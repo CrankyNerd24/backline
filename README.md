@@ -4,21 +4,35 @@ An easy drum-track creator for iPad, for guitarists and other non-drummers. Buil
 
 The full product spec is in [`docs/spec.md`](docs/spec.md).
 
-## Status: milestone 1 (engine core)
+## Status: milestone 2 (song model, groove library, Song Builder)
 
-- **DSP core** (`Backline/Engine/DSP/`, C++ behind a C API): synthesized kick, snare, closed and open hi-hat (with choke), and a sample-accurate step clock. Nothing on the render thread allocates or locks. Commands reach it through a lock-free SPSC queue, and position comes back through atomics.
-- **Swift façade** (`Backline/Engine/EngineController.swift`): `AVAudioEngine` + `AVAudioSourceNode`, a `.playback` session with a 5 ms buffer, background audio, and clean stops on interruptions and route changes.
-- **Engine Lab** (`Backline/Features/EngineLab/`): a temporary home screen with play/stop, tempo (40–260 BPM), beat lights and a tappable 16-step hat/snare/kick grid. It goes away when the Song Builder lands in milestone 2.
+**Milestone 2**
+- **Song model** (`Backline/Model/`): `Song`, `Section`, `Feel`, `Groove`, `Kit` and the rest of spec §3, all `Codable`.
+- **Saving**: each song is a JSON file in Application Support/Songs. Edits save themselves shortly after you stop, and again when the app goes to the background. A first-time user gets a starter song: Intro, Verse, Chorus, Verse, Chorus, Outro in Rock.
+- **Groove library** (`Backline/Library/Grooves/`): a starter set of 29 grooves, at least two for each of the 12 styles. Each has a main bar and a fill. `python3 tools/check_grooves.py -v` validates them and prints each one as a grid.
+- **Song Builder** (`Backline/Features/SongBuilder/`), now the home screen:
+  - Song row with blocks sized by bar count. Tap to select, drag to reorder, long-press to duplicate or delete, + to add.
+  - Section settings: name, type, bar count, repeat-until-I-step, groove (chosen from a menu until the Groove Picker lands), the feel sliders, and time, cymbals and fill.
+  - Transport: play from the selected section, stop, loop a section, position readout, count-in.
+  - Header: rename, switch, create, duplicate and delete songs; tempo with − / + and tap tempo.
+- **Engine**: plays a *timeline* (the whole song as bars of hits) instead of one looping pattern. Every edit builds a new timeline, which swaps in at the next bar line. Playback continues from the same bar of the same section even when sections are reordered, shortened or deleted mid-song. The engine also handles play-from-bar, loop-a-section, stop at the end of the song, and tempo changes on the next beat.
 
-### Milestone 1 acceptance
+Saved but not heard yet: feel, time, cymbals, fills and count-in (milestone 3), and repeat-until-I-step (milestone 5). Toms are silent and ride/crash use a hi-hat stand-in until the full kit (milestone 8).
 
-| Criterion | How it's checked | Result |
-|---|---|---|
-| Every hit within ±1 sample over a 10-minute render at 120 BPM | `Tests/DSP/EngineTests.cpp` | 4,500 hits, worst error 0 samples |
-| A 16-step pattern plays at any BPM | 40–260 BPM at 44.1 and 48 kHz, plus triplets | pass |
-| No dropouts with a 5 ms buffer | Renders about 100× faster than real time on a laptop CPU; no allocations while rendering (checked by the tests) | **still needs an Instruments run on an iPad** |
+**Milestone 1:** the C++ DSP core (synthesized kick, snare and hats, a sample-accurate clock, lock-free command queue) and the Swift `AVAudioEngine` wrapper.
 
-The tests also check that audio onsets land on the exact sample, that output doesn't depend on buffer size, that renders are bit-identical, that tempo changes land on the next step and pattern changes on the next bar, and that stop lets the last hit ring.
+### Tests
+
+`Tests/DSP/EngineTests.cpp` covers both milestones:
+- Every hit within ±1 sample over a 10-minute render (worst error: 0 samples), at awkward tempos and sample rates, and in triplets.
+- Audio onsets on the exact sample, output independent of buffer size, and bit-identical renders.
+- No allocations on the render thread, even while timelines are being swapped.
+- Tempo changes on the next beat, and timeline swaps on the next bar.
+- Section order, end of song, looping, and play-from-bar.
+- Swaps after reordering, shortening or deleting sections.
+- Every timeline freed.
+
+Still to check on an iPad: no dropouts with a 5 ms buffer, using Instruments.
 
 ## Building
 
@@ -32,6 +46,12 @@ cmake --build build
 ctest --test-dir build --output-on-failure   # or ./build/engine_tests for details
 ```
 
+**Check the groove library:**
+
+```sh
+python3 tools/check_grooves.py -v
+```
+
 **Hear the kit without an iPad:**
 
 ```sh
@@ -43,9 +63,10 @@ ctest --test-dir build --output-on-failure   # or ./build/engine_tests for detai
 ```
 Backline/            app sources (Xcode synchronized folder: new files are picked up automatically)
   App/               app entry point, design tokens
-  Features/          one folder per screen
-  Model/             Codable model types
-  Engine/            EngineController (Swift) + DSP/ (C++)
+  Features/          one folder per screen (SongBuilder/, Shared/ components)
+  Model/             Codable model types, SongStore (saving)
+  Library/           GrooveLibrary + Grooves/*.json
+  Engine/            EngineController, TimelineBuilder (Swift) + DSP/ (C++)
 Tests/DSP/           C++ engine tests (CMake)
 tools/               offline render tool
 docs/spec.md         product spec

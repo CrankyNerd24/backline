@@ -8,72 +8,78 @@ import Observation
 /// Lives for the life of the app, so it never tears the core down.
 @Observable
 final class EngineController {
+    struct Position: Equatable {
+        var sectionID: UUID
+        var barInSection: Int
+        var songBar: Int
+        var barPhase: Double // 0…1 through the current bar
+    }
+
     private(set) var isPlaying = false
-    private(set) var bpm: Double
-    private(set) var pattern: Pattern
-    /// Bar and step that most recently fired. `step` is nil when stopped.
-    /// These lead what you hear by the output latency (a few ms).
-    private(set) var bar = 0
-    private(set) var step: Int?
+    /// Where playback is, or nil when stopped. Leads what you hear by the
+    /// output latency (a few ms).
+    private(set) var position: Position?
+    private(set) var loopingSectionID: UUID?
     private(set) var lastError: String?
 
+    @ObservationIgnored private let library: GrooveLibrary
     @ObservationIgnored private let avEngine = AVAudioEngine()
     @ObservationIgnored private var sourceNode: AVAudioSourceNode?
     @ObservationIgnored private var core: OpaquePointer?
     @ObservationIgnored private var pollTimer: Timer?
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
 
-    init(pattern: Pattern = .rockStraight8ths, bpm: Double = 112) {
-        self.pattern = pattern
-        self.bpm = bpm
+    @ObservationIgnored private var song: Song?
+    @ObservationIgnored private var needsTimeline = false
+    @ObservationIgnored private var sentBPM: Double?
+    @ObservationIgnored private var sectionsByKey: [UInt32: UUID] = [:]
+    @ObservationIgnored private var playRequestedAt: Date?
+
+    init(library: GrooveLibrary) {
+        self.library = library
         configureSession()
         buildGraph()
         observeSystemEvents()
         startPolling()
     }
 
+    // MARK: Song
+
+    /// Call on every song change. The rebuilt timeline reaches the engine on
+    /// the next poll (within a frame), and the engine swaps it in at the next
+    /// bar line, so edits are heard live.
+    func load(_ song: Song) {
+        self.song = song
+        needsTimeline = true
+        if let looping = loopingSectionID, song.index(of: looping) == nil { setLoop(nil) }
+    }
+
     // MARK: Transport
 
-    func play() {
-        guard let core else { return }
+    /// Plays from the start of a section (or the top of the song).
+    func play(from sectionID: UUID? = nil) {
+        guard let core, let song, !song.sections.isEmpty else { return }
         startEngineIfNeeded()
-        bl_engine_play(core)
+        pushPendingChanges() // the engine must have the current timeline first
+        let bar = sectionID.map { song.startBar(of: $0) } ?? 0
+        bl_engine_play_from(core, UInt32(bar))
         isPlaying = true
+        playRequestedAt = .now
     }
 
     func stop() {
         guard let core else { return }
         bl_engine_stop(core)
         isPlaying = false
+        playRequestedAt = nil
     }
 
-    func togglePlay() {
-        isPlaying ? stop() : play()
-    }
-
-    func setTempo(_ newValue: Double) {
-        let clamped = min(max(newValue.rounded(), BL_MIN_BPM), BL_MAX_BPM)
-        guard clamped != bpm else { return }
-        bpm = clamped
-        if let core { bl_engine_set_tempo(core, clamped) }
-    }
-
-    func nudgeTempo(by delta: Double) {
-        setTempo(bpm + delta)
-    }
-
-    // MARK: Pattern
-
-    func setPattern(_ newValue: Pattern) {
-        pattern = newValue
-        sendPattern()
-    }
-
-    /// Cycles a cell off → normal → loud → soft → off. While playing, the
-    /// change is heard from the next bar line.
-    func cycle(_ piece: Piece, step: Int) {
-        pattern.setVelocity(pattern.velocity(piece, step: step).next, piece, step: step)
-        sendPattern()
+    /// Loops a section when playback reaches its end; nil turns looping off.
+    func setLoop(_ sectionID: UUID?) {
+        loopingSectionID = sectionID
+        guard let core else { return }
+        let key = sectionID.flatMap { id in song?.sections.first { $0.id == id }?.engineKey } ?? 0
+        bl_engine_set_loop_section(core, key)
     }
 
     func audition(_ piece: Piece, velocity: Velocity = .normal) {
@@ -82,10 +88,21 @@ final class EngineController {
         bl_engine_audition(core, piece.engineIndex, velocity.rawValue)
     }
 
-    private func sendPattern() {
-        guard let core else { return }
-        var raw = pattern.engineValue
-        bl_engine_set_pattern(core, &raw)
+    private func pushPendingChanges() {
+        guard let core, let song else { return }
+        if sentBPM != song.bpm {
+            bl_engine_set_tempo(core, song.bpm)
+            sentBPM = song.bpm
+        }
+        guard needsTimeline else { return }
+        guard let timeline = TimelineBuilder.build(song, library: library) else { return }
+        if bl_engine_set_timeline(core, timeline) {
+            needsTimeline = false
+            // Merge rather than replace: until the next bar line the engine may
+            // still be playing a section that was just deleted.
+            for section in song.sections { sectionsByKey[section.engineKey] = section.id }
+        }
+        // If the queue was full, needsTimeline stays set and the next poll retries.
     }
 
     // MARK: Audio graph
@@ -110,8 +127,10 @@ final class EngineController {
             return
         }
         self.core = core
-        bl_engine_set_tempo(core, bpm)
-        sendPattern()
+        sentBPM = nil
+        needsTimeline = true
+        pushPendingChanges()
+        if loopingSectionID != nil { setLoop(loopingSectionID) }
 
         let node = AVAudioSourceNode(format: format, renderBlock: Self.makeRenderBlock(core: core))
         avEngine.attach(node)
@@ -154,6 +173,7 @@ final class EngineController {
         if let core { bl_engine_destroy(core) } // safe: the render thread is stopped
         core = nil
         isPlaying = false
+        position = nil
         buildGraph()
     }
 
@@ -206,14 +226,29 @@ final class EngineController {
 
     private func poll() {
         guard let core else { return }
-        var position = BLPosition()
-        bl_engine_get_position(core, &position)
-        let newStep = position.playing && position.step >= 0 ? Int(position.step) : nil
-        // Only assign on change so SwiftUI isn't re-rendered 60 times a second.
-        if step != newStep { step = newStep }
-        if bar != Int(position.bar) { bar = Int(position.bar) }
-        // isPlaying is owned by play()/stop(); polling it here would flicker
-        // for the few ms before the render thread picks up the command.
+        pushPendingChanges()
+        bl_engine_collect_garbage(core)
+
+        var raw = BLPosition()
+        bl_engine_get_position(core, &raw)
+
+        // For a moment after Play the render thread hasn't picked the command
+        // up yet; don't flip back to stopped during that window.
+        if raw.playing {
+            playRequestedAt = nil
+            if !isPlaying { isPlaying = true }
+        } else if isPlaying, playRequestedAt.map({ Date.now.timeIntervalSince($0) > 0.3 }) ?? true {
+            isPlaying = false // reached the end of the song
+            playRequestedAt = nil
+        }
+
+        var newPosition: Position?
+        if raw.playing, raw.songBar >= 0, let id = sectionsByKey[raw.sectionKey] {
+            newPosition = Position(sectionID: id, barInSection: Int(raw.barInSection), songBar: Int(raw.songBar),
+                                   barPhase: raw.barPhase)
+        }
+        // Only assign on change so SwiftUI isn't re-rendered for nothing.
+        if position != newPosition { position = newPosition }
     }
 }
 

@@ -24,6 +24,7 @@ enum Theme {
         static let bridge = Color(hex: 0xC86FA8)
         static let solo = Color(hex: 0xE0663F)
         static let outro = Color(hex: 0x8A8F99)
+        static let custom = Color(hex: 0xB9A46A) // not in the spec; a neutral gold for custom sections
     }
 
     enum Radius {

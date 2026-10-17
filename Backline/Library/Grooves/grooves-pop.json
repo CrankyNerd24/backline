@@ -1,0 +1,66 @@
+[
+  {
+    "id": "pop.fourOnFloor",
+    "style": "Pop",
+    "name": "Four on the Floor",
+    "summary": "Kick on every beat with open hats on the 'ands'. Built for dancing.",
+    "tags": [
+      "four on the floor",
+      "dance",
+      "open hat"
+    ],
+    "tempoRange": [100, 130],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1],
+          "openHat": [0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 1, 0, 1, 2, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+          "openHat": [0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "pop.syncopated",
+    "style": "Pop",
+    "name": "Syncopated Pop",
+    "summary": "A modern pop beat with the kick dancing around the backbeat.",
+    "tags": [
+      "syncopated",
+      "modern"
+    ],
+    "tempoRange": [85, 120],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 2, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 2, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        }
+      }
+    }
+  }
+]

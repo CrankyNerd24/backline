@@ -1,0 +1,66 @@
+[
+  {
+    "id": "latin.bossaFeel",
+    "style": "Latin",
+    "name": "Bossa Feel",
+    "summary": "Soft rim clicks in a clave-like pattern over a gently pulsing kick.",
+    "tags": [
+      "bossa",
+      "cross-stick",
+      "soft"
+    ],
+    "tempoRange": [120, 150],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0],
+          "snare": [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+          "kick": [2, 0, 0, 1, 2, 0, 0, 1, 2, 0, 0, 1, 2, 0, 0, 1]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 2, 0, 2, 3],
+          "kick": [2, 0, 0, 1, 2, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "latin.rock",
+    "style": "Latin",
+    "name": "Latin Rock",
+    "summary": "A syncopated ride pattern over a rock backbeat.",
+    "tags": [
+      "latin",
+      "ride",
+      "syncopated"
+    ],
+    "tempoRange": [100, 130],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [3, 0, 0, 2, 0, 0, 3, 0, 0, 0, 2, 0, 3, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 2, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [3, 0, 0, 2, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        }
+      }
+    }
+  }
+]

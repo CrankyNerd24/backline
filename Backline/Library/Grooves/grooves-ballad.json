@@ -1,0 +1,65 @@
+[
+  {
+    "id": "ballad.slow8ths",
+    "style": "Ballad",
+    "name": "Slow Eighths",
+    "summary": "Gentle eighths and a soft backbeat. Stays out of the way of the song.",
+    "tags": [
+      "slow",
+      "soft",
+      "eighths"
+    ],
+    "tempoRange": [60, 85],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 3],
+          "kick": [2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "ballad.sparse",
+    "style": "Ballad",
+    "name": "Sparse Half-time",
+    "summary": "Quiet ride and a single snare on beat 3. Lots of space for the vocal.",
+    "tags": [
+      "half-time",
+      "sparse",
+      "ride",
+      "soft"
+    ],
+    "tempoRange": [60, 90],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [2, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 3],
+          "kick": [2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  }
+]

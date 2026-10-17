@@ -1,0 +1,69 @@
+[
+  {
+    "id": "metal.doubleKick",
+    "style": "Metal",
+    "name": "Double Kick",
+    "summary": "Sixteenth notes on the kick under a steady backbeat. Relentless.",
+    "tags": [
+      "double kick",
+      "sixteenths",
+      "fast"
+    ],
+    "tempoRange": [140, 200],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 2, 2, 2, 3, 2, 2, 2, 3, 2, 2, 2, 3, 2, 2, 2]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [3, 2, 2, 2, 3, 2, 2, 2, 3, 0, 0, 0, 3, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 3, 2]
+        }
+      }
+    }
+  },
+  {
+    "id": "metal.halfTimeChug",
+    "style": "Metal",
+    "name": "Half-time Chug",
+    "summary": "Crash into a half-time feel with the kick locking to a chugging riff.",
+    "tags": [
+      "half-time",
+      "breakdown",
+      "heavy"
+    ],
+    "tempoRange": [120, 180],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "crash": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "hiHat": [0, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 3, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "crash": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "hiHat": [0, 0, 2, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 3, 0, 0, 0, 3, 0, 3, 0, 0, 0, 3, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 3, 2]
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,162 @@
+[
+  {
+    "id": "rock.straight8ths",
+    "style": "Rock",
+    "name": "Straight 8ths",
+    "summary": "The everyday rock beat: steady eighths on the hi-hat, snare on 2 and 4, and a kick that pushes into the back half of the bar.",
+    "tags": [
+      "straight",
+      "eighths",
+      "backbeat"
+    ],
+    "tempoRange": [90, 160],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 1, 0, 0, 0, 0, 3, 0, 1, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 1, 2, 2, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        }
+      }
+    }
+  },
+  {
+    "id": "rock.driving",
+    "style": "Rock",
+    "name": "Driving Eighths",
+    "summary": "A pushier straight beat with an open hat lifting the end of every bar. Good for choruses.",
+    "tags": [
+      "straight",
+      "eighths",
+      "open hat",
+      "chorus"
+    ],
+    "tempoRange": [110, 180],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 0, 0],
+          "openHat": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 3, 0, 2, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "rock.halfTime",
+    "style": "Rock",
+    "name": "Half-time Rock",
+    "summary": "Snare on beat 3 only, so the song feels twice as wide without slowing down.",
+    "tags": [
+      "half-time",
+      "heavy"
+    ],
+    "tempoRange": [120, 180],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 3, 0, 0, 0, 3, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 3, 2]
+        }
+      }
+    }
+  },
+  {
+    "id": "rock.sixteenths",
+    "style": "Rock",
+    "name": "Sixteenth Hats",
+    "summary": "Busy sixteenths on the hi-hat over a simple backbeat. Fills out mid-tempo songs.",
+    "tags": [
+      "sixteenths",
+      "busy"
+    ],
+    "tempoRange": [80, 130],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 1, 2, 1, 3, 1, 2, 1, 3, 1, 2, 1, 3, 1, 2, 1],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 2, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 1, 2, 1, 3, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        }
+      }
+    }
+  },
+  {
+    "id": "rock.ride",
+    "style": "Rock",
+    "name": "Ride Rock",
+    "summary": "Opens with a crash, then rides the cymbal in eighths. Bigger and washier than the hi-hat.",
+    "tags": [
+      "ride",
+      "chorus",
+      "big"
+    ],
+    "tempoRange": [90, 150],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "crash": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "ride": [0, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "crash": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "ride": [0, 0, 2, 0, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  }
+]

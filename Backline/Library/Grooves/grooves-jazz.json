@@ -1,0 +1,67 @@
+[
+  {
+    "id": "jazz.mediumSwing",
+    "style": "Jazz & Swing",
+    "name": "Medium Swing",
+    "summary": "Swinging ride pattern, hi-hat foot on 2 and 4, and a feathered kick. The jazz standard feel.",
+    "tags": [
+      "swing",
+      "ride",
+      "triplets"
+    ],
+    "tempoRange": [100, 180],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [3, 0, 0, 3, 0, 2, 3, 0, 0, 3, 0, 2],
+          "hiHat": [0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+          "kick": [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [3, 0, 0, 3, 0, 2, 0, 0, 0, 0, 0, 0],
+          "hiHat": [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 1, 2, 1, 2, 2, 2, 3],
+          "kick": [1, 0, 0, 1, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "jazz.upTempo",
+    "style": "Jazz & Swing",
+    "name": "Up-tempo Swing",
+    "summary": "A lighter ride pattern for fast tunes, with the hat foot keeping 2 and 4.",
+    "tags": [
+      "swing",
+      "fast",
+      "ride",
+      "triplets"
+    ],
+    "tempoRange": [180, 260],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [3, 0, 0, 2, 0, 1, 3, 0, 0, 2, 0, 1],
+          "hiHat": [0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+          "kick": [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [3, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0],
+          "hiHat": [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 2, 1, 2, 2, 2, 3],
+          "kick": [1, 0, 0, 1, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  }
+]

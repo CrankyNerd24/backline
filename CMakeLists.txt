@@ -10,7 +10,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(DSP_DIR ${CMAKE_SOURCE_DIR}/Backline/Engine/DSP)
-add_library(backline_dsp STATIC ${DSP_DIR}/Engine.cpp ${DSP_DIR}/Voices.cpp)
+add_library(backline_dsp STATIC ${DSP_DIR}/Engine.cpp ${DSP_DIR}/Timeline.cpp ${DSP_DIR}/Voices.cpp)
 target_include_directories(backline_dsp PUBLIC ${DSP_DIR})
 target_compile_options(backline_dsp PRIVATE -Wall -Wextra -Wpedantic -Werror)
 

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "hiphop.boomBap",
+    "style": "Hip-hop",
+    "name": "Boom Bap",
+    "summary": "Heavy kick and snare with a loose hat. Head-nod tempo.",
+    "tags": [
+      "boom bap",
+      "laid back"
+    ],
+    "tempoRange": [80, 100],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 1, 2, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 1, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 3],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "hiphop.halfTime",
+    "style": "Hip-hop",
+    "name": "Half-time Groove",
+    "summary": "Rolling sixteenth hats over a half-time snare. Modern and spacious.",
+    "tags": [
+      "half-time",
+      "sixteenths",
+      "modern"
+    ],
+    "tempoRange": [120, 160],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 1, 2, 1, 2, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  }
+]

@@ -4,34 +4,39 @@
 #include <cstdint>
 
 #include "SPSCQueue.hpp"
+#include "Timeline.hpp"
 #include "Voices.hpp"
 #include "backline_engine.h"
 
 namespace backline {
 
 struct Command {
-    enum Type : uint8_t { Play, Stop, SetTempo, SetPattern, Audition };
-    Type type = Play;
+    enum Type : uint8_t { PlayFrom, Stop, SetTempo, SetTimeline, SetLoop, Audition };
+    Type type = Stop;
     uint8_t piece = 0;
     uint8_t velocity = 0;
-    double value = 0.0;
-    BLPattern pattern{};
+    uint32_t value32 = 0; // bar for PlayFrom, key for SetLoop
+    double value = 0.0;   // bpm for SetTempo
+    const Timeline *timeline = nullptr;
 };
 
 // The sample-accurate sequencer and voice mixer. Everything reachable from
-// render() is allocation- and lock-free.
+// render() is allocation- and lock-free; timelines the render thread is done
+// with go back to the control thread to be freed.
 //
-// Timing model: each step's ideal position is an exact (fractional) sample
-// time measured from an anchor. We round that ideal once per step, so every
-// hit lands within half a sample of where it belongs and rounding error never
-// accumulates. A tempo or resolution change moves the anchor to the step where
-// it takes effect, keeping the anchor itself unrounded.
+// Timing model: every event's ideal position is an exact (fractional) sample
+// time measured from an anchor beat. We round that ideal once per event, so
+// every hit lands within half a sample of where it belongs and rounding error
+// never accumulates. A tempo change moves the anchor to the beat where it
+// takes effect, keeping the anchor itself unrounded.
 class Engine {
 public:
     explicit Engine(double sampleRate);
+    ~Engine();
 
     // Control thread.
     bool post(const Command &command) { return commands_.push(command); }
+    void collectGarbage();
 
     // Render thread.
     void render(float *left, float *right, uint32_t frames);
@@ -49,37 +54,47 @@ public:
 
 private:
     void applyCommands();
-    void start();
-    void fireStep();
+    void start(uint32_t songBar);
+    void stop();
+    void installTimeline(const Timeline *timeline);
+    void retire(const Timeline *timeline);
+    void processEvents(int64_t sample);
+    void advanceBar();
+    void scheduleNextEvent();
+    int64_t sampleAt(double globalBeat) const;
+    double beatAt(int64_t sample) const;
     void trigger(int piece, uint8_t velocity, uint32_t seed);
     void renderVoices(float *left, float *right, uint32_t frames);
-    double samplesPerStep() const;
     void publishPosition();
 
     const double sampleRate_;
     SPSCQueue<Command, 64> commands_;
+    SPSCQueue<const Timeline *, 128> retired_;
 
     // Render-thread state.
     int64_t now_ = 0; // absolute sample time of the current buffer's first frame
     bool playing_ = false;
     double bpm_ = 120.0;
-    BLPattern pattern_{};
+    const Timeline *timeline_ = nullptr;
+    const Timeline *pendingTimeline_ = nullptr;
+    uint32_t loopKey_ = 0;
+
+    uint32_t songBar_ = 0;  // timeline bar now playing
+    int64_t barCount_ = 0;  // bars played since start (drives timing; loops keep counting)
+    uint32_t hitIndex_ = 0; // next hit within the current bar
+    double anchorTime_ = 0.0;
+    double anchorBeat_ = 0.0;
+    double beatLength_ = 0.0;
     bool hasPendingTempo_ = false;
     double pendingTempo_ = 0.0;
-    bool hasPendingPattern_ = false;
-    BLPattern pendingPattern_{};
-
-    double anchorTime_ = 0.0; // exact sample time of anchorStep_
-    int64_t anchorStep_ = 0;
-    double stepLength_ = 0.0;
-    int64_t stepCount_ = 0; // global index of the next step to fire
-    int32_t stepInBar_ = 0;
-    int64_t bar_ = 0;
-    int64_t nextStepSample_ = 0;
+    double pendingTempoBeat_ = 0.0;
+    int64_t nextEventSample_ = 0;
 
     KickVoice kick_;
     SnareVoice snare_;
     HatVoice closedHat_, openHat_;
+    // Until the full kit (milestone 8), ride and crash borrow the hat voice.
+    HatVoice rideStandIn_, crashStandIn_;
 
     BLTriggerRecord *log_ = nullptr;
     uint32_t logCapacity_ = 0;
@@ -87,9 +102,10 @@ private:
 
     // Published for the UI.
     std::atomic<bool> pubPlaying_{false};
-    std::atomic<int64_t> pubBar_{0};
-    std::atomic<int32_t> pubStep_{-1};
-    std::atomic<int32_t> pubStepsPerBar_{16};
+    std::atomic<int32_t> pubSongBar_{-1};
+    std::atomic<uint32_t> pubSectionKey_{0};
+    std::atomic<int32_t> pubBarInSection_{0};
+    std::atomic<double> pubBarPhase_{0.0};
     std::atomic<double> pubBpm_{120.0};
     std::atomic<int64_t> pubSampleTime_{0};
 };

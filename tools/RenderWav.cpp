@@ -5,6 +5,7 @@
 //
 // Writes 48 kHz, 24-bit stereo (the export format from spec §8).
 
+#include <algorithm>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -23,26 +24,24 @@ int main(int argc, char **argv) {
     }
     const double sr = 48000.0;
     const double bpm = argc > 2 ? std::atof(argv[2]) : 112.0;
-    const int bars = argc > 3 ? std::atoi(argv[3]) : 8;
+    const int bars = std::max(1, std::min(argc > 3 ? std::atoi(argv[3]) : 8, 64));
     const auto frames = static_cast<uint32_t>(bars * 240.0 / bpm * sr + 1.5 * sr); // plus ring-out
 
     BLEngine *e = bl_engine_create(sr);
-    const BLPattern p = rockStraight8ths();
+    BLSectionDesc section;
+    section.key = 1;
+    section.bars = static_cast<uint16_t>(std::max(1, std::min(bars, 64)));
+    section.main = rockStraight8ths();
     bl_engine_set_tempo(e, bpm);
-    bl_engine_set_pattern(e, &p);
-    bl_engine_play(e);
+    bl_engine_set_timeline(e, bl_timeline_create(&section, 1));
+    bl_engine_play_from(e, 0);
 
+    // The song stops by itself after the last bar; the extra time is ring-out.
     std::vector<float> l(frames), r(frames);
-    const auto playFrames = static_cast<uint32_t>(bars * 240.0 / bpm * sr);
     for (uint32_t done = 0; done < frames;) {
         const uint32_t n = std::min<uint32_t>(256, frames - done);
-        if (done < playFrames && done + n >= playFrames) {
-            bl_engine_render(e, l.data() + done, r.data() + done, playFrames - done);
-            bl_engine_stop(e);
-            done = playFrames;
-            continue;
-        }
         bl_engine_render(e, l.data() + done, r.data() + done, n);
+        bl_engine_collect_garbage(e);
         done += n;
     }
     bl_engine_destroy(e);

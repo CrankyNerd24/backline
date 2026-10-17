@@ -1,0 +1,65 @@
+[
+  {
+    "id": "reggae.oneDrop",
+    "style": "Reggae",
+    "name": "One Drop",
+    "summary": "Kick and snare land together on beat 3 only, with a swung hat. Laid back.",
+    "tags": [
+      "one drop",
+      "laid back",
+      "triplets"
+    ],
+    "tempoRange": [65, 90],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "kick": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [2, 0, 1, 2, 0, 1, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 2, 2, 0, 0, 0],
+          "kick": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        }
+      }
+    }
+  },
+  {
+    "id": "reggae.steppers",
+    "style": "Reggae",
+    "name": "Steppers",
+    "summary": "Kick on every beat under a beat-3 snare. Marches forward.",
+    "tags": [
+      "steppers",
+      "four on the floor",
+      "triplets"
+    ],
+    "tempoRange": [70, 95],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [2, 0, 1, 2, 0, 1, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 2, 1, 2, 2, 2, 3],
+          "kick": [3, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  }
+]

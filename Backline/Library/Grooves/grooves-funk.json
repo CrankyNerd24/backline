@@ -1,0 +1,97 @@
+[
+  {
+    "id": "funk.tight",
+    "style": "Funk",
+    "name": "Tight Sixteenths",
+    "summary": "Accented sixteenth hats, ghost notes on the snare and a syncopated kick. Sits right in the pocket.",
+    "tags": [
+      "sixteenths",
+      "ghost notes",
+      "syncopated"
+    ],
+    "tempoRange": [85, 115],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 1, 2, 1, 3, 1, 2, 1, 3, 1, 2, 1, 3, 1, 2, 1],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 1, 0, 1, 0, 0, 3, 0, 0, 1],
+          "kick": [3, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 1, 2, 1, 3, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "funk.openHat",
+    "style": "Funk",
+    "name": "Open-hat Strut",
+    "summary": "Closed hat on the beat, open hat on every 'and'. A dance-floor strut.",
+    "tags": [
+      "open hat",
+      "disco",
+      "dance"
+    ],
+    "tempoRange": [90, 120],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0],
+          "openHat": [0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 1, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "openHat": [0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 1, 2, 2, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        }
+      }
+    }
+  },
+  {
+    "id": "funk.linear",
+    "style": "Funk",
+    "name": "Linear Groove",
+    "summary": "No two drums ever hit together: kick, snare and hat take turns. Tight and talky.",
+    "tags": [
+      "linear",
+      "sixteenths",
+      "ghost notes"
+    ],
+    "tempoRange": [85, 110],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [0, 2, 2, 0, 0, 2, 2, 0, 3, 2, 0, 2, 0, 2, 2, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 1, 0, 0, 0, 0, 3, 0, 0, 1],
+          "kick": [3, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [0, 2, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  }
+]

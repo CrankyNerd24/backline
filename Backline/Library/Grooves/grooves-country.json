@@ -1,0 +1,63 @@
+[
+  {
+    "id": "country.trainBeat",
+    "style": "Country",
+    "name": "Train Beat",
+    "summary": "Constant sixteenths on the snare with accents on 2 and 4, like a train on the tracks.",
+    "tags": [
+      "train beat",
+      "sixteenths",
+      "snare"
+    ],
+    "tempoRange": [100, 160],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "snare": [1, 2, 1, 1, 3, 2, 1, 1, 1, 2, 1, 1, 3, 2, 1, 1],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "snare": [1, 2, 1, 1, 3, 2, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "country.twoStep",
+    "style": "Country",
+    "name": "Two-step",
+    "summary": "Boom-chick: kick on 1 and 3, snare on 2 and 4, light hat in between.",
+    "tags": [
+      "two-step",
+      "boom-chick",
+      "light"
+    ],
+    "tempoRange": [100, 150],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "punk.skate",
+    "style": "Punk",
+    "name": "Skate Beat",
+    "summary": "Kick on every beat, snare on every 'and'. Fast and bouncy.",
+    "tags": [
+      "fast",
+      "polka",
+      "offbeat"
+    ],
+    "tempoRange": [160, 220],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0],
+          "snare": [0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0],
+          "kick": [3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 3, 0, 0, 0, 3, 0, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "punk.drive",
+    "style": "Punk",
+    "name": "Punk Drive",
+    "summary": "Hard eighths on the hat, simple and loud. Turn it up.",
+    "tags": [
+      "eighths",
+      "driving",
+      "loud"
+    ],
+    "tempoRange": [150, 210],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 3, 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 3, 0, 3, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  }
+]
