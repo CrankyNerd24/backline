@@ -34,6 +34,10 @@ struct SongBuilderView: View {
         .onChange(of: store.song, initial: true) { _, song in
             engine.load(song)
         }
+        .onChange(of: selection, initial: true) { _, id in
+            engine.cuedSectionID = id // where a pedal's Play starts
+        }
+        .pedalConfirmations()
         .onChange(of: store.song.id) {
             engine.stop()
             engine.setLoop(nil)

@@ -4,7 +4,19 @@ An easy drum-track creator for iPad, for guitarists and other non-drummers. Buil
 
 The full product spec is in [`docs/spec.md`](docs/spec.md).
 
-## Status: milestone 5 (Play-Along and queued actions)
+## Status: milestone 6 (foot pedals)
+
+**Milestone 6**: hands stay on the guitar.
+- **Page-turner pedals** (Bluetooth keyboards) are read through GCKeyboard, which gives real key-down and key-up wherever the app's focus is. The pedals are ignored while you're typing in a text field.
+- **MIDI foot controllers** over USB or Bluetooth: every MIDI source is connected. Note on/off and controllers (64 and up means pressed) become switch presses. **Add a pedal** opens Apple's Bluetooth MIDI pairing screen.
+- **Gestures** (spec §7.3): tap, double-tap and hold per switch. A switch with only a tap action fires on key-down with no wait. Hold waits for release or the hold length, and double-tap waits for its window after release. Tap tempo counts every press straight away while it's collecting.
+- **Pedal Setup** (spec §6.6), opened from the pedal chip in either header:
+  - a 1 / 2 / 4-switch layout with a drawing that lights up as you press;
+  - a **Test it** strip, and **Learn** for each switch;
+  - a gesture map where every cell picks an action;
+  - the next-section timing, a confirmation banner and/or a quiet click in your ears, and the hold length.
+- **Defaults** (spec §7.2) for two switches. Left: tap Play/stop, double-tap Restart, hold Loop. Right: tap Next section, double-tap Tap tempo, hold Big ending. Before you learn anything, each switch accepts the arrow and page keys common page-turners send.
+- The Play-Along footer shows the current pedal mapping.
 
 **Milestone 5**
 - **Play-Along screen** (spec §6.3), opened with **Play-along mode** and built to be read from a metre or two away:
@@ -64,7 +76,9 @@ Toms are silent and ride/crash use a hi-hat stand-in until the full kit (milesto
 
 ### Tests
 
-`Tests/DSP/EngineTests.cpp` covers milestones 1–5:
+`Tests/Pedal/PedalTests.cpp` covers gesture detection and MIDI decoding. That includes the milestone 6 acceptance test: a tap-only action fires on key-down with nothing added. The engine then applies any queued action at the start of the next audio buffer, which `EngineTests` checks.
+
+`Tests/DSP/EngineTests.cpp` covers milestones 1–6:
 - Every hit within ±1 sample over a 10-minute render (worst error: 0 samples), at awkward tempos and sample rates, and in triplets.
 - Audio onsets on the exact sample, output independent of buffer size, and bit-identical renders.
 - No allocations on the render thread, even while timelines are being swapped.
@@ -82,12 +96,12 @@ Still to check on an iPad: no dropouts with a 5 ms buffer, using Instruments.
 
 **App:** open `Backline.xcodeproj` in Xcode 26 and run on an iPad or the iPad simulator. Minimum iPadOS 17, landscape only.
 
-**DSP tests** (macOS or Linux, no Xcode needed):
+**Engine and pedal tests** (macOS or Linux, no Xcode needed):
 
 ```sh
 cmake -S . -B build
 cmake --build build
-ctest --test-dir build --output-on-failure   # or ./build/engine_tests for details
+ctest --test-dir build --output-on-failure   # or ./build/engine_tests and ./build/pedal_tests for details
 ```
 
 **Edit and check the groove library:**
@@ -112,7 +126,9 @@ Backline/            app sources (Xcode synchronized folder: new files are picke
   Model/             Codable model types, SongStore (saving)
   Library/           GrooveLibrary + Grooves/*.json
   Engine/            EngineController, TimelineBuilder (Swift) + DSP/ (C++)
+  Input/             PedalController, keyboard and MIDI sources (Swift) + PedalCore/ (C++ gestures, MIDI)
 Tests/DSP/           C++ engine tests (CMake)
+Tests/Pedal/         C++ gesture and MIDI tests (CMake)
 tools/               offline render tool
 docs/spec.md         product spec
 ```

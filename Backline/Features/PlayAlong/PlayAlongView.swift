@@ -7,12 +7,14 @@ import UIKit
 struct PlayAlongView: View {
     @Environment(SongStore.self) private var store
     @Environment(EngineController.self) private var engine
+    @Environment(PedalController.self) private var pedals
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// The section shown while stopped, and where Play starts.
     @State private var cuedSectionID: UUID?
     @State private var tapTempo = TapTempo()
+    @State private var settingUpPedals = false
 
     init(startingAt sectionID: UUID?) {
         _cuedSectionID = State(initialValue: sectionID)
@@ -64,6 +66,15 @@ struct PlayAlongView: View {
         .onChange(of: engine.position?.sectionID) { _, id in
             if let id { cuedSectionID = id }
         }
+        .onChange(of: cuedSectionID, initial: true) { _, id in
+            engine.cuedSectionID = id // where a pedal's Play starts
+        }
+        .pedalConfirmations()
+        .fullScreenCover(isPresented: $settingUpPedals) {
+            PedalSetupView()
+                .environment(pedals)
+                .environment(engine)
+        }
         .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
     }
 
@@ -81,14 +92,13 @@ struct PlayAlongView: View {
                 .font(Theme.condensed(26, weight: .bold))
                 .lineLimit(1)
             Spacer()
-            // Foot pedals arrive in milestone 6.
-            Label("No pedal", systemImage: "shoeprints.fill")
-                .font(Theme.body(14, weight: .semibold))
-                .foregroundStyle(Theme.textMuted)
-                .padding(.horizontal, 12)
-                .frame(height: 36)
-                .background(Theme.surface, in: Capsule())
-                .accessibilityLabel("No foot pedal connected")
+            Button {
+                settingUpPedals = true
+            } label: {
+                PedalStatusChip()
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Opens foot pedal setup")
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 12)
@@ -259,8 +269,9 @@ struct PlayAlongView: View {
         let section = currentSection
         let looping = engine.loopingSectionID.flatMap { id in song.sections.first { $0.id == id } }
         return HStack(spacing: 14) {
+            // No keyboard shortcuts here: page-turner pedals send arrow keys,
+            // and the pedal system already handles them.
             transportButton("backward.end.fill", label: "Previous section") { previousSection() }
-                .keyboardShortcut(.leftArrow, modifiers: [])
             transportButton("arrow.counterclockwise", label: "Restart section") {
                 if engine.isPlaying { engine.queue(.restartSection) }
             }
@@ -274,10 +285,8 @@ struct PlayAlongView: View {
                     .background(Theme.accent, in: RoundedRectangle(cornerRadius: Theme.Radius.pad))
             }
             .buttonStyle(.plain)
-            .keyboardShortcut(.space, modifiers: [])
             .accessibilityLabel(engine.isPlaying ? "Stop" : "Play from \(section?.name ?? "the start")")
             transportButton("forward.end.fill", label: "Next section") { nextSection() }
-                .keyboardShortcut(.rightArrow, modifiers: [])
             Button {
                 engine.setLoop(looping == nil ? section?.id : nil)
             } label: {
@@ -305,7 +314,7 @@ struct PlayAlongView: View {
     }
 
     private var footer: some View {
-        Text("Foot pedals (coming next): Left — tap Play/stop · double-tap Restart · hold Loop     Right — tap Next section · double-tap Tap tempo · hold Big ending")
+        Text(pedals.profile.summary.joined(separator: "     "))
             .font(Theme.body(12, weight: .medium))
             .foregroundStyle(Theme.textMuted)
             .lineLimit(1)

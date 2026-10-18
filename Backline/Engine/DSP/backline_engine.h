@@ -167,6 +167,9 @@ bool bl_engine_audition(BLEngine *engine, uint8_t piece, uint8_t velocity);
 bool bl_engine_queue_action(BLEngine *engine, uint8_t action, uint8_t nextTiming);
 // A metronome click on every beat, accented on beat 1.
 bool bl_engine_set_click(BLEngine *engine, bool on);
+// A single quiet tick, right away: the optional "heard it" cue for a pedal
+// press (spec §6.6), mixed into the drums so it's in the player's headphones.
+bool bl_engine_cue_tick(BLEngine *engine);
 
 // Frees timelines the render thread has finished with. Call regularly from
 // the control thread (the app does it on every position poll).

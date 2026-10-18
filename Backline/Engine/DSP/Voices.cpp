@@ -100,11 +100,11 @@ float HatVoice::process() {
 
 // MARK: Click
 
-void ClickVoice::trigger(bool accent) {
+void ClickVoice::trigger(bool accent, float level) {
     active_ = true;
     phase_ = 0.0f;
     increment_ = (accent ? 2000.0f : 1500.0f) / sr_;
-    env_.start(accent ? 0.9f : 0.6f, 0.012f, sr_);
+    env_.start((accent ? 0.9f : 0.6f) * level, 0.012f, sr_);
 }
 
 float ClickVoice::process() {

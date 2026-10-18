@@ -5,6 +5,9 @@ import SwiftUI
 /// time signature, kit and export.
 struct SongHeader: View {
     @Environment(SongStore.self) private var store
+    @Environment(EngineController.self) private var engine
+    @Environment(PedalController.self) private var pedals
+    @State private var settingUpPedals = false
     @State private var renaming = false
     @State private var newName = ""
     @State private var confirmingDelete = false
@@ -29,6 +32,13 @@ struct SongHeader: View {
                 .font(Theme.condensed(20, weight: .bold))
                 .foregroundStyle(Theme.textMuted)
                 .accessibilityLabel("Four four time")
+            Button {
+                settingUpPedals = true
+            } label: {
+                PedalStatusChip()
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Opens foot pedal setup")
             // Kits and export arrive in milestones 8 and 9.
             Button {} label: { Label("Garage Kit", systemImage: "circle.grid.2x2") }
                 .buttonStyle(ChipButtonStyle())
@@ -48,6 +58,11 @@ struct SongHeader: View {
                 let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !trimmed.isEmpty { store.song.name = trimmed }
             }
+        }
+        .fullScreenCover(isPresented: $settingUpPedals) {
+            PedalSetupView()
+                .environment(pedals)
+                .environment(engine)
         }
         .confirmationDialog("Delete “\(store.song.name)”?", isPresented: $confirmingDelete, titleVisibility: .visible) {
             Button("Delete Song", role: .destructive) { store.deleteSong() }

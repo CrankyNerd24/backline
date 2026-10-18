@@ -73,7 +73,7 @@ private:
 class ClickVoice {
 public:
     void prepare(float sampleRate) { sr_ = sampleRate; }
-    void trigger(bool accent);
+    void trigger(bool accent, float level = 1.0f);
     float process();
 
 private:

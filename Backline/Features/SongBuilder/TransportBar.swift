@@ -5,6 +5,7 @@ import SwiftUI
 struct TransportBar: View {
     @Environment(SongStore.self) private var store
     @Environment(EngineController.self) private var engine
+    @Environment(PedalController.self) private var pedals
     let selection: UUID?
     @State private var playingAlong = false
 
@@ -19,7 +20,6 @@ struct TransportBar: View {
             }
             .buttonStyle(ChipButtonStyle(prominent: true))
             .disabled(store.song.sections.isEmpty)
-            .keyboardShortcut(.space, modifiers: [])
             .accessibilityLabel(engine.isPlaying ? "Stop" : "Play from \(selectedName ?? "the start")")
 
             loopButton
@@ -51,6 +51,7 @@ struct TransportBar: View {
             PlayAlongView(startingAt: selection)
                 .environment(store)
                 .environment(engine)
+                .environment(pedals)
         }
     }
 

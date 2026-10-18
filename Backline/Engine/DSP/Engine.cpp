@@ -108,6 +108,9 @@ void Engine::applyCommands() {
             if (c.flag && !clickOn_ && playing_) nextClickBeat_ = std::ceil(beatAt(now_));
             clickOn_ = c.flag;
             break;
+        case Command::CueTick:
+            click_.trigger(false, 0.4f);
+            break;
         }
     }
 }
@@ -652,6 +655,8 @@ bool bl_engine_set_click(BLEngine *e, bool on) {
     c.flag = on;
     return e->engine.post(c);
 }
+
+bool bl_engine_cue_tick(BLEngine *e) { return post(e, backline::Command::CueTick); }
 
 void bl_engine_collect_garbage(BLEngine *e) { e->engine.collectGarbage(); }
 

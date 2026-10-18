@@ -1,7 +1,8 @@
-// Acceptance tests for the DSP core (milestones 1–5). Plain C++ so they run on any
+// Acceptance tests for the DSP core (milestones 1–6). Plain C++ so they run on any
 // machine with a compiler (macOS or Linux): `cmake -B build && cmake --build
 // build && ctest --test-dir build --output-on-failure`.
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -980,6 +981,44 @@ static void testClick() {
     CHECK(l[3 * kBar] == 0.0f, "no click after the song stops");
 }
 
+// MARK: - Milestone 6: pedal latency and cue
+
+// Spec §12 milestone 6: a pedal action takes effect within one audio buffer.
+// Whatever is queued before a render call is applied at the start of that
+// buffer: the very next render shows it.
+static void testActionLandsWithinOneBuffer() {
+    BLEngine *e = bl_engine_create(48000.0);
+    bl_engine_set_tempo(e, 120.0);
+    bl_engine_set_timeline(e, timelineOf({beats(10, 4, BL_PIECE_KICK), beats(20, 1, BL_PIECE_SNARE)}));
+    std::vector<float> l(256), r(256);
+    bl_engine_play_from(e, 0, false);
+    for (int i = 0; i < 10; ++i) bl_engine_render(e, l.data(), r.data(), 256);
+    bl_engine_queue_action(e, BL_ACTION_NEXT_SECTION, BL_NEXT_AT_BAR_END);
+    bl_engine_render(e, l.data(), r.data(), 256); // one buffer
+    BLPosition p = positionOf(e);
+    CHECK(p.pendingAction == BL_ACTION_NEXT_SECTION, "action not applied within one buffer");
+
+    bl_engine_stop(e);
+    bl_engine_render(e, l.data(), r.data(), 256);
+    p = positionOf(e);
+    CHECK(!p.playing, "stop not applied within one buffer");
+    bl_engine_destroy(e);
+}
+
+// The pedal cue: a quiet tick, right away, even when stopped.
+static void testCueTick() {
+    BLEngine *e = bl_engine_create(48000.0);
+    std::vector<float> l(1024), r(1024);
+    bl_engine_render(e, l.data(), r.data(), 1024);
+    const bool silentBefore = std::all_of(l.begin(), l.end(), [](float x) { return x == 0.0f; });
+    bl_engine_cue_tick(e);
+    bl_engine_render(e, l.data(), r.data(), 1024);
+    float peak = 0.0f;
+    for (float x : l) peak = std::max(peak, std::fabs(x));
+    bl_engine_destroy(e);
+    CHECK(silentBefore && l[1] != 0.0f && peak > 0.05f && peak < 0.3f, "cue peak %.3f", peak);
+}
+
 // How much faster than real time the engine renders (headroom for 5 ms buffers).
 static void reportSpeed() {
     const auto start = std::chrono::steady_clock::now();
@@ -1034,6 +1073,8 @@ int main() {
         {"actions ignored outside the song", testActionsIgnoredOutsideTheSong},
         {"next survives a swap", testNextSurvivesSwap},
         {"click", testClick},
+        {"action lands within one buffer", testActionLandsWithinOneBuffer},
+        {"cue tick", testCueTick},
         {"render speed", reportSpeed},
     };
     for (const auto &t : tests) {

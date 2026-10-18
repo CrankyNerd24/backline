@@ -99,6 +99,18 @@ final class EngineController {
         didSet { UserDefaults.standard.set(nextSectionTiming.rawValue, forKey: "nextSectionTiming") }
     }
 
+    /// The section Play starts from when the request doesn't say (a pedal's
+    /// Play/stop): the selected section in the builder, the cued one in
+    /// Play-Along.
+    @ObservationIgnored var cuedSectionID: UUID?
+
+    /// A quiet tick in the player's ears, confirming a pedal press.
+    func cueTick() {
+        guard let core else { return }
+        startEngineIfNeeded()
+        bl_engine_cue_tick(core)
+    }
+
     /// The tempo the engine plays at: the song tempo times the practice speed.
     var playbackBPM: Double {
         let factor = min(max(speed, Self.speedRange.lowerBound), Self.speedRange.upperBound)

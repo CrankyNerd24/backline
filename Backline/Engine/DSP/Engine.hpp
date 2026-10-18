@@ -11,7 +11,7 @@
 namespace backline {
 
 struct Command {
-    enum Type : uint8_t { PlayFrom, Stop, SetTempo, SetTimeline, SetLoop, Audition, QueueAction, SetClick };
+    enum Type : uint8_t { PlayFrom, Stop, SetTempo, SetTimeline, SetLoop, Audition, QueueAction, SetClick, CueTick };
     Type type = Stop;
     uint8_t piece = 0;    // piece for Audition, action for QueueAction
     uint8_t velocity = 0; // velocity for Audition, timing for QueueAction
