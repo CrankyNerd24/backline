@@ -93,5 +93,63 @@
         }
       }
     }
+  },
+  {
+    "id": "funk.halfTime",
+    "style": "Funk",
+    "name": "Half-time Funk",
+    "summary": "Sixteenth hats over a half-time snare and a kick that keeps answering it.",
+    "tags": [
+      "half-time",
+      "sixteenths",
+      "ghost notes"
+    ],
+    "tempoRange": [70, 100],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 1, 2, 1, 3, 1, 2, 1, 3, 1, 2, 1, 3, 1, 2, 1],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1, 0, 0, 0, 1],
+          "kick": [3, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 1, 2, 1, 3, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "funk.streetBeat",
+    "style": "Funk",
+    "name": "Street Beat",
+    "summary": "Snare-led and parade-like, with the kick filling the gaps. No hi-hat at all.",
+    "tags": [
+      "second line",
+      "snare",
+      "parade"
+    ],
+    "tempoRange": [90, 120],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "snare": [1, 0, 3, 0, 1, 0, 3, 1, 0, 1, 3, 0, 1, 0, 3, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "snare": [1, 0, 3, 0, 1, 0, 3, 1, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
   }
 ]

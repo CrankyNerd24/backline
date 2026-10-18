@@ -43,6 +43,42 @@ final class GrooveLibrary {
         grooves.filter { $0.style == style }
     }
 
+    // MARK: Search
+
+    /// Grooves matching every word of `query` (in the name, style or tags),
+    /// optionally limited to one style. An empty query matches everything.
+    func search(_ query: String, style: String? = nil) -> [Groove] {
+        let words = Self.words(in: query)
+        return grooves.filter { groove in
+            (style == nil || groove.style == style) && Self.matches(groove, words: words)
+        }
+    }
+
+    /// How many grooves in each style match `query`.
+    func counts(matching query: String) -> [String: Int] {
+        let words = Self.words(in: query)
+        var counts: [String: Int] = [:]
+        for groove in grooves where Self.matches(groove, words: words) { counts[groove.style, default: 0] += 1 }
+        return counts
+    }
+
+    /// Lowercased and stripped of punctuation, so "half time", "half-time"
+    /// and "halftime" all find a groove tagged "half-time".
+    private static func normalize(_ text: String) -> String {
+        String(text.lowercased().unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) || $0 == " " })
+    }
+
+    private static func words(in query: String) -> [String] {
+        normalize(query).split(separator: " ").map(String.init)
+    }
+
+    private static func matches(_ groove: Groove, words: [String]) -> Bool {
+        guard !words.isEmpty else { return true }
+        let haystack = normalize(([groove.name, groove.style] + (groove.tags ?? [])).joined(separator: " "))
+        let squashed = haystack.replacingOccurrences(of: " ", with: "")
+        return words.allSatisfy { haystack.contains($0) || squashed.contains($0) }
+    }
+
     /// Xcode may copy resources flat or keep folders, so search the whole
     /// bundle rather than one subdirectory.
     private static func grooveFiles(in bundle: Bundle) -> [URL] {

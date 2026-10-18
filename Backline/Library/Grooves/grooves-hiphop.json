@@ -58,5 +58,97 @@
         }
       }
     }
+  },
+  {
+    "id": "hiphop.laidBack",
+    "style": "Hip-hop",
+    "name": "Laid-back Groove",
+    "summary": "Soft hats and a lazy snare with a pickup ghost note. Try it with some swing.",
+    "tags": [
+      "laid back",
+      "swing",
+      "lazy"
+    ],
+    "tempoRange": [75, 95],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 3],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "hiphop.oldSchool",
+    "style": "Hip-hop",
+    "name": "Old-school Break",
+    "summary": "A busy, breakbeat-style kick and snare with ghost notes in between.",
+    "tags": [
+      "breakbeat",
+      "ghost notes",
+      "busy"
+    ],
+    "tempoRange": [90, 110],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 1, 0, 1, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 2, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "hiphop.sparse",
+    "style": "Hip-hop",
+    "name": "Sparse Head-nod",
+    "summary": "Quarter-note hats with a heavy kick and snare. Lots of space.",
+    "tags": [
+      "sparse",
+      "quarter notes",
+      "heavy"
+    ],
+    "tempoRange": [80, 95],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 2, 0, 3, 0, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 3],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0]
+        }
+      }
+    }
   }
 ]

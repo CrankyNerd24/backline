@@ -62,5 +62,97 @@
         }
       }
     }
+  },
+  {
+    "id": "pop.halfTime",
+    "style": "Pop",
+    "name": "Half-time Pop",
+    "summary": "A big, slow-feeling backbeat on 3 under steady eighths.",
+    "tags": [
+      "half-time",
+      "big",
+      "modern"
+    ],
+    "tempoRange": [120, 160],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 3, 0, 0, 0, 3, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 3, 2]
+        }
+      }
+    }
+  },
+  {
+    "id": "pop.soulStomp",
+    "style": "Pop",
+    "name": "Soul Stomp",
+    "summary": "Snare and kick on every beat with hats on the 'ands'. Pure forward motion.",
+    "tags": [
+      "four on the floor",
+      "snare on every beat",
+      "soul"
+    ],
+    "tempoRange": [100, 130],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0],
+          "snare": [3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [3, 0, 0, 0, 3, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "pop.shuffle",
+    "style": "Pop",
+    "name": "Pop Shuffle",
+    "summary": "A gentle shuffle for upbeat pop and singer-songwriter songs.",
+    "tags": [
+      "shuffle",
+      "light",
+      "triplets"
+    ],
+    "tempoRange": [90, 120],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [3, 0, 2, 3, 0, 2, 3, 0, 2, 3, 0, 2],
+          "snare": [0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [3, 0, 2, 3, 0, 2, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 3, 0, 0, 2, 1, 2, 2, 2, 3],
+          "kick": [3, 0, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0]
+        }
+      }
+    }
   }
 ]

@@ -100,6 +100,7 @@ struct FeelSlider: View {
 struct MiniPattern: View {
     let pattern: Pattern
     var cell: CGFloat = 12
+    var showsLabels = true
 
     private var rows: [Piece] {
         let keeper = [Piece.hiHat, .ride, .openHat, .crash].first { piece in
@@ -113,16 +114,18 @@ struct MiniPattern: View {
         VStack(alignment: .leading, spacing: 3) {
             ForEach(rows, id: \.self) { piece in
                 HStack(spacing: 3) {
-                    Text(piece == .kick ? "Kick" : piece == .snare ? "Snare" : piece == .ride ? "Ride" : "Hat")
-                        .font(Theme.condensed(11, weight: .bold))
-                        .foregroundStyle(Theme.textMuted)
-                        .frame(width: 34, alignment: .leading)
+                    if showsLabels {
+                        Text(piece == .kick ? "Kick" : piece == .snare ? "Snare" : piece == .ride ? "Ride" : "Hat")
+                            .font(Theme.condensed(11, weight: .bold))
+                            .foregroundStyle(Theme.textMuted)
+                            .frame(width: 34, alignment: .leading)
+                    }
                     ForEach(0..<steps, id: \.self) { step in
                         let v = pattern.velocity(piece, step: step)
                         RoundedRectangle(cornerRadius: 2)
                             .fill(v == .off ? Theme.surfaceHi : Theme.accent.opacity(v == .soft ? 0.45 : v == .normal ? 0.75 : 1))
                             .frame(width: cell, height: cell)
-                            .padding(.leading, step > 0 && step % (steps / 4) == 0 ? 3 : 0)
+                            .padding(.leading, step > 0 && step % (steps / 4) == 0 ? max(2, cell / 4) : 0)
                     }
                 }
             }

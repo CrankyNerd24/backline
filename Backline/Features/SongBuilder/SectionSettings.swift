@@ -5,9 +5,11 @@ import SwiftUI
 struct SectionSettings: View {
     @Environment(SongStore.self) private var store
     @Environment(GrooveLibrary.self) private var library
+    @Environment(EngineController.self) private var engine
     let sectionID: UUID
     @Binding var selectedID: UUID?
     @State private var confirmingDelete = false
+    @State private var choosingGroove = false
 
     var body: some View {
         @Bindable var store = store
@@ -24,6 +26,12 @@ struct SectionSettings: View {
             .confirmationDialog("Delete “\(section.wrappedValue.name)”?", isPresented: $confirmingDelete,
                                 titleVisibility: .visible) {
                 Button("Delete Section", role: .destructive) { delete(at: index) }
+            }
+            .fullScreenCover(isPresented: $choosingGroove) {
+                GroovePickerView(section: section.wrappedValue)
+                    .environment(store)
+                    .environment(library)
+                    .environment(engine)
             }
         }
     }
@@ -113,11 +121,12 @@ struct SectionSettings: View {
                 MiniPattern(pattern: section.wrappedValue.mainPattern(library: library))
                     .padding(.vertical, 4)
                 HStack(spacing: 8) {
-                    GrooveMenu(selectedID: section.wrappedValue.grooveID) { id in
-                        section.wrappedValue.grooveID = id
-                        section.wrappedValue.patternOverride = nil // edits belonged to the old groove
-                        section.wrappedValue.cymbals = library.groove(id).naturalCymbals
+                    Button {
+                        choosingGroove = true
+                    } label: {
+                        Label("Change groove", systemImage: "music.note.list")
                     }
+                    .buttonStyle(ChipButtonStyle(prominent: true))
                     // The Pattern Editor arrives in milestone 7.
                     Button {} label: { Label("Edit pattern", systemImage: "square.grid.3x3") }
                         .buttonStyle(ChipButtonStyle())
@@ -188,39 +197,5 @@ struct SectionSettings: View {
         store.song.sections.remove(at: index)
         let sections = store.song.sections
         selectedID = sections.isEmpty ? nil : sections[min(index, sections.count - 1)].id
-    }
-}
-
-/// "Change groove": every built-in groove, grouped by style. The full Groove
-/// Picker screen arrives in milestone 4.
-struct GrooveMenu: View {
-    @Environment(GrooveLibrary.self) private var library
-    let selectedID: String
-    let onSelect: (String) -> Void
-
-    var body: some View {
-        Menu {
-            ForEach(GrooveLibrary.styles, id: \.self) { style in
-                let grooves = library.grooves(in: style)
-                if !grooves.isEmpty {
-                    Menu(style) {
-                        ForEach(grooves) { groove in
-                            Button {
-                                onSelect(groove.id)
-                            } label: {
-                                if groove.id == selectedID {
-                                    Label(groove.name, systemImage: "checkmark")
-                                } else {
-                                    Text(groove.name)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } label: {
-            Label("Change groove", systemImage: "music.note.list")
-        }
-        .buttonStyle(ChipButtonStyle(prominent: true))
     }
 }

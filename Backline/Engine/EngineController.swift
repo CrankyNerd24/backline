@@ -21,6 +21,8 @@ final class EngineController {
     /// output latency (a few ms).
     private(set) var position: Position?
     private(set) var loopingSectionID: UUID?
+    /// The groove being auditioned in the Groove Picker, if any.
+    private(set) var previewingGrooveID: String?
     private(set) var lastError: String?
 
     @ObservationIgnored private let library: GrooveLibrary
@@ -35,6 +37,10 @@ final class EngineController {
     @ObservationIgnored private var sentBPM: Double?
     @ObservationIgnored private var sectionsByKey: [UInt32: UUID] = [:]
     @ObservationIgnored private var playRequestedAt: Date?
+    /// While previewing, the engine plays a one-section timeline instead of
+    /// the song, and song edits wait until the preview stops.
+    @ObservationIgnored private var previewing = false
+    private static let previewSectionID = UUID(uuidString: "0B5E55ED-0000-4000-8000-00000000F00D")!
 
     init(library: GrooveLibrary) {
         self.library = library
@@ -61,6 +67,7 @@ final class EngineController {
     /// song's count-in.
     func play(from sectionID: UUID? = nil) {
         guard let core, let song, !song.sections.isEmpty else { return }
+        stopPreview()
         startEngineIfNeeded()
         pushPendingChanges() // the engine must have the current timeline first
         let bar = sectionID.map { song.startBar(of: $0) } ?? 0
@@ -71,9 +78,61 @@ final class EngineController {
 
     func stop() {
         guard let core else { return }
+        if previewing {
+            stopPreview()
+            return
+        }
         bl_engine_stop(core)
         isPlaying = false
         playRequestedAt = nil
+    }
+
+    // MARK: Preview
+
+    /// Loops `section` (two bars, no fill) at the song tempo. Calling it again
+    /// while previewing swaps the new settings in at the next bar line, so
+    /// flicking between grooves or variations never breaks the beat.
+    func preview(_ section: Section) {
+        guard let core, let song else { return }
+        startEngineIfNeeded()
+        var looped = section
+        looped.id = Self.previewSectionID
+        looped.bars = 2
+        looped.fillIntoNext = .none
+        looped.repeatUntilStep = false
+        looped.kind = .verse // never an outro, so no big ending
+        let previewSong = Song(id: song.id, name: song.name, bpm: song.bpm, timeSignature: song.timeSignature,
+                               kitID: song.kitID, countInBars: 0, sections: [looped])
+        guard let timeline = TimelineBuilder.build(previewSong, library: library) else { return }
+
+        let wasPreviewing = previewing
+        previewing = true
+        if !wasPreviewing { bl_engine_stop(core) } // stop the song first; commands run in order
+        if sentBPM != song.bpm {
+            bl_engine_set_tempo(core, song.bpm)
+            sentBPM = song.bpm
+        }
+        bl_engine_set_timeline(core, timeline)
+        bl_engine_set_loop_section(core, looped.engineKey)
+        if !wasPreviewing {
+            bl_engine_play_from(core, 0, false)
+            playRequestedAt = .now
+        }
+        previewingGrooveID = section.grooveID
+        isPlaying = true
+    }
+
+    /// Stops the preview and gives the engine the song back.
+    func stopPreview() {
+        guard previewing, let core else { return }
+        bl_engine_stop(core)
+        previewing = false
+        previewingGrooveID = nil
+        isPlaying = false
+        playRequestedAt = nil
+        needsTimeline = true
+        pushPendingChanges()
+        setLoop(loopingSectionID)
     }
 
     /// Loops a section when playback reaches its end; nil turns looping off.
@@ -96,7 +155,7 @@ final class EngineController {
             bl_engine_set_tempo(core, song.bpm)
             sentBPM = song.bpm
         }
-        guard needsTimeline else { return }
+        guard needsTimeline, !previewing else { return }
         guard let timeline = TimelineBuilder.build(song, library: library) else { return }
         if bl_engine_set_timeline(core, timeline) {
             needsTimeline = false
@@ -176,6 +235,8 @@ final class EngineController {
         core = nil
         isPlaying = false
         position = nil
+        previewing = false
+        previewingGrooveID = nil
         buildGraph()
     }
 
@@ -242,6 +303,7 @@ final class EngineController {
         } else if isPlaying, playRequestedAt.map({ Date.now.timeIntervalSince($0) > 0.3 }) ?? true {
             isPlaying = false // reached the end of the song
             playRequestedAt = nil
+            if previewing { stopPreview() }
         }
 
         var newPosition: Position?

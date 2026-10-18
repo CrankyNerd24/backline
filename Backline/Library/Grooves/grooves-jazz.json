@@ -63,5 +63,103 @@
         }
       }
     }
+  },
+  {
+    "id": "jazz.ballad",
+    "style": "Jazz & Swing",
+    "name": "Ballad Swing",
+    "summary": "A soft, slow ride pattern with the hat foot on 2 and 4.",
+    "tags": [
+      "ballad",
+      "swing",
+      "ride",
+      "soft",
+      "triplets"
+    ],
+    "tempoRange": [50, 90],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [2, 0, 0, 2, 0, 1, 2, 0, 0, 2, 0, 1],
+          "hiHat": [0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0],
+          "kick": [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [2, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0],
+          "hiHat": [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 2, 1, 2, 2, 2, 3]
+        }
+      }
+    }
+  },
+  {
+    "id": "jazz.twoFeel",
+    "style": "Jazz & Swing",
+    "name": "Two-feel",
+    "summary": "The swing ride over a kick on 1 and 3, like a bass playing in two.",
+    "tags": [
+      "two-feel",
+      "swing",
+      "ride",
+      "triplets"
+    ],
+    "tempoRange": [100, 160],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [3, 0, 0, 3, 0, 2, 3, 0, 0, 3, 0, 2],
+          "hiHat": [0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [3, 0, 0, 3, 0, 2, 0, 0, 0, 0, 0, 0],
+          "hiHat": [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 2, 1, 2, 2, 2, 3]
+        }
+      }
+    }
+  },
+  {
+    "id": "jazz.shuffle",
+    "style": "Jazz & Swing",
+    "name": "Jazz Shuffle",
+    "summary": "A shuffle on the ride with the snare chattering on every 'let'.",
+    "tags": [
+      "shuffle",
+      "swing",
+      "ride",
+      "triplets"
+    ],
+    "tempoRange": [110, 170],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [3, 0, 2, 3, 0, 2, 3, 0, 2, 3, 0, 2],
+          "hiHat": [0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0],
+          "snare": [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+          "kick": [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [3, 0, 2, 3, 0, 2, 0, 0, 0, 0, 0, 0],
+          "hiHat": [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 1, 0, 0, 1, 2, 1, 2, 2, 2, 3],
+          "kick": [1, 0, 0, 1, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      }
+    }
   }
 ]

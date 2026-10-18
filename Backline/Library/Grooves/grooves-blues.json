@@ -92,5 +92,67 @@
         }
       }
     }
+  },
+  {
+    "id": "blues.halfTimeShuffle",
+    "style": "Blues & Shuffle",
+    "name": "Half-time Shuffle",
+    "summary": "A shuffle with the backbeat on 3 and ghost notes rolling in between. Deep and greasy.",
+    "tags": [
+      "shuffle",
+      "half-time",
+      "ghost notes",
+      "triplets"
+    ],
+    "tempoRange": [70, 110],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [3, 0, 1, 2, 0, 1, 3, 0, 1, 2, 0, 1],
+          "snare": [0, 0, 1, 0, 0, 0, 3, 0, 1, 0, 0, 1],
+          "kick": [3, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [3, 0, 1, 2, 0, 1, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 1, 0, 0, 0, 2, 1, 2, 2, 2, 3],
+          "kick": [3, 0, 0, 0, 0, 1, 3, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "blues.boogie",
+    "style": "Blues & Shuffle",
+    "name": "Boogie",
+    "summary": "A bright, bouncing shuffle for boogie and up-tempo blues.",
+    "tags": [
+      "boogie",
+      "shuffle",
+      "fast",
+      "triplets"
+    ],
+    "tempoRange": [120, 180],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [3, 0, 2, 3, 0, 2, 3, 0, 2, 3, 0, 2],
+          "snare": [0, 0, 0, 3, 0, 0, 1, 0, 0, 3, 0, 0],
+          "kick": [3, 0, 0, 2, 0, 0, 3, 0, 0, 2, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [3, 0, 2, 3, 0, 2, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 3, 0, 0, 2, 1, 2, 2, 2, 3],
+          "kick": [3, 0, 0, 2, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      }
+    }
   }
 ]

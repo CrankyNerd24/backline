@@ -61,5 +61,103 @@
         }
       }
     }
+  },
+  {
+    "id": "ballad.slow128",
+    "style": "Ballad",
+    "name": "Ballad 12/8",
+    "summary": "Soft triplets on the hat for slow, swaying ballads.",
+    "tags": [
+      "12/8",
+      "slow",
+      "triplets",
+      "soft"
+    ],
+    "tempoRange": [50, 75],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1],
+          "snare": [0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [2, 1, 1, 2, 1, 1, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 2, 0, 0, 3, 2, 2, 0, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        }
+      }
+    }
+  },
+  {
+    "id": "ballad.crossStick",
+    "style": "Ballad",
+    "name": "Cross-stick Ballad",
+    "summary": "A quiet rim click on 2 and 4 instead of a full snare. Intimate.",
+    "tags": [
+      "cross-stick",
+      "soft",
+      "quiet"
+    ],
+    "tempoRange": [60, 90],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 3],
+          "kick": [2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "ballad.build",
+    "style": "Ballad",
+    "name": "Building Ballad",
+    "summary": "A fuller ballad beat on the ride for the last chorus.",
+    "tags": [
+      "ride",
+      "big",
+      "chorus"
+    ],
+    "tempoRange": [70, 95],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [2, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        }
+      }
+    }
   }
 ]

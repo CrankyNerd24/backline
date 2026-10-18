@@ -62,5 +62,104 @@
         }
       }
     }
+  },
+  {
+    "id": "latin.sambaFeel",
+    "style": "Latin",
+    "name": "Samba Feel",
+    "summary": "A pulsing kick on every beat under sixteenth hats and a rim pattern.",
+    "tags": [
+      "samba",
+      "sixteenths",
+      "rim"
+    ],
+    "tempoRange": [90, 130],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1],
+          "snare": [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+          "kick": [3, 0, 0, 2, 3, 0, 0, 2, 3, 0, 0, 2, 3, 0, 0, 2]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 1, 2, 1, 2, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [1, 0, 0, 1, 0, 0, 1, 0, 2, 2, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 2, 3, 0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        }
+      }
+    }
+  },
+  {
+    "id": "latin.chaCha",
+    "style": "Latin",
+    "name": "Cha-cha Feel",
+    "summary": "Steady eighths with the snare answering 'cha-cha-cha' at the end of every bar.",
+    "tags": [
+      "cha-cha",
+      "eighths"
+    ],
+    "tempoRange": [100, 130],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 3, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 2, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        }
+      }
+    }
+  },
+  {
+    "id": "latin.bell68",
+    "style": "Latin",
+    "name": "6/8 Bell Feel",
+    "summary": "A rolling bell pattern on the ride in triplets, with the kick on the big beats.",
+    "tags": [
+      "6/8",
+      "bell",
+      "ride",
+      "triplets"
+    ],
+    "tempoRange": [90, 130],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [3, 0, 2, 0, 2, 2, 0, 2, 0, 2, 0, 2],
+          "snare": [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [3, 0, 2, 0, 2, 2, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 1, 0, 0, 3, 2, 2, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        }
+      }
+    }
   }
 ]

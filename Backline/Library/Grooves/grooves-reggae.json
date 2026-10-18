@@ -61,5 +61,99 @@
         }
       }
     }
+  },
+  {
+    "id": "reggae.rockers",
+    "style": "Reggae",
+    "name": "Rockers",
+    "summary": "Kick on 1 and 3 with a snare that walks into beat 3.",
+    "tags": [
+      "rockers",
+      "triplets",
+      "driving"
+    ],
+    "tempoRange": [70, 95],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1],
+          "snare": [0, 0, 0, 2, 0, 0, 3, 0, 0, 2, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [2, 0, 1, 2, 0, 1, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 2, 0, 0, 2, 1, 2, 2, 2, 3],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "reggae.skaUpbeat",
+    "style": "Reggae",
+    "name": "Ska Upbeat",
+    "summary": "Hi-hat on every 'and', backbeat on 2 and 4. Quick and skanking.",
+    "tags": [
+      "ska",
+      "offbeat",
+      "fast"
+    ],
+    "tempoRange": [110, 160],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        }
+      }
+    }
+  },
+  {
+    "id": "reggae.dub",
+    "style": "Reggae",
+    "name": "Dub Half-time",
+    "summary": "Sparse and heavy, with kick and snare dropping on 3 and lots of space around them.",
+    "tags": [
+      "dub",
+      "sparse",
+      "half-time",
+      "triplets"
+    ],
+    "tempoRange": [60, 80],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [2, 0, 0, 2, 0, 1, 2, 0, 0, 2, 0, 1],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        }
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [2, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 2, 2, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        }
+      }
+    }
   }
 ]

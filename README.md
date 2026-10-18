@@ -4,7 +4,15 @@ An easy drum-track creator for iPad, for guitarists and other non-drummers. Buil
 
 The full product spec is in [`docs/spec.md`](docs/spec.md).
 
-## Status: milestone 3 (feel, time, cymbals, fills, count-in, endings)
+## Status: milestone 4 (Groove Picker)
+
+**Milestone 4**: **Change groove** now opens the Groove Picker (spec §6.2):
+- **Search** across groove names, styles and tags. Punctuation and spacing don't matter, so "half time", "half-time" and "halftime" all find the same grooves.
+- **Style list** on the left, with how many grooves in each style match the search.
+- **A grid of cards**, three across. Tap one to preview it looped at the song's tempo. Previews switch at the bar line, so moving between grooves never breaks the beat.
+- **A detail panel** with the description, the tempo range (with a warning when your song is outside it), a larger pattern preview, and quick variations: Simpler, Busier, On the ride, Half-time. The variations set the section's feel, cymbals and time, and you hear them in the preview before you choose.
+- **Use for *section*** or **Use for all *verses*** (every section of the same type).
+- **Library:** grown to 61 grooves, 5–6 per style. `tools/make_grooves.py` is the source; edit it and regenerate the JSON.
 
 **Milestone 3**: everything you set in a section is now heard. The C++ timeline builder applies it all (spec §4.3–4.5):
 - **Busy:** below the middle, the groove thins out in priority order (hat sixteenths, then ghost notes, extra kicks, hat eighths). Above it, extra notes fade in, from the groove's busy layer or one derived from the groove.
@@ -23,7 +31,7 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 **Milestone 2**
 - **Song model** (`Backline/Model/`): `Song`, `Section`, `Feel`, `Groove`, `Kit` and the rest of spec §3, all `Codable`.
 - **Saving**: each song is a JSON file in Application Support/Songs. Edits save themselves shortly after you stop, and again when the app goes to the background. A first-time user gets a starter song: Intro, Verse, Chorus, Verse, Chorus, Outro in Rock.
-- **Groove library** (`Backline/Library/Grooves/`): a starter set of 29 grooves, at least two for each of the 12 styles. Each has a main bar and a fill. `python3 tools/check_grooves.py -v` validates them and prints each one as a grid.
+- **Groove library** (`Backline/Library/Grooves/`): a starter set of 29 grooves (61 since milestone 4). Each has a main bar and a fill. `python3 tools/check_grooves.py -v` validates them and prints each one as a grid.
 - **Song Builder** (`Backline/Features/SongBuilder/`), now the home screen:
   - Song row with blocks sized by bar count. Tap to select, drag to reorder, long-press to duplicate or delete, + to add.
   - Section settings: name, type, bar count, repeat-until-I-step, groove (chosen from a menu until the Groove Picker lands), the feel sliders, and time, cymbals and fill.
@@ -62,10 +70,11 @@ cmake --build build
 ctest --test-dir build --output-on-failure   # or ./build/engine_tests for details
 ```
 
-**Check the groove library:**
+**Edit and check the groove library:**
 
 ```sh
-python3 tools/check_grooves.py -v
+python3 tools/make_grooves.py      # regenerate Backline/Library/Grooves/*.json from the source
+python3 tools/check_grooves.py -v  # validate, and print every groove as a grid
 ```
 
 **Hear the kit without an iPad:**
