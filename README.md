@@ -4,7 +4,24 @@ An easy drum-track creator for iPad, for guitarists and other non-drummers. Buil
 
 The full product spec is in [`docs/spec.md`](docs/spec.md).
 
-## Status: milestone 7 (Pattern Editor)
+## Status: milestone 8 (full kit and Kit Editor)
+
+**Milestone 8**: every piece now has its own synthesized voice (spec §4.1).
+- **Starting sounds:** kicks (Big Room, Tight, Vintage, Punchy); snares (Tight Funk, Fat 70s, Rimshot Crack, Piccolo, Brushes, Cross-stick); hi-hats (Bright 14", Dark 15", Trashy); ride and crash (Dark Ride, Bell Ride, Thin Crash, Big Crash); toms (Rack 12", Rack 13", Floor 16").
+- **Shaping:** tune, decay, tone, character, room send and volume on every piece. Character means beater click on the kick, snare wires on the snare, openness on the hi-hat, bell on cymbals and attack on toms.
+- **Whole-kit room and punch**, both in the C++ core so playback and export sound the same. The room is a stereo reverb that runs from a small room to a big hall. Punch is parallel compression: denser and louder, with the attack kept.
+- **Six built-in kits:** Garage Kit, Studio Rock, Vintage 60s, Metal, Jazz Brushes, Lo-fi.
+- **Kit Editor** (spec §6.5), opened from the kit chip in the header:
+  - a piece list showing each piece's current sound;
+  - starting-sound cards with a one-line description each;
+  - "Shape it" knobs: drag to change, double-tap to reset;
+  - a tap pad with soft, normal or loud hits, and **Hear it in the groove**;
+  - whole-kit Room and Punch, **Reset *piece***, and **Save as new kit**.
+
+  Edits stay with the song until you save them as a kit.
+- Toms are now audible and ride and crash have their own voices, so fills sound complete.
+
+`./build/backline-render demo.wav 112 1` renders the demo song on any built-in kit (0–5).
 
 **Milestone 7**: **Edit pattern** opens the Pattern Editor (spec §6.4):
 - **Grid:** nine rows (crash, ride, open hat, hi-hat, snare, three toms, kick), grouped with a little space between them, under a "1 e & a…" ruler. Tapping a step cycles off → normal → loud → soft (ghost) → off. The fill height shows the level (a third, two thirds, full), loud steps get a white outline, and alternate beats sit on a slightly different background. Every row has a speaker button to hear that drum.
@@ -84,7 +101,7 @@ Toms are silent and ride/crash use a hi-hat stand-in until the full kit (milesto
 
 `Tests/Pedal/PedalTests.cpp` covers gesture detection and MIDI decoding. That includes the milestone 6 acceptance test: a tap-only action fires on key-down with nothing added. The engine then applies any queued action at the start of the next audio buffer, which `EngineTests` checks.
 
-`Tests/DSP/EngineTests.cpp` covers milestones 1–7:
+`Tests/DSP/EngineTests.cpp` covers milestones 1–8:
 - Every hit within ±1 sample over a 10-minute render (worst error: 0 samples), at awkward tempos and sample rates, and in triplets.
 - Audio onsets on the exact sample, output independent of buffer size, and bit-identical renders.
 - No allocations on the render thread, even while timelines are being swapped.
@@ -92,6 +109,7 @@ Toms are silent and ride/crash use a hi-hat stand-in until the full kit (milesto
 - Section order, end of song, looping, and play-from-bar.
 - Swaps after reordering, shortening or deleting sections.
 - Every timeline freed.
+- Every starting sound of every piece plays, stays in range and ends. Tune moves by octaves; decay, tone, openness and volume do what they say. The room adds a stereo tail only where a piece sends to it. Punch makes the kit louder without clipping. The six built-in kits render deterministically.
 - Re-gridding between 16ths and triplets: offbeats shuffle, colliding notes keep the louder one, and the backbeat survives a round trip.
 - A song with every feel control switched on renders bit-identically twice (the milestone 3 acceptance test).
 - Every queued action, including cancelling, waiting for room, landing at the end of the loop, surviving a timeline swap and being ignored outside the song. Also vamp looping, tap tempo on the bar line, and the click landing exactly on the beat.
@@ -121,7 +139,7 @@ python3 tools/check_grooves.py -v  # validate, and print every groove as a grid
 **Hear the kit without an iPad:**
 
 ```sh
-./build/backline-render demo.wav 112   # file, BPM → 48 kHz / 24-bit WAV of a short demo song
+./build/backline-render demo.wav 112 0   # file, BPM, kit (0–5) → 48 kHz / 24-bit WAV of a short demo song
 ```
 
 ## Layout

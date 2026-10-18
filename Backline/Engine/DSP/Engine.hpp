@@ -3,6 +3,7 @@
 #include <atomic>
 #include <cstdint>
 
+#include "Effects.hpp"
 #include "SPSCQueue.hpp"
 #include "Timeline.hpp"
 #include "Voices.hpp"
@@ -11,7 +12,7 @@
 namespace backline {
 
 struct Command {
-    enum Type : uint8_t { PlayFrom, Stop, SetTempo, SetTimeline, SetLoop, Audition, QueueAction, SetClick, CueTick };
+    enum Type : uint8_t { PlayFrom, Stop, SetTempo, SetTimeline, SetLoop, Audition, QueueAction, SetClick, CueTick, SetKit };
     Type type = Stop;
     uint8_t piece = 0;    // piece for Audition, action for QueueAction
     uint8_t velocity = 0; // velocity for Audition, timing for QueueAction
@@ -19,6 +20,7 @@ struct Command {
     uint32_t value32 = 0; // song bar for PlayFrom, key for SetLoop
     double value = 0.0;   // bpm for SetTempo
     const Timeline *timeline = nullptr;
+    BLKit kit{}; // for SetKit
 };
 
 // The sample-accurate sequencer and voice mixer. Everything reachable from
@@ -76,6 +78,7 @@ private:
     void playFrom(const TimelineBar *bar);
     int64_t navigationTarget() const;
 
+    void applyKit(const BLKit &kit);
     void trigger(int piece, float amp, float bright, uint32_t seed, int64_t at);
     void renderVoices(float *left, float *right, uint32_t frames);
     void publishPosition();
@@ -120,9 +123,16 @@ private:
     KickVoice kick_;
     SnareVoice snare_;
     HatVoice closedHat_, openHat_;
-    // Until the full kit (milestone 8), ride and crash borrow the hat voice.
-    HatVoice rideStandIn_, crashStandIn_;
+    CymbalVoice ride_, crash_;
+    TomVoice toms_[3]; // high, low, floor
     ClickVoice click_;
+    Reverb reverb_;
+    Compressor compressor_;
+    bool reverbOn_ = false;
+    // Per piece, from the kit: level, stereo placement and room send.
+    float gainLeft_[BL_PIECE_COUNT] = {};
+    float gainRight_[BL_PIECE_COUNT] = {};
+    float send_[BL_PIECE_COUNT] = {};
 
     BLTriggerRecord *log_ = nullptr;
     uint32_t logCapacity_ = 0;

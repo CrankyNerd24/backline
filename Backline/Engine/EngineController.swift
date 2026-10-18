@@ -118,6 +118,8 @@ final class EngineController {
     }
 
     @ObservationIgnored private let library: GrooveLibrary
+    @ObservationIgnored private let kits: KitLibrary
+    @ObservationIgnored private var sentKit: Kit?
     @ObservationIgnored private let avEngine = AVAudioEngine()
     @ObservationIgnored private var sourceNode: AVAudioSourceNode?
     @ObservationIgnored private var core: OpaquePointer?
@@ -136,8 +138,9 @@ final class EngineController {
     @ObservationIgnored private var tappedTempo: Double?
     private static let previewSectionID = UUID(uuidString: "0B5E55ED-0000-4000-8000-00000000F00D")!
 
-    init(library: GrooveLibrary) {
+    init(library: GrooveLibrary, kits: KitLibrary) {
         self.library = library
+        self.kits = kits
         configureSession()
         buildGraph()
         observeSystemEvents()
@@ -150,9 +153,29 @@ final class EngineController {
     /// the next poll (within a frame), and the engine swaps it in at the next
     /// bar line, so edits are heard live.
     func load(_ song: Song) {
+        // Only rebuild the timeline when what plays changes, not for every
+        // kit-knob drag or rename.
+        if song.sections != self.song?.sections || song.countInBars != self.song?.countInBars {
+            needsTimeline = true
+        }
         self.song = song
-        needsTimeline = true
+        pushKit()
         if let looping = loopingSectionID, song.index(of: looping) == nil { setLoop(nil) }
+    }
+
+    /// The kit the song plays: its own edits, or the library kit.
+    var currentKit: Kit {
+        guard let song else { return kits.kit(Kit.garageKitID) }
+        return song.kitOverride ?? kits.kit(song.kitID)
+    }
+
+    /// New sounds apply to the next hit of each piece.
+    private func pushKit() {
+        guard let core else { return }
+        let kit = currentKit
+        guard kit != sentKit else { return }
+        var raw = kit.engineValue
+        if bl_engine_set_kit(core, &raw) { sentKit = kit }
     }
 
     // MARK: Transport
@@ -196,7 +219,7 @@ final class EngineController {
         looped.repeatUntilStep = false
         looped.kind = .verse // never an outro, so no big ending
         let previewSong = Song(id: song.id, name: song.name, bpm: song.bpm, timeSignature: song.timeSignature,
-                               kitID: song.kitID, countInBars: 0, sections: [looped])
+                               kitID: song.kitID, countInBars: 0, sections: [looped], kitOverride: song.kitOverride)
         guard let timeline = TimelineBuilder.build(previewSong, library: library) else { return }
 
         let wasPreviewing = previewing
@@ -311,10 +334,12 @@ final class EngineController {
         }
         self.core = core
         sentBPM = nil
+        sentKit = nil
         needsTimeline = true
         pushPendingChanges()
         if loopingSectionID != nil { setLoop(loopingSectionID) }
         if clickOn { bl_engine_set_click(core, true) }
+        pushKit()
         avEngine.mainMixerNode.outputVolume = Float(drumsLevel)
 
         let node = AVAudioSourceNode(format: format, renderBlock: Self.makeRenderBlock(core: core))

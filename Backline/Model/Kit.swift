@@ -1,7 +1,7 @@
 import Foundation
 
-// Kit types from spec §3. Kits become editable in milestone 8; for now every
-// song uses the Garage Kit.
+// Kit types from spec §3. The sounds themselves live in the C++ core; a kit
+// is the choice of starting sound per piece plus the six shaping controls.
 
 struct Kit: Codable, Identifiable, Equatable {
     var id: UUID
@@ -11,14 +11,54 @@ struct Kit: Codable, Identifiable, Equatable {
     var punch: Double              // 0…1
 
     static let garageKitID = UUID(uuidString: "6A1E0C5B-2B4E-4F0E-9C1D-0000000000A1")!
+
+    func voice(_ piece: Piece) -> VoiceSettings {
+        voices[piece] ?? VoiceSettings(model: KitLibrary.models(for: piece).first?.id ?? "")
+    }
 }
 
 struct VoiceSettings: Codable, Equatable {
     var model: String              // e.g. "snare.fat70s"
-    var tune: Double               // semitones, −12…+12
-    var decay: Double              // 0…1
-    var tone: Double               // 0…1 (dark ↔ bright)
-    var character: Double          // snare: wire buzz; hat: open-ness; kick: click
-    var room: Double               // per-voice send
-    var volumeDB: Double           // −24…+6
+    var tune: Double = 0           // semitones, −12…+12
+    var decay: Double = 0.5        // 0…1
+    var tone: Double = 0.5         // 0…1 (dark ↔ bright)
+    var character: Double = 0.5    // snare: wire buzz; hat: open-ness; kick: click
+    var room: Double = 0.3         // per-voice send
+    var volumeDB: Double = 0       // −24…+6
+}
+
+extension Kit {
+    /// The fixed-size C struct the DSP core consumes.
+    var engineValue: BLKit {
+        var raw = BLKit()
+        withUnsafeMutableBytes(of: &raw.voices) { bytes in
+            let slots = bytes.bindMemory(to: BLVoiceSettings.self)
+            for piece in Piece.allCases {
+                let v = voice(piece)
+                let model = bl_kit_model_index(piece.engineIndex, v.model)
+                slots[Int(piece.engineIndex)] = BLVoiceSettings(
+                    model: UInt8(max(0, model)), tune: Float(v.tune), decay: Float(v.decay), tone: Float(v.tone),
+                    character: Float(v.character), room: Float(v.room), volumeDB: Float(v.volumeDB))
+            }
+        }
+        raw.room = Float(room)
+        raw.punch = Float(punch)
+        return raw
+    }
+
+    /// Reads a kit from the core (the built-in kits).
+    init(id: UUID, name: String, engineValue raw: BLKit) {
+        var voices: [Piece: VoiceSettings] = [:]
+        withUnsafeBytes(of: raw.voices) { bytes in
+            let slots = bytes.bindMemory(to: BLVoiceSettings.self)
+            for piece in Piece.allCases {
+                let v = slots[Int(piece.engineIndex)]
+                let model = bl_kit_model_id(piece.engineIndex, v.model).map { String(cString: $0) } ?? ""
+                voices[piece] = VoiceSettings(model: model, tune: Double(v.tune), decay: Double(v.decay),
+                                              tone: Double(v.tone), character: Double(v.character),
+                                              room: Double(v.room), volumeDB: Double(v.volumeDB))
+            }
+        }
+        self.init(id: id, name: name, voices: voices, room: Double(raw.room), punch: Double(raw.punch))
+    }
 }

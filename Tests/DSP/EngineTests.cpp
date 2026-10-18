@@ -1,9 +1,11 @@
-// Acceptance tests for the DSP core (milestones 1–7). Plain C++ so they run on any
+// Acceptance tests for the DSP core (milestones 1–8). Plain C++ so they run on any
 // machine with a compiler (macOS or Linux): `cmake -B build && cmake --build
 // build && ctest --test-dir build --output-on-failure`.
 
 #include <algorithm>
 #include <chrono>
+#include <climits>
+#include <cstdint>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -283,6 +285,11 @@ static void testNoAllocationsWhileRendering() {
         if (i == 1050) bl_engine_queue_action(e, BL_ACTION_FILL_NOW, 0);
         if (i == 1100) bl_engine_set_tempo_at_next_bar(e, 140.0);
         if (i == 1150) bl_engine_queue_action(e, BL_ACTION_BIG_ENDING, 0);
+        if (i == 1170) {
+            BLKit kit;
+            bl_kit_builtin(1, &kit);
+            bl_engine_set_kit(e, &kit); // Studio Rock: room and punch switch on
+        }
         if (i == 1200) bl_engine_stop(e);
         bl_engine_render(e, l.data(), r.data(), 64 + (i % 7) * 100);
     }
@@ -713,7 +720,8 @@ static void testCountIn() {
 static void testBigEnding() {
     BLSectionDesc outro = section(7, 1, only(BL_PIECE_HI_HAT, {0, 4, 8, 12}));
     outro.bigEnding = true;
-    const Render r = renderTimeline(timelineOf({outro}), 120.0, 8.0, 48000.0, fixed(256));
+    // A big crash rings for about 8 s before it's silent.
+    const Render r = renderTimeline(timelineOf({outro}), 120.0, 12.0, 48000.0, fixed(256));
     const auto ending = inBar(r, 1);
     CHECK(ending.size() == 2 && countPiece(ending, BL_PIECE_CRASH) == 1 && countPiece(ending, BL_PIECE_KICK) == 1 &&
               ending[0].sample == 96000,
@@ -893,7 +901,7 @@ static void testFillNow() {
 
 // Big ending: the next bar is a crash and kick, then playback stops.
 static void testBigEndingAction() {
-    const Render r = renderTimeline(timelineOf({rockSection(10, 4)}), 120.0, 8.0, 48000.0, fixed(256),
+    const Render r = renderTimeline(timelineOf({rockSection(10, 4)}), 120.0, 14.0, 48000.0, fixed(256),
                                     at(kBar + kBeat, [](BLEngine *e) { bl_engine_queue_action(e, BL_ACTION_BIG_ENDING, 0); }));
     std::vector<BLTriggerRecord> after;
     for (const auto &h : r.triggers)
@@ -1064,6 +1072,226 @@ static void testPatternConvert() {
     CHECK(std::memcmp(&same, &out, sizeof(out)) == 0, "16 → 16 should change nothing");
 }
 
+// MARK: - Milestone 8: the full kit
+
+static BLKit dryKit(uint8_t builtin = 0) {
+    BLKit kit;
+    bl_kit_builtin(builtin, &kit);
+    kit.room = 0.0f;
+    kit.punch = 0.0f;
+    return kit;
+}
+
+// One hit of `piece` through `kit`, `seconds` long.
+static Render audition(const BLKit &kit, uint8_t piece, uint8_t velocity, double seconds) {
+    BLEngine *e = bl_engine_create(48000.0);
+    bl_engine_set_kit(e, &kit);
+    bl_engine_audition(e, piece, velocity);
+    Render r;
+    r.left.assign(static_cast<size_t>(seconds * 48000.0), 0.0f);
+    r.right.assign(r.left.size(), 0.0f);
+    for (size_t done = 0; done < r.left.size(); done += 256) {
+        const auto n = static_cast<uint32_t>(std::min<size_t>(256, r.left.size() - done));
+        bl_engine_render(e, r.left.data() + done, r.right.data() + done, n);
+    }
+    bl_engine_destroy(e);
+    return r;
+}
+
+static float peakOf(const std::vector<float> &x, size_t from = 0, size_t to = SIZE_MAX) {
+    float peak = 0.0f;
+    for (size_t i = from; i < std::min(to, x.size()); ++i) peak = std::max(peak, std::fabs(x[i]));
+    return peak;
+}
+
+static double rmsOf(const std::vector<float> &x, size_t from = 0, size_t to = SIZE_MAX) {
+    double sum = 0.0;
+    size_t n = 0;
+    for (size_t i = from; i < std::min(to, x.size()); ++i, ++n) sum += static_cast<double>(x[i]) * x[i];
+    return n ? std::sqrt(sum / static_cast<double>(n)) : 0.0;
+}
+
+// Seconds until the sound stays below `level`.
+static double ringTime(const std::vector<float> &x, float level) {
+    size_t last = 0;
+    for (size_t i = 0; i < x.size(); ++i)
+        if (std::fabs(x[i]) >= level) last = i;
+    return static_cast<double>(last) / 48000.0;
+}
+
+// Upward zero crossings per second in a window (a rough pitch).
+static double crossingsPerSecond(const std::vector<float> &x, size_t from, size_t to) {
+    int n = 0;
+    for (size_t i = from + 1; i < to; ++i) n += x[i - 1] < 0.0f && x[i] >= 0.0f;
+    return n * 48000.0 / static_cast<double>(to - from);
+}
+
+static void testModelCatalogue() {
+    const uint8_t expected[BL_PIECE_COUNT] = {4, 4, 3, 3, 6, 3, 3, 3, 4};
+    for (uint8_t piece = 0; piece < BL_PIECE_COUNT; ++piece) {
+        CHECK(bl_kit_model_count(piece) == expected[piece], "piece %d has %d models", piece, bl_kit_model_count(piece));
+        for (uint8_t m = 0; m < bl_kit_model_count(piece); ++m) {
+            const char *id = bl_kit_model_id(piece, m);
+            CHECK(id && bl_kit_model_name(piece, m) && bl_kit_model_description(piece, m), "missing text");
+            CHECK(id && bl_kit_model_index(piece, id) == m, "id round trip for %s", id ? id : "?");
+        }
+        CHECK(bl_kit_model_id(piece, 99) == nullptr, "bad index should be NULL");
+    }
+    CHECK(bl_kit_model_index(BL_PIECE_SNARE, "snare.fat70s") == 1, "snare.fat70s");
+    CHECK(bl_kit_model_index(BL_PIECE_SNARE, "kick.tight") == -1, "another piece's model");
+    CHECK(bl_kit_model_index(BL_PIECE_KICK, "nope") == -1, "unknown id");
+    CHECK(std::string(bl_kit_model_name(BL_PIECE_SNARE, 4)) == "Brushes", "brushes");
+}
+
+// Every starting sound of every piece plays, stays in range, and ends.
+static void testEveryModelSounds() {
+    for (uint8_t piece = 0; piece < BL_PIECE_COUNT; ++piece) {
+        for (uint8_t m = 0; m < bl_kit_model_count(piece); ++m) {
+            BLKit kit = dryKit();
+            kit.voices[piece].model = m;
+            const Render r = audition(kit, piece, BL_VEL_LOUD, 12.0);
+            bool finite = true;
+            for (float x : r.left) finite = finite && std::isfinite(x);
+            const float peak = peakOf(r.left);
+            CHECK(finite && peak > 0.02f && peak <= 1.0f, "%s: peak %.3f", bl_kit_model_id(piece, m), peak);
+            CHECK(r.left.back() == 0.0f, "%s never went silent (ring %.1f s)", bl_kit_model_id(piece, m),
+                  ringTime(r.left, 1e-6f));
+        }
+    }
+}
+
+// Tune: +12 semitones is an octave up.
+static void testTune() {
+    for (uint8_t piece : {static_cast<uint8_t>(BL_PIECE_KICK), static_cast<uint8_t>(BL_PIECE_FLOOR_TOM)}) {
+        BLKit low = dryKit(), high = dryKit();
+        high.voices[piece].tune = 12.0f;
+        const Render a = audition(low, piece, BL_VEL_NORMAL, 0.5), b = audition(high, piece, BL_VEL_NORMAL, 0.5);
+        const double ratio = crossingsPerSecond(b.left, 7200, 14400) / crossingsPerSecond(a.left, 7200, 14400);
+        CHECK(ratio > 1.8 && ratio < 2.2, "piece %d: octave ratio %.2f", piece, ratio);
+    }
+}
+
+// Decay, tone, character and volume each do what they say.
+static void testShapingControls() {
+    BLKit shortSnare = dryKit(), longSnare = dryKit();
+    shortSnare.voices[BL_PIECE_SNARE].decay = 0.0f;
+    longSnare.voices[BL_PIECE_SNARE].decay = 1.0f;
+    const double shortRing = ringTime(audition(shortSnare, BL_PIECE_SNARE, BL_VEL_LOUD, 3.0).left, 1e-3f);
+    const double longRing = ringTime(audition(longSnare, BL_PIECE_SNARE, BL_VEL_LOUD, 3.0).left, 1e-3f);
+    CHECK(longRing > 2.5 * shortRing, "decay: %.3f s vs %.3f s", shortRing, longRing);
+
+    // Brightness: how much the signal changes sample to sample.
+    auto brightness = [](const std::vector<float> &x) {
+        double diff = 0.0, level = 0.0;
+        for (size_t i = 1; i < 4800; ++i) {
+            diff += std::fabs(x[i] - x[i - 1]);
+            level += std::fabs(x[i]);
+        }
+        return diff / level;
+    };
+    BLKit dark = dryKit(), bright = dryKit();
+    dark.voices[BL_PIECE_SNARE].tone = 0.0f;
+    bright.voices[BL_PIECE_SNARE].tone = 1.0f;
+    const double d = brightness(audition(dark, BL_PIECE_SNARE, BL_VEL_LOUD, 0.2).left);
+    const double b = brightness(audition(bright, BL_PIECE_SNARE, BL_VEL_LOUD, 0.2).left);
+    CHECK(b > 1.3 * d, "tone: bright %.3f vs dark %.3f", b, d);
+
+    // Character on the hi-hat is openness: a longer closed hat.
+    BLKit tight = dryKit(), open = dryKit();
+    tight.voices[BL_PIECE_HI_HAT].character = 0.0f;
+    open.voices[BL_PIECE_HI_HAT].character = 1.0f;
+    const double tightRing = ringTime(audition(tight, BL_PIECE_HI_HAT, BL_VEL_NORMAL, 1.0).left, 1e-3f);
+    const double openRing = ringTime(audition(open, BL_PIECE_HI_HAT, BL_VEL_NORMAL, 1.0).left, 1e-3f);
+    CHECK(openRing > 3.0 * tightRing, "openness: %.3f s vs %.3f s", tightRing, openRing);
+
+    // Volume: 6 dB down halves the level (quiet enough that the limiter is linear).
+    BLKit a = dryKit(), c = dryKit();
+    a.voices[BL_PIECE_KICK].volumeDB = -18.0f;
+    c.voices[BL_PIECE_KICK].volumeDB = -24.0f;
+    const double ratio = rmsOf(audition(c, BL_PIECE_KICK, BL_VEL_NORMAL, 0.5).left) /
+                         rmsOf(audition(a, BL_PIECE_KICK, BL_VEL_NORMAL, 0.5).left);
+    CHECK(std::fabs(ratio - 0.501) < 0.01, "-6 dB ratio %.3f", ratio);
+}
+
+// Room: none means a dry hit that ends in silence; more room leaves a tail
+// after the drum has stopped, different on each side.
+static void testRoom() {
+    BLKit dry = dryKit();
+    dry.voices[BL_PIECE_SNARE].room = 1.0f;
+    const Render d = audition(dry, BL_PIECE_SNARE, BL_VEL_LOUD, 4.0);
+    const double dryRing = ringTime(d.left, 1e-6f);
+
+    BLKit wet = dry;
+    wet.room = 0.8f;
+    const Render w = audition(wet, BL_PIECE_SNARE, BL_VEL_LOUD, 4.0);
+    const auto after = static_cast<size_t>((dryRing + 0.05) * 48000.0);
+    CHECK(d.left.back() == 0.0f, "dry snare should end in silence");
+    CHECK(peakOf(w.left, after) > 1e-5f, "no room tail after the dry hit");
+    // While the hit rings, the room adds plenty of energy.
+    const double dryBody = rmsOf(d.left, 14400, 38400), wetBody = rmsOf(w.left, 14400, 38400); // 0.3–0.8 s
+    CHECK(wetBody > 1.5 * dryBody, "room adds too little: %.4f vs %.4f", wetBody, dryBody);
+    bool differs = false;
+    for (size_t i = after; i < w.left.size() && !differs; ++i) differs = w.left[i] != w.right[i];
+    CHECK(differs, "the room should be stereo");
+
+    // A piece with no send stays dry even in a big room.
+    BLKit noSend = wet;
+    noSend.voices[BL_PIECE_SNARE].room = 0.0f;
+    const Render n = audition(noSend, BL_PIECE_SNARE, BL_VEL_LOUD, 4.0);
+    CHECK(peakOf(n.left, after) == 0.0f, "send 0 still reached the room");
+}
+
+// Punch: denser and louder, without going over full scale.
+static void testPunch() {
+    auto measure = [](float punch) {
+        BLKit kit = dryKit();
+        kit.punch = punch;
+        BLEngine *e = bl_engine_create(48000.0);
+        bl_engine_set_kit(e, &kit);
+        bl_engine_set_tempo(e, 120.0);
+        bl_engine_set_timeline(e, timelineOf({section(1, 2, rockStraight8ths())}));
+        bl_engine_play_from(e, 0, false);
+        std::vector<float> l(4 * kBar), r(4 * kBar);
+        for (size_t done = 0; done < l.size(); done += 256) bl_engine_render(e, l.data() + done, r.data() + done, 256);
+        bl_engine_destroy(e);
+        return std::make_pair(rmsOf(l), peakOf(l));
+    };
+    const auto natural = measure(0.0f), punchy = measure(1.0f);
+    CHECK(punchy.first > 1.4 * natural.first && punchy.second <= 1.0f, "RMS %.3f → %.3f, peak %.3f", natural.first,
+          punchy.first, punchy.second);
+}
+
+// The six built-in kits: named, in range, and deterministic.
+static void testBuiltInKits() {
+    CHECK(bl_kit_builtin_count() == 6, "%d kits", bl_kit_builtin_count());
+    CHECK(std::string(bl_kit_builtin_name(0)) == "Garage Kit", "kit 0 is %s", bl_kit_builtin_name(0));
+    for (uint8_t k = 0; k < bl_kit_builtin_count(); ++k) {
+        BLKit kit;
+        bl_kit_builtin(k, &kit);
+        auto render = [&] {
+            BLEngine *e = bl_engine_create(48000.0);
+            bl_engine_set_kit(e, &kit);
+            bl_engine_set_tempo(e, 120.0);
+            BLSectionDesc d = rockSection(1, 2);
+            d.fillIntoNext = BL_FILL_BIG;
+            BLSectionDesc ride = rockSection(2, 1);
+            ride.cymbals = BL_CYMBALS_RIDE;
+            bl_engine_set_timeline(e, timelineOf({d, ride}));
+            bl_engine_play_from(e, 0, false);
+            std::vector<float> l(4 * kBar), r(4 * kBar);
+            for (size_t done = 0; done < l.size(); done += 256) bl_engine_render(e, l.data() + done, r.data() + done, 256);
+            bl_engine_destroy(e);
+            return l;
+        };
+        const auto a = render(), b = render();
+        bool finite = true;
+        for (float x : a) finite = finite && std::isfinite(x);
+        const float peak = peakOf(a);
+        CHECK(finite && peak > 0.2f && peak <= 1.0f, "%s: peak %.3f", bl_kit_builtin_name(k), peak);
+        CHECK(a == b, "%s isn't deterministic", bl_kit_builtin_name(k));
+    }
+}
+
 // How much faster than real time the engine renders (headroom for 5 ms buffers).
 static void reportSpeed() {
     const auto start = std::chrono::steady_clock::now();
@@ -1121,6 +1349,13 @@ int main() {
         {"action lands within one buffer", testActionLandsWithinOneBuffer},
         {"cue tick", testCueTick},
         {"pattern convert", testPatternConvert},
+        {"model catalogue", testModelCatalogue},
+        {"every model sounds", testEveryModelSounds},
+        {"tune", testTune},
+        {"shaping controls", testShapingControls},
+        {"room", testRoom},
+        {"punch", testPunch},
+        {"built-in kits", testBuiltInKits},
         {"render speed", reportSpeed},
     };
     for (const auto &t : tests) {

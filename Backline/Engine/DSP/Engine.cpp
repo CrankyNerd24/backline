@@ -10,12 +10,10 @@ namespace {
 constexpr float kAmp[4] = {0.0f, 0.32f, 0.68f, 1.0f};
 constexpr float kBright[4] = {0.0f, 0.45f, 0.75f, 1.0f};
 
-// Per-voice mix levels and stereo placement (hats sit slightly right, as if
-// heard from the drummer's seat).
-constexpr float kKickLevel = 0.9f;
-constexpr float kSnareLevel = 0.7f;
-constexpr float kHatLevel = 0.4f;
-constexpr float kHatLeft = 0.8f;
+// Base mix level and stereo placement of each piece, in BL_PIECE order, as
+// heard from the drummer's seat (hats left, ride and floor tom right).
+constexpr float kLevel[BL_PIECE_COUNT] = {0.35f, 0.35f, 0.4f, 0.4f, 0.7f, 0.6f, 0.6f, 0.6f, 0.9f};
+constexpr float kPan[BL_PIECE_COUNT] = {-0.35f, 0.35f, -0.3f, -0.3f, 0.0f, -0.2f, 0.1f, 0.35f, 0.0f};
 constexpr float kClickLevel = 0.35f;
 constexpr float kMasterDrive = 0.9f;
 constexpr double kBeatsPerBar = 4.0; // 4/4 only in v1
@@ -43,10 +41,41 @@ Engine::Engine(double sampleRate) : sampleRate_(sampleRate) {
     snare_.prepare(sr);
     closedHat_.prepare(sr);
     openHat_.prepare(sr);
-    rideStandIn_.prepare(sr);
-    crashStandIn_.prepare(sr);
+    ride_.prepare(sr);
+    crash_.prepare(sr);
+    for (TomVoice &tom : toms_) tom.prepare(sr);
     click_.prepare(sr);
+    reverb_.prepare(sr); // the only allocation, here on the control thread
+    compressor_.prepare(sr);
+    applyKit(defaultKit());
     beatLength_ = sampleRate_ * 60.0 / bpm_;
+}
+
+// Configures every voice and the mix from a kit. Render thread; no allocation.
+void Engine::applyKit(const BLKit &kit) {
+    const BLVoiceSettings *v = kit.voices;
+    kick_.configure(kickModel(v[BL_PIECE_KICK].model), v[BL_PIECE_KICK]);
+    snare_.configure(snareModel(v[BL_PIECE_SNARE].model), v[BL_PIECE_SNARE]);
+    closedHat_.configure(hatModel(v[BL_PIECE_HI_HAT].model), v[BL_PIECE_HI_HAT]);
+    openHat_.configure(hatModel(v[BL_PIECE_OPEN_HAT].model), v[BL_PIECE_OPEN_HAT]);
+    ride_.configure(cymbalModel(v[BL_PIECE_RIDE].model), v[BL_PIECE_RIDE]);
+    crash_.configure(cymbalModel(v[BL_PIECE_CRASH].model), v[BL_PIECE_CRASH]);
+    const int toms[3] = {BL_PIECE_HIGH_TOM, BL_PIECE_LOW_TOM, BL_PIECE_FLOOR_TOM};
+    for (int i = 0; i < 3; ++i) toms_[i].configure(tomModel(v[toms[i]].model), v[toms[i]]);
+
+    const float room = std::clamp(kit.room, 0.0f, 1.0f);
+    for (int piece = 0; piece < BL_PIECE_COUNT; ++piece) {
+        // Equal-power pan, scaled so the centre is unity.
+        const float gain = kLevel[piece] * std::pow(10.0f, std::clamp(v[piece].volumeDB, -24.0f, 6.0f) / 20.0f);
+        const float angle = (kPan[piece] + 1.0f) * kPi * 0.25f;
+        gainLeft_[piece] = gain * std::cos(angle) * 1.41421356f;
+        gainRight_[piece] = gain * std::sin(angle) * 1.41421356f;
+        send_[piece] = gain * std::clamp(v[piece].room, 0.0f, 1.0f);
+    }
+    if (room > 0.0f && !reverbOn_) reverb_.clear(); // start from a quiet room
+    reverbOn_ = room > 0.0f;
+    reverb_.setRoom(room);
+    compressor_.setPunch(kit.punch);
 }
 
 Engine::~Engine() {
@@ -110,6 +139,9 @@ void Engine::applyCommands() {
             break;
         case Command::CueTick:
             click_.trigger(false, 0.4f);
+            break;
+        case Command::SetKit:
+            applyKit(c.kit);
             break;
         }
     }
@@ -415,28 +447,19 @@ void Engine::scheduleNextEvent() {
 void Engine::trigger(int piece, float amp, float bright, uint32_t seed, int64_t at) {
     const Hit hit{amp, bright, seed};
     switch (piece) {
-    case BL_PIECE_KICK:
-        kick_.trigger(hit);
-        break;
-    case BL_PIECE_SNARE:
-        snare_.trigger(hit);
-        break;
+    case BL_PIECE_KICK: kick_.trigger(hit); break;
+    case BL_PIECE_SNARE: snare_.trigger(hit); break;
     case BL_PIECE_HI_HAT:
         openHat_.choke();
         closedHat_.trigger(hit, false);
         break;
-    case BL_PIECE_OPEN_HAT:
-        openHat_.trigger(hit, true);
-        break;
-    case BL_PIECE_RIDE:
-        rideStandIn_.trigger({hit.amp * 0.8f, hit.bright * 0.6f, seed}, false);
-        break;
-    case BL_PIECE_CRASH:
-        crashStandIn_.trigger(hit, true);
-        break;
-    default:
-        // Toms arrive with the full kit (milestone 8).
-        break;
+    case BL_PIECE_OPEN_HAT: openHat_.trigger(hit, true); break;
+    case BL_PIECE_RIDE: ride_.trigger(hit); break;
+    case BL_PIECE_CRASH: crash_.trigger(hit); break;
+    case BL_PIECE_HIGH_TOM: toms_[0].trigger(hit); break;
+    case BL_PIECE_LOW_TOM: toms_[1].trigger(hit); break;
+    case BL_PIECE_FLOOR_TOM: toms_[2].trigger(hit); break;
+    default: break;
     }
     if (log_ && logCount_ < logCapacity_ && playing_)
         log_[logCount_++] = {at, static_cast<uint8_t>(piece), amp, static_cast<int32_t>(songBar_)};
@@ -444,12 +467,33 @@ void Engine::trigger(int piece, float amp, float bright, uint32_t seed, int64_t 
 
 void Engine::renderVoices(float *left, float *right, uint32_t frames) {
     for (uint32_t i = 0; i < frames; ++i) {
-        const float center = kKickLevel * kick_.process() + kSnareLevel * snare_.process() + kClickLevel * click_.process();
-        const float hats = kHatLevel * (closedHat_.process() + openHat_.process() + rideStandIn_.process() +
-                                        crashStandIn_.process());
-        const float r = std::tanh(kMasterDrive * (center + hats));
-        left[i] = std::tanh(kMasterDrive * (center + kHatLeft * hats));
-        if (right) right[i] = r;
+        float v[BL_PIECE_COUNT];
+        v[BL_PIECE_CRASH] = crash_.process();
+        v[BL_PIECE_RIDE] = ride_.process();
+        v[BL_PIECE_OPEN_HAT] = openHat_.process();
+        v[BL_PIECE_HI_HAT] = closedHat_.process();
+        v[BL_PIECE_SNARE] = snare_.process();
+        v[BL_PIECE_HIGH_TOM] = toms_[0].process();
+        v[BL_PIECE_LOW_TOM] = toms_[1].process();
+        v[BL_PIECE_FLOOR_TOM] = toms_[2].process();
+        v[BL_PIECE_KICK] = kick_.process();
+
+        float l = 0.0f, r = 0.0f, send = 0.0f;
+        for (int piece = 0; piece < BL_PIECE_COUNT; ++piece) {
+            l += v[piece] * gainLeft_[piece];
+            r += v[piece] * gainRight_[piece];
+            send += v[piece] * send_[piece];
+        }
+        compressor_.process(l, r); // the drum bus; bypassed at punch 0
+        if (reverbOn_) {
+            float wetL, wetR;
+            reverb_.process(send, wetL, wetR);
+            l += wetL;
+            r += wetR;
+        }
+        const float click = kClickLevel * click_.process(); // not compressed or reverbed
+        left[i] = std::tanh(kMasterDrive * (l + click));
+        if (right) right[i] = std::tanh(kMasterDrive * (r + click));
     }
 }
 
@@ -657,6 +701,13 @@ bool bl_engine_set_click(BLEngine *e, bool on) {
 }
 
 bool bl_engine_cue_tick(BLEngine *e) { return post(e, backline::Command::CueTick); }
+
+bool bl_engine_set_kit(BLEngine *e, const BLKit *kit) {
+    backline::Command c;
+    c.type = backline::Command::SetKit;
+    c.kit = *kit;
+    return e->engine.post(c);
+}
 
 void bl_engine_collect_garbage(BLEngine *e) { e->engine.collectGarbage(); }
 

@@ -48,6 +48,44 @@ typedef struct {
     uint8_t velocity[BL_PIECE_COUNT][BL_MAX_STEPS];
 } BLPattern;
 
+// MARK: Kit (spec §4.1, §6.5)
+//
+// Every sound is synthesized. Each piece has a few starting sounds
+// ("models"), shaped by the same six controls, and the whole kit shares a
+// room reverb and a "punch" compressor. Open hat and hi-hat share the hat
+// models; ride and crash share the cymbal models; the three toms share the
+// tom models.
+
+typedef struct {
+    uint8_t model;    // index into the piece's models (bl_kit_model_*)
+    float tune;       // semitones, -12…+12
+    float decay;      // 0…1 (0.5 = the model as designed)
+    float tone;       // 0…1, dark ↔ bright (0.5 = as designed)
+    float character;  // 0…1: kick click, snare wires, hat openness, cymbal bell, tom attack (0.5 = as designed)
+    float room;       // 0…1, how much of this piece goes to the room reverb
+    float volumeDB;   // -24…+6
+} BLVoiceSettings;
+
+typedef struct {
+    BLVoiceSettings voices[BL_PIECE_COUNT];
+    float room;   // 0…1, small room ↔ big hall (0 = no reverb)
+    float punch;  // 0…1, natural ↔ punchy (0 = no compression)
+} BLKit;
+
+uint8_t bl_kit_model_count(uint8_t piece);
+// Stable ids ("snare.fat70s"), display names ("Fat 70s") and one-line
+// descriptions, or NULL for a bad index.
+const char *bl_kit_model_id(uint8_t piece, uint8_t model);
+const char *bl_kit_model_name(uint8_t piece, uint8_t model);
+const char *bl_kit_model_description(uint8_t piece, uint8_t model);
+// The index of a model id for this piece, or -1.
+int32_t bl_kit_model_index(uint8_t piece, const char *modelID);
+
+// The built-in kits (spec §6.5). Index 0 is the Garage Kit, the default.
+uint8_t bl_kit_builtin_count(void);
+const char *bl_kit_builtin_name(uint8_t index);
+void bl_kit_builtin(uint8_t index, BLKit *out);
+
 // MARK: Timeline
 //
 // A timeline is the whole song flattened into bars of hits, with the feel
@@ -161,6 +199,10 @@ bool bl_engine_set_timeline(BLEngine *engine, BLTimeline *timeline);
 // looping off.
 bool bl_engine_set_loop_section(BLEngine *engine, uint32_t sectionKey);
 bool bl_engine_audition(BLEngine *engine, uint8_t piece, uint8_t velocity);
+// New sounds apply to the next hit of each piece. A new engine starts with
+// the Garage Kit's voices but no room or punch, so tests hear dry hits that
+// end in exact silence.
+bool bl_engine_set_kit(BLEngine *engine, const BLKit *kit);
 // Queues an action while playing (ignored when stopped, during the count-in
 // and during an ending). `nextTiming` is BL_NEXT_AT_* and only matters for
 // Next section.

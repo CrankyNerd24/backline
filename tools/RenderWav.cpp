@@ -3,7 +3,9 @@
 // small fill, a busier, harder chorus on the ride with a big fill (and a
 // crash after it), and a half-time outro with the big ending.
 //
-//   backline-render out.wav [bpm=112]
+//   backline-render out.wav [bpm=112] [kit=0]
+//
+// Kits: 0 Garage Kit, 1 Studio Rock, 2 Vintage 60s, 3 Metal, 4 Jazz Brushes, 5 Lo-fi.
 //
 // Writes 48 kHz, 24-bit stereo (the export format from spec §8).
 
@@ -21,7 +23,7 @@ static void put32(FILE *f, uint32_t v) { std::fwrite(&v, 4, 1, f); }
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        std::fprintf(stderr, "usage: %s out.wav [bpm]\n", argv[0]);
+        std::fprintf(stderr, "usage: %s out.wav [bpm] [kit 0-%d]\n", argv[0], bl_kit_builtin_count() - 1);
         return 2;
     }
     const double sr = 48000.0;
@@ -47,14 +49,19 @@ int main(int argc, char **argv) {
     sections[2].bigEnding = true;
     const BLSongDesc song{1};
 
+    const int kitIndex = std::clamp(argc > 3 ? std::atoi(argv[3]) : 0, 0, bl_kit_builtin_count() - 1);
+    BLKit kit;
+    bl_kit_builtin(static_cast<uint8_t>(kitIndex), &kit);
+
     BLEngine *e = bl_engine_create(sr);
+    bl_engine_set_kit(e, &kit);
     bl_engine_set_tempo(e, bpm);
     bl_engine_set_timeline(e, bl_timeline_create(&song, sections, 3));
     bl_engine_play_from(e, 0, true);
 
     // 1 count-in + 10 song bars + the ending bar, plus time to ring out. The
     // song stops by itself.
-    const auto frames = static_cast<uint32_t>(12 * 240.0 / bpm * sr + 2.0 * sr);
+    const auto frames = static_cast<uint32_t>(12 * 240.0 / bpm * sr + 6.0 * sr); // the big crash rings a while
     std::vector<float> l(frames), r(frames);
     for (uint32_t done = 0; done < frames;) {
         const uint32_t n = std::min<uint32_t>(256, frames - done);
@@ -90,6 +97,6 @@ int main(int argc, char **argv) {
         }
     }
     std::fclose(f);
-    std::printf("wrote %s: demo song at %.1f BPM\n", argv[1], bpm);
+    std::printf("wrote %s: demo song at %.1f BPM on the %s\n", argv[1], bpm, bl_kit_builtin_name(static_cast<uint8_t>(kitIndex)));
     return 0;
 }

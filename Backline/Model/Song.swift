@@ -10,6 +10,9 @@ struct Song: Codable, Identifiable, Equatable {
     var kitID: UUID
     var countInBars: Int           // 0, 1, 2
     var sections: [Section]
+    /// The song's own edits to its kit (Kit Editor), like a section's
+    /// patternOverride; nil plays the kit as it is in the library.
+    var kitOverride: Kit? = nil
 }
 
 enum TimeSig: String, Codable {

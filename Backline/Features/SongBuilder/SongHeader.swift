@@ -7,7 +7,9 @@ struct SongHeader: View {
     @Environment(SongStore.self) private var store
     @Environment(EngineController.self) private var engine
     @Environment(PedalController.self) private var pedals
+    @Environment(KitLibrary.self) private var kits
     @State private var settingUpPedals = false
+    @State private var editingKit = false
     @State private var renaming = false
     @State private var newName = ""
     @State private var confirmingDelete = false
@@ -39,10 +41,15 @@ struct SongHeader: View {
             }
             .buttonStyle(.plain)
             .accessibilityHint("Opens foot pedal setup")
-            // Kits and export arrive in milestones 8 and 9.
-            Button {} label: { Label("Garage Kit", systemImage: "circle.grid.2x2") }
-                .buttonStyle(ChipButtonStyle())
-                .disabled(true)
+            Button {
+                editingKit = true
+            } label: {
+                Label(kitLabel, systemImage: "circle.grid.2x2")
+                    .lineLimit(1)
+            }
+            .buttonStyle(ChipButtonStyle())
+            .accessibilityHint("Opens the Kit Editor")
+            // Export arrives in milestone 9.
             Button {} label: { Label("Export", systemImage: "square.and.arrow.up") }
                 .buttonStyle(ChipButtonStyle())
                 .disabled(true)
@@ -58,6 +65,12 @@ struct SongHeader: View {
                 let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !trimmed.isEmpty { store.song.name = trimmed }
             }
+        }
+        .fullScreenCover(isPresented: $editingKit) {
+            KitEditorView()
+                .environment(store)
+                .environment(kits)
+                .environment(engine)
         }
         .fullScreenCover(isPresented: $settingUpPedals) {
             PedalSetupView()
@@ -134,6 +147,11 @@ struct SongHeader: View {
             .accessibilityLabel("Tap tempo")
             .accessibilityHint("Tap four or more times in time with the music")
         }
+    }
+
+    private var kitLabel: String {
+        let name = kits.kit(store.song.kitID).name
+        return store.song.kitOverride == nil ? name : "\(name) · edited"
     }
 
     private func setTempo(_ bpm: Double) {
