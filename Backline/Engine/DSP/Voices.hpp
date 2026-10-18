@@ -69,4 +69,18 @@ private:
     SVF band_, high_;
 };
 
+// Metronome click: a short, bright sine blip (higher on beat 1).
+class ClickVoice {
+public:
+    void prepare(float sampleRate) { sr_ = sampleRate; }
+    void trigger(bool accent);
+    float process();
+
+private:
+    float sr_ = 48000.0f;
+    bool active_ = false;
+    float phase_ = 0, increment_ = 0;
+    Decay env_;
+};
+
 } // namespace backline

@@ -11,11 +11,11 @@
 namespace backline {
 
 struct Command {
-    enum Type : uint8_t { PlayFrom, Stop, SetTempo, SetTimeline, SetLoop, Audition };
+    enum Type : uint8_t { PlayFrom, Stop, SetTempo, SetTimeline, SetLoop, Audition, QueueAction, SetClick };
     Type type = Stop;
-    uint8_t piece = 0;
-    uint8_t velocity = 0;
-    bool flag = false;    // count-in for PlayFrom
+    uint8_t piece = 0;    // piece for Audition, action for QueueAction
+    uint8_t velocity = 0; // velocity for Audition, timing for QueueAction
+    bool flag = false;    // count-in for PlayFrom, at-next-bar for SetTempo, on for SetClick
     uint32_t value32 = 0; // song bar for PlayFrom, key for SetLoop
     double value = 0.0;   // bpm for SetTempo
     const Timeline *timeline = nullptr;
@@ -30,6 +30,10 @@ struct Command {
 // every hit lands within half a sample of where it belongs and rounding error
 // never accumulates. A tempo change moves the anchor to the beat where it
 // takes effect, keeping the anchor itself unrounded.
+//
+// Each bar plays the hits of `playBar_`: normally the timeline bar at
+// `songBar_`, but queued actions can swap in one of the section's spare bars
+// (a fill or the ending), even partway through a bar.
 class Engine {
 public:
     explicit Engine(double sampleRate);
@@ -64,7 +68,15 @@ private:
     void scheduleNextEvent();
     int64_t sampleAt(double globalBeat, float offsetSeconds = 0.0f) const;
     double beatAt(int64_t sample) const;
-    void trigger(int piece, float amp, float bright, uint32_t seed);
+    double barBeat() const { return static_cast<double>(barCount_) * 4.0; }
+
+    void queueAction(uint8_t action, uint8_t timing);
+    void clearActions();
+    void cancelNavigation();
+    void playFrom(const TimelineBar *bar);
+    int64_t navigationTarget() const;
+
+    void trigger(int piece, float amp, float bright, uint32_t seed, int64_t at);
     void renderVoices(float *left, float *right, uint32_t frames);
     void publishPosition();
 
@@ -80,10 +92,11 @@ private:
     const Timeline *pendingTimeline_ = nullptr;
     uint32_t loopKey_ = 0;
 
-    uint32_t songBar_ = 0;  // timeline bar now playing (count-in included)
-    uint32_t countInTarget_ = 0; // song bar to jump to after the count-in
-    int64_t barCount_ = 0;  // bars played since start (drives timing; loops keep counting)
-    uint32_t hitIndex_ = 0; // next hit within the current bar
+    uint32_t songBar_ = 0;                 // timeline bar now playing (count-in included)
+    const TimelineBar *playBar_ = nullptr; // whose hits are playing
+    uint32_t countInTarget_ = 0;           // song bar to jump to after the count-in
+    int64_t barCount_ = 0;                 // bars played since start (drives timing; loops keep counting)
+    uint32_t hitIndex_ = 0;                // next hit within playBar_
     double anchorTime_ = 0.0;
     double anchorBeat_ = 0.0;
     double beatLength_ = 0.0;
@@ -92,11 +105,24 @@ private:
     double pendingTempoBeat_ = 0.0;
     int64_t nextEventSample_ = 0;
 
+    // Queued actions.
+    uint8_t navigation_ = BL_ACTION_NONE; // Next, Previous, Restart or Big ending
+    bool nextAtSectionEnd_ = false;
+    int64_t navigationBar_ = -1;          // barCount_ of the bar it lands at the end of; -1 = the section's last bar
+    uint32_t navigationFromKey_ = 0;
+    bool splicedForNext_ = false;         // the current bar's remaining hits were swapped for a fill
+    int64_t fillNowBar_ = -1;             // barCount_ of the bar that becomes a fill
+    bool endingPlaying_ = false;
+
+    bool clickOn_ = false;
+    double nextClickBeat_ = 0.0;
+
     KickVoice kick_;
     SnareVoice snare_;
     HatVoice closedHat_, openHat_;
     // Until the full kit (milestone 8), ride and crash borrow the hat voice.
     HatVoice rideStandIn_, crashStandIn_;
+    ClickVoice click_;
 
     BLTriggerRecord *log_ = nullptr;
     uint32_t logCapacity_ = 0;
@@ -111,6 +137,11 @@ private:
     std::atomic<double> pubBarPhase_{0.0};
     std::atomic<double> pubBpm_{120.0};
     std::atomic<int64_t> pubSampleTime_{0};
+    std::atomic<uint8_t> pubAction_{BL_ACTION_NONE};
+    std::atomic<uint8_t> pubWhen_{BL_WHEN_THIS_BAR};
+    std::atomic<uint32_t> pubTargetKey_{0};
+    std::atomic<bool> pubFillPending_{false};
+    std::atomic<double> pubPendingTempo_{0.0};
 };
 
 } // namespace backline

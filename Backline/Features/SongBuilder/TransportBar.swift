@@ -6,6 +6,7 @@ struct TransportBar: View {
     @Environment(SongStore.self) private var store
     @Environment(EngineController.self) private var engine
     let selection: UUID?
+    @State private var playingAlong = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -33,18 +34,45 @@ struct TransportBar: View {
             Spacer(minLength: 12)
 
             countInMenu
-            // Practice speed and play-along arrive in milestone 5.
-            Button {} label: { Label("Speed 100%", systemImage: "gauge.with.dots.needle.50percent") }
-                .buttonStyle(ChipButtonStyle())
-                .disabled(true)
-            Button {} label: { Label("Play-along mode", systemImage: "music.mic") }
-                .buttonStyle(ChipButtonStyle())
-                .disabled(true)
+            speedMenu
+            Button {
+                playingAlong = true
+            } label: {
+                Label("Play-along mode", systemImage: "music.mic")
+            }
+            .buttonStyle(ChipButtonStyle(prominent: true))
+            .disabled(store.song.sections.isEmpty)
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 12)
         .background(Theme.bgDeep)
         .overlay(alignment: .top) { Theme.line.frame(height: 1) }
+        .fullScreenCover(isPresented: $playingAlong) {
+            PlayAlongView(startingAt: selection)
+                .environment(store)
+                .environment(engine)
+        }
+    }
+
+    private var speedMenu: some View {
+        @Bindable var engine = engine
+        return Menu {
+            ForEach(Array(stride(from: 50, through: 120, by: 10)), id: \.self) { percent in
+                Button {
+                    engine.speed = Double(percent) / 100
+                } label: {
+                    if Int((engine.speed * 100).rounded()) == percent {
+                        Label("\(percent)%", systemImage: "checkmark")
+                    } else {
+                        Text("\(percent)%")
+                    }
+                }
+            }
+        } label: {
+            Label("Speed \(Int((engine.speed * 100).rounded()))%", systemImage: "gauge.with.dots.needle.50percent")
+        }
+        .buttonStyle(ChipButtonStyle(prominent: engine.speed != 1.0))
+        .accessibilityLabel("Practice speed \(Int((engine.speed * 100).rounded())) percent")
     }
 
     private var selectedName: String? {
@@ -88,7 +116,7 @@ struct TransportBar: View {
     private var positionText: String {
         guard let position = engine.position else { return "Stopped" }
         if position.isCountIn { return "Count-in \(position.barInSection + 1)" }
-        let seconds = (Double(position.songBar) + position.barPhase) * 240 / store.song.bpm
+        let seconds = (Double(position.songBar) + position.barPhase) * 240 / engine.playbackBPM
         return "Bar \(position.songBar + 1) · \(seconds.minutesSeconds)"
     }
 }

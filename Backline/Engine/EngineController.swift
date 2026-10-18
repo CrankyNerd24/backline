@@ -8,6 +8,53 @@ import Observation
 /// Lives for the life of the app, so it never tears the core down.
 @Observable
 final class EngineController {
+    /// Actions that wait for the right moment (spec §5).
+    enum QueuedAction: Equatable {
+        case nextSection, previousSection, restartSection, fillNow, bigEnding
+
+        var engineValue: UInt8 {
+            switch self {
+            case .nextSection: UInt8(BL_ACTION_NEXT_SECTION)
+            case .previousSection: UInt8(BL_ACTION_PREVIOUS_SECTION)
+            case .restartSection: UInt8(BL_ACTION_RESTART_SECTION)
+            case .fillNow: UInt8(BL_ACTION_FILL_NOW)
+            case .bigEnding: UInt8(BL_ACTION_BIG_ENDING)
+            }
+        }
+
+        init?(engineValue: UInt8) {
+            switch Int(engineValue) {
+            case Int(BL_ACTION_NEXT_SECTION): self = .nextSection
+            case Int(BL_ACTION_PREVIOUS_SECTION): self = .previousSection
+            case Int(BL_ACTION_RESTART_SECTION): self = .restartSection
+            case Int(BL_ACTION_FILL_NOW): self = .fillNow
+            case Int(BL_ACTION_BIG_ENDING): self = .bigEnding
+            default: return nil
+            }
+        }
+    }
+
+    /// When "Next section" lands.
+    enum NextSectionTiming: String, CaseIterable {
+        case endOfBar, endOfLoop
+
+        var label: String { self == .endOfBar ? "End of bar" : "End of loop" }
+    }
+
+    /// What's waiting to happen, for the Play-Along banner.
+    struct Pending: Equatable {
+        enum When: Equatable { case thisBar, nextBar, endOfLoop }
+
+        var action: QueuedAction?    // navigation: next, previous, restart, big ending
+        var when: When
+        var targetSectionID: UUID?   // where it leads; nil for the end of the song
+        var fillComing: Bool         // Fill now is waiting for the next bar
+        var tempo: Double?           // a tapped tempo waiting for the next bar
+        var source: String           // what asked for it ("Screen", or a pedal later)
+
+        var isEmpty: Bool { action == nil && !fillComing && tempo == nil }
+    }
+
     struct Position: Equatable {
         var sectionID: UUID?  // nil during the count-in
         var isCountIn: Bool
@@ -23,7 +70,40 @@ final class EngineController {
     private(set) var loopingSectionID: UUID?
     /// The groove being auditioned in the Groove Picker, if any.
     private(set) var previewingGrooveID: String?
+    /// Queued actions that haven't landed yet; nil when there are none.
+    private(set) var pending: Pending?
     private(set) var lastError: String?
+
+    /// Practice speed, 50–120 % of the song tempo (spec §4.2). Everything is
+    /// synthesized, so slowing down never sounds stretched.
+    var speed: Double = 1.0 {
+        didSet { pushPendingChanges() } // playbackBPM clamps
+    }
+    static let speedRange = 0.5...1.2
+
+    /// Drum level in the mix, 0…1.
+    var drumsLevel: Double = UserDefaults.standard.object(forKey: "drumsLevel") as? Double ?? 1.0 {
+        didSet {
+            avEngine.mainMixerNode.outputVolume = Float(drumsLevel)
+            UserDefaults.standard.set(drumsLevel, forKey: "drumsLevel")
+        }
+    }
+
+    /// A metronome click on every beat.
+    var clickOn = false {
+        didSet { if let core { bl_engine_set_click(core, clickOn) } }
+    }
+
+    var nextSectionTiming: NextSectionTiming = NextSectionTiming(
+        rawValue: UserDefaults.standard.string(forKey: "nextSectionTiming") ?? "") ?? .endOfBar {
+        didSet { UserDefaults.standard.set(nextSectionTiming.rawValue, forKey: "nextSectionTiming") }
+    }
+
+    /// The tempo the engine plays at: the song tempo times the practice speed.
+    var playbackBPM: Double {
+        let factor = min(max(speed, Self.speedRange.lowerBound), Self.speedRange.upperBound)
+        return min(max((song?.bpm ?? 120) * factor, BL_MIN_BPM), BL_MAX_BPM)
+    }
 
     @ObservationIgnored private let library: GrooveLibrary
     @ObservationIgnored private let avEngine = AVAudioEngine()
@@ -40,6 +120,8 @@ final class EngineController {
     /// While previewing, the engine plays a one-section timeline instead of
     /// the song, and song edits wait until the preview stops.
     @ObservationIgnored private var previewing = false
+    @ObservationIgnored private var actionSource = "Screen"
+    @ObservationIgnored private var tappedTempo: Double?
     private static let previewSectionID = UUID(uuidString: "0B5E55ED-0000-4000-8000-00000000F00D")!
 
     init(library: GrooveLibrary) {
@@ -108,9 +190,9 @@ final class EngineController {
         let wasPreviewing = previewing
         previewing = true
         if !wasPreviewing { bl_engine_stop(core) } // stop the song first; commands run in order
-        if sentBPM != song.bpm {
-            bl_engine_set_tempo(core, song.bpm)
-            sentBPM = song.bpm
+        if sentBPM != playbackBPM {
+            bl_engine_set_tempo(core, playbackBPM)
+            sentBPM = playbackBPM
         }
         bl_engine_set_timeline(core, timeline)
         bl_engine_set_loop_section(core, looped.engineKey)
@@ -143,6 +225,33 @@ final class EngineController {
         bl_engine_set_loop_section(core, key)
     }
 
+    /// Queues an action (ignored when stopped or counting in). Asking for the
+    /// same action again before it lands cancels it.
+    func queue(_ action: QueuedAction, source: String = "Screen") {
+        guard let core, isPlaying, !previewing else { return }
+        actionSource = source
+        let timing = nextSectionTiming == .endOfBar ? BL_NEXT_AT_BAR_END : BL_NEXT_AT_SECTION_END
+        bl_engine_queue_action(core, action.engineValue, UInt8(timing))
+    }
+
+    /// Tap tempo while playing: the new tempo lands on the next bar line.
+    /// Returns the song tempo to store (the tapped tempo without the practice
+    /// speed applied).
+    func applyTappedTempo(_ bpm: Double, source: String = "Screen") -> Double {
+        let songBPM = min(max(bpm / speed, Song.bpmRange.lowerBound), Song.bpmRange.upperBound).rounded()
+        guard let core else { return songBPM }
+        let playback = min(max(songBPM * speed, BL_MIN_BPM), BL_MAX_BPM)
+        if isPlaying {
+            bl_engine_set_tempo_at_next_bar(core, playback)
+            tappedTempo = playback
+            actionSource = source
+        } else {
+            bl_engine_set_tempo(core, playback)
+        }
+        sentBPM = playback // so the song change that follows doesn't resend it
+        return songBPM
+    }
+
     func audition(_ piece: Piece, velocity: Velocity = .normal) {
         guard let core else { return }
         startEngineIfNeeded()
@@ -150,11 +259,12 @@ final class EngineController {
     }
 
     private func pushPendingChanges() {
-        guard let core, let song else { return }
-        if sentBPM != song.bpm {
-            bl_engine_set_tempo(core, song.bpm)
-            sentBPM = song.bpm
+        guard let core, song != nil else { return }
+        if sentBPM != playbackBPM {
+            bl_engine_set_tempo(core, playbackBPM)
+            sentBPM = playbackBPM
         }
+        guard let song else { return }
         guard needsTimeline, !previewing else { return }
         guard let timeline = TimelineBuilder.build(song, library: library) else { return }
         if bl_engine_set_timeline(core, timeline) {
@@ -192,6 +302,8 @@ final class EngineController {
         needsTimeline = true
         pushPendingChanges()
         if loopingSectionID != nil { setLoop(loopingSectionID) }
+        if clickOn { bl_engine_set_click(core, true) }
+        avEngine.mainMixerNode.outputVolume = Float(drumsLevel)
 
         let node = AVAudioSourceNode(format: format, renderBlock: Self.makeRenderBlock(core: core))
         avEngine.attach(node)
@@ -316,6 +428,27 @@ final class EngineController {
         }
         // Only assign on change so SwiftUI isn't re-rendered for nothing.
         if position != newPosition { position = newPosition }
+
+        var newPending: Pending?
+        if raw.playing, !previewing {
+            if raw.pendingTempo == 0 { tappedTempo = nil }
+            let when: Pending.When = switch Int(raw.pendingWhen) {
+            case Int(BL_WHEN_NEXT_BAR): .nextBar
+            case Int(BL_WHEN_SECTION_END): .endOfLoop
+            default: .thisBar
+            }
+            let candidate = Pending(
+                action: QueuedAction(engineValue: raw.pendingAction),
+                when: when,
+                targetSectionID: raw.pendingTargetKey == 0 ? nil : sectionsByKey[raw.pendingTargetKey],
+                fillComing: raw.fillPending,
+                tempo: tappedTempo != nil && raw.pendingTempo > 0 ? raw.pendingTempo : nil,
+                source: actionSource)
+            newPending = candidate.isEmpty ? nil : candidate
+        } else {
+            tappedTempo = nil
+        }
+        if pending != newPending { pending = newPending }
     }
 }
 

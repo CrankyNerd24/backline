@@ -1,4 +1,4 @@
-// Acceptance tests for the DSP core (milestones 1–3). Plain C++ so they run on any
+// Acceptance tests for the DSP core (milestones 1–5). Plain C++ so they run on any
 // machine with a compiler (macOS or Linux): `cmake -B build && cmake --build
 // build && ctest --test-dir build --output-on-failure`.
 
@@ -277,6 +277,11 @@ static void testNoAllocationsWhileRendering() {
         if (i == 300) bl_engine_set_timeline(e, second);
         if (i == 500) bl_engine_set_tempo(e, 180.0);
         if (i == 900) bl_engine_audition(e, BL_PIECE_SNARE, BL_VEL_LOUD);
+        if (i == 950) bl_engine_set_click(e, true);
+        if (i == 1000) bl_engine_queue_action(e, BL_ACTION_NEXT_SECTION, BL_NEXT_AT_BAR_END);
+        if (i == 1050) bl_engine_queue_action(e, BL_ACTION_FILL_NOW, 0);
+        if (i == 1100) bl_engine_set_tempo_at_next_bar(e, 140.0);
+        if (i == 1150) bl_engine_queue_action(e, BL_ACTION_BIG_ENDING, 0);
         if (i == 1200) bl_engine_stop(e);
         bl_engine_render(e, l.data(), r.data(), 64 + (i % 7) * 100);
     }
@@ -735,6 +740,246 @@ static void testSeedFollowsSection() {
     CHECK(x == y && !x.empty(), "section A changed when moved (%zu vs %zu hits)", x.size(), y.size());
 }
 
+// MARK: - Milestone 5: queued actions, vamps, tap tempo, click
+
+// 120 BPM at 48 kHz: a bar is 96,000 samples, a beat 24,000.
+constexpr int64_t kBar = 96000, kBeat = 24000;
+
+// A section playing `piece` on every beat, with the rock fill (whose last
+// beat is toms) available for fills.
+static BLSectionDesc beats(uint32_t key, uint16_t bars, int piece, bool vamp = false) {
+    BLSectionDesc d = section(key, bars, only(piece, {0, 4, 8, 12}));
+    d.fill = rockStraight8thsFill();
+    d.fillIntoNext = BL_FILL_SMALL;
+    d.repeatUntilStep = vamp;
+    return d;
+}
+
+static bool isTom(const BLTriggerRecord &h) {
+    return h.piece == BL_PIECE_HIGH_TOM || h.piece == BL_PIECE_LOW_TOM || h.piece == BL_PIECE_FLOOR_TOM;
+}
+
+static int tomsBetween(const Render &r, int64_t from, int64_t to) {
+    int n = 0;
+    for (const auto &h : r.triggers) n += isTom(h) && h.sample >= from && h.sample < to;
+    return n;
+}
+
+// Runs `hook` once, before the buffer containing sample `at`.
+static BufferHook at(int64_t when, std::function<void(BLEngine *)> hook) {
+    return [when, hook](BLEngine *e, int64_t t) {
+        if (t <= when && when < t + 256) hook(e);
+    };
+}
+
+static BufferHook both(BufferHook a, BufferHook b) {
+    return [a, b](BLEngine *e, int64_t t) {
+        a(e, t);
+        b(e, t);
+    };
+}
+
+static BLPosition positionOf(BLEngine *e) {
+    BLPosition p;
+    bl_engine_get_position(e, &p);
+    return p;
+}
+
+// "Repeat until I step": a vamp loops on its own and never fills by itself.
+static void testVampLoops() {
+    const Render r = renderTimeline(timelineOf({beats(10, 2, BL_PIECE_KICK, true), beats(20, 1, BL_PIECE_SNARE)}), 120.0,
+                                    10.0, 48000.0, fixed(256));
+    CHECK(join(barsPlayed(r)) == "0,1,0,1,0", "bars %s", join(barsPlayed(r)).c_str());
+    CHECK(tomsBetween(r, 0, 10 * 48000) == 0, "a vamp shouldn't fill on its own");
+}
+
+// Next section with room left: the rest of this bar becomes the fill, then the
+// next section starts with a crash.
+static void testNextSectionThisBar() {
+    BLPosition pending{};
+    const Render r = renderTimeline(
+        timelineOf({beats(10, 2, BL_PIECE_KICK, true), beats(20, 1, BL_PIECE_SNARE)}), 120.0, 4.0, 48000.0, fixed(256),
+        both(at(kBeat + 64, [](BLEngine *e) { bl_engine_queue_action(e, BL_ACTION_NEXT_SECTION, BL_NEXT_AT_BAR_END); }),
+             at(2 * kBeat, [&](BLEngine *e) { pending = positionOf(e); })));
+    CHECK(join(barsPlayed(r)) == "0,2", "bars %s", join(barsPlayed(r)).c_str());
+    CHECK(tomsBetween(r, 3 * kBeat, kBar) == 4, "fill toms in the last beat: %d", tomsBetween(r, 3 * kBeat, kBar));
+    bool crash = false;
+    for (const auto &h : r.triggers) crash = crash || (h.piece == BL_PIECE_CRASH && h.sample == kBar);
+    CHECK(crash, "crash on beat 1 of the next section");
+    CHECK(pending.pendingAction == BL_ACTION_NEXT_SECTION && pending.pendingWhen == BL_WHEN_THIS_BAR &&
+              pending.pendingTargetKey == 20,
+          "pending: action %d when %d target %u", pending.pendingAction, pending.pendingWhen, pending.pendingTargetKey);
+}
+
+// With less than a beat left, the change waits a bar so the fill has room.
+static void testNextSectionWaitsForRoom() {
+    BLPosition pending{};
+    const Render r = renderTimeline(
+        timelineOf({beats(10, 2, BL_PIECE_KICK, true), beats(20, 1, BL_PIECE_SNARE)}), 120.0, 6.0, 48000.0, fixed(256),
+        both(at(84000, [](BLEngine *e) { bl_engine_queue_action(e, BL_ACTION_NEXT_SECTION, BL_NEXT_AT_BAR_END); }),
+             at(90000, [&](BLEngine *e) { pending = positionOf(e); })));
+    CHECK(join(barsPlayed(r)) == "0,1,2", "bars %s", join(barsPlayed(r)).c_str());
+    CHECK(tomsBetween(r, 0, kBar) == 0 && tomsBetween(r, kBar + 3 * kBeat, 2 * kBar) == 4, "fill in the second bar");
+    CHECK(pending.pendingWhen == BL_WHEN_NEXT_BAR, "pending when %d", pending.pendingWhen);
+}
+
+// At the end of the loop: the section finishes its pass, filling on its last bar.
+static void testNextSectionAtLoopEnd() {
+    BLPosition early{};
+    const Render r = renderTimeline(
+        timelineOf({beats(10, 3, BL_PIECE_KICK, true), beats(20, 1, BL_PIECE_SNARE)}), 120.0, 8.5, 48000.0, fixed(256),
+        both(at(kBeat, [](BLEngine *e) { bl_engine_queue_action(e, BL_ACTION_NEXT_SECTION, BL_NEXT_AT_SECTION_END); }),
+             at(kBar + kBeat, [&](BLEngine *e) { early = positionOf(e); })));
+    CHECK(join(barsPlayed(r)) == "0,1,2,3", "bars %s", join(barsPlayed(r)).c_str());
+    CHECK(tomsBetween(r, 0, 2 * kBar) == 0 && tomsBetween(r, 2 * kBar, 3 * kBar) == 4, "fill only on the last bar");
+    CHECK(early.pendingAction == BL_ACTION_NEXT_SECTION && early.pendingWhen == BL_WHEN_SECTION_END,
+          "pending when %d", early.pendingWhen);
+}
+
+// Asking again before it lands cancels, and the bar goes back to normal.
+static void testNextSectionCancel() {
+    BLPosition after{};
+    const Render r = renderTimeline(
+        timelineOf({beats(10, 2, BL_PIECE_KICK, true), beats(20, 1, BL_PIECE_SNARE)}), 120.0, 8.0, 48000.0, fixed(256),
+        both(both(at(kBeat, [](BLEngine *e) { bl_engine_queue_action(e, BL_ACTION_NEXT_SECTION, BL_NEXT_AT_BAR_END); }),
+                  at(2 * kBeat, [](BLEngine *e) { bl_engine_queue_action(e, BL_ACTION_NEXT_SECTION, BL_NEXT_AT_BAR_END); })),
+             at(2 * kBeat + 512, [&](BLEngine *e) { after = positionOf(e); })));
+    CHECK(join(barsPlayed(r)) == "0,1,0,1", "bars %s", join(barsPlayed(r)).c_str());
+    CHECK(tomsBetween(r, 0, 8 * 48000) == 0, "the cancelled fill still played");
+    CHECK(after.pendingAction == BL_ACTION_NONE, "still pending after cancel");
+}
+
+static void testRestartAndPreviousSection() {
+    const Render restart = renderTimeline(
+        timelineOf({beats(10, 3, BL_PIECE_KICK), beats(20, 1, BL_PIECE_SNARE)}), 120.0, 14.0, 48000.0, fixed(256),
+        at(kBar + kBeat, [](BLEngine *e) { bl_engine_queue_action(e, BL_ACTION_RESTART_SECTION, 0); }));
+    CHECK(join(barsPlayed(restart)) == "0,1,0,1,2,3", "restart: %s", join(barsPlayed(restart)).c_str());
+
+    const Render previous = renderTimeline(
+        timelineOf({beats(10, 1, BL_PIECE_KICK), beats(20, 2, BL_PIECE_SNARE)}), 120.0, 12.0, 48000.0, fixed(256),
+        at(kBar + kBeat, [](BLEngine *e) { bl_engine_queue_action(e, BL_ACTION_PREVIOUS_SECTION, 0); }));
+    CHECK(join(barsPlayed(previous)) == "0,1,0,1,2", "previous: %s", join(barsPlayed(previous)).c_str());
+
+    // Previous from the first section restarts it.
+    const Render first = renderTimeline(
+        timelineOf({beats(10, 2, BL_PIECE_KICK), beats(20, 1, BL_PIECE_SNARE)}), 120.0, 10.0, 48000.0, fixed(256),
+        at(kBeat, [](BLEngine *e) { bl_engine_queue_action(e, BL_ACTION_PREVIOUS_SECTION, 0); }));
+    // Bar 0 plays twice (barsPlayed collapses repeats, so count its kicks).
+    int firstBarKicks = 0;
+    for (const auto &h : first.triggers) firstBarKicks += h.timelineBar == 0 && h.piece == BL_PIECE_KICK;
+    CHECK(join(barsPlayed(first)) == "0,1,2" && firstBarKicks == 8, "previous from the top: %s, %d kicks in bar 0",
+          join(barsPlayed(first)).c_str(), firstBarKicks);
+}
+
+// Fill now: the next bar becomes a big fill, then the groove carries on.
+static void testFillNow() {
+    BLPosition pending{};
+    BLSectionDesc rock = rockSection(10, 4);
+    const Render r = renderTimeline(
+        timelineOf({rock}), 120.0, 8.5, 48000.0, fixed(256),
+        both(at(kBeat, [](BLEngine *e) { bl_engine_queue_action(e, BL_ACTION_FILL_NOW, 0); }),
+             at(2 * kBeat, [&](BLEngine *e) { pending = positionOf(e); })));
+    auto runSnares = [&](int bar) {
+        int n = 0;
+        for (const auto &h : inBar(r, bar))
+            n += h.piece == BL_PIECE_SNARE && h.sample >= bar * kBar + 2 * kBeat && h.sample < bar * kBar + 3 * kBeat;
+        return n;
+    };
+    CHECK(runSnares(0) == 0 && runSnares(1) == 4 && runSnares(2) == 0, "snare run in bar 1 only (%d %d %d)", runSnares(0),
+          runSnares(1), runSnares(2));
+    CHECK(pending.fillPending, "fill should be reported pending");
+}
+
+// Big ending: the next bar is a crash and kick, then playback stops.
+static void testBigEndingAction() {
+    const Render r = renderTimeline(timelineOf({rockSection(10, 4)}), 120.0, 8.0, 48000.0, fixed(256),
+                                    at(kBar + kBeat, [](BLEngine *e) { bl_engine_queue_action(e, BL_ACTION_BIG_ENDING, 0); }));
+    std::vector<BLTriggerRecord> after;
+    for (const auto &h : r.triggers)
+        if (h.sample >= 2 * kBar) after.push_back(h);
+    CHECK(after.size() == 2 && countPiece(after, BL_PIECE_CRASH) == 1 && countPiece(after, BL_PIECE_KICK) == 1 &&
+              after[0].sample == 2 * kBar,
+          "ending: %zu hits after bar 2", after.size());
+    CHECK(r.left.back() == 0.0f, "should have rung out and stopped");
+}
+
+// Tap tempo lands on the next bar line.
+static void testTapTempoAtNextBar() {
+    BLPattern hats = only(BL_PIECE_HI_HAT, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
+    BLPosition pending{};
+    const Render r = renderPattern(hats, 120.0, 4.0, 48000.0, fixed(256),
+                                   both(at(30000, [](BLEngine *e) { bl_engine_set_tempo_at_next_bar(e, 90.0); }),
+                                        at(40000, [&](BLEngine *e) { pending = positionOf(e); })));
+    size_t bad = 0;
+    for (size_t i = 0; i < r.triggers.size(); ++i) {
+        const double ideal = i < 16 ? i * 6000.0 : kBar + (i - 16) * 8000.0;
+        if (std::fabs(static_cast<double>(r.triggers[i].sample) - ideal) > 1.0) ++bad;
+    }
+    CHECK(r.triggers.size() > 24 && bad == 0, "%zu of %zu hits off", bad, r.triggers.size());
+    CHECK(pending.pendingTempo == 90.0, "pending tempo %.1f", pending.pendingTempo);
+}
+
+// Actions only count while the song itself is playing.
+static void testActionsIgnoredOutsideTheSong() {
+    const Render countIn = renderTimeline(
+        timelineOf({beats(10, 1, BL_PIECE_KICK), beats(20, 1, BL_PIECE_SNARE)}, 1), 120.0, 7.0, 48000.0, fixed(256),
+        at(kBeat, [](BLEngine *e) { bl_engine_queue_action(e, BL_ACTION_BIG_ENDING, 0); }), 0, 0, true);
+    CHECK(join(barsPlayed(countIn)) == "0,1,2", "during the count-in: %s", join(barsPlayed(countIn)).c_str());
+
+    BLEngine *e = bl_engine_create(48000.0);
+    bl_engine_set_tempo(e, 120.0);
+    bl_engine_set_timeline(e, timelineOf({section(10, 1, only(BL_PIECE_KICK, {0, 4, 8, 12})),
+                                          section(20, 1, only(BL_PIECE_SNARE, {0, 4, 8, 12}))}));
+    std::vector<float> l(256), rr(256);
+    bl_engine_render(e, l.data(), rr.data(), 256);
+    bl_engine_queue_action(e, BL_ACTION_NEXT_SECTION, BL_NEXT_AT_BAR_END); // stopped: ignored
+    bl_engine_render(e, l.data(), rr.data(), 256);
+    bl_engine_play_from(e, 0, false);
+    std::vector<BLTriggerRecord> log(64);
+    bl_engine_debug_set_trigger_log(e, log.data(), 64);
+    for (int i = 0; i < 1000; ++i) bl_engine_render(e, l.data(), rr.data(), 256);
+    log.resize(bl_engine_debug_trigger_count(e));
+    bl_engine_destroy(e);
+    CHECK(log.size() == 8 && log[3].timelineBar == 0 && log[4].timelineBar == 1, "stopped action leaked into playback");
+}
+
+// A pending Next section survives a timeline swap.
+static void testNextSurvivesSwap() {
+    const Render r = renderTimeline(
+        timelineOf({beats(10, 2, BL_PIECE_KICK, true), beats(20, 1, BL_PIECE_SNARE)}), 120.0, 6.0, 48000.0, fixed(256),
+        both(at(kBeat, [](BLEngine *e) { bl_engine_queue_action(e, BL_ACTION_NEXT_SECTION, BL_NEXT_AT_SECTION_END); }),
+             at(2 * kBeat, [](BLEngine *e) {
+                 bl_engine_set_timeline(e, timelineOf({beats(10, 2, BL_PIECE_KICK, true), beats(20, 1, BL_PIECE_HI_HAT)}));
+             })));
+    CHECK(join(barsPlayed(r)) == "0,1,2", "bars %s", join(barsPlayed(r)).c_str());
+    const auto landed = inBar(r, 2);
+    CHECK(countPiece(landed, BL_PIECE_HI_HAT) > 0 && countPiece(landed, BL_PIECE_SNARE) == 0,
+          "should land in the new timeline's B");
+}
+
+// The click lands on every beat, exactly.
+static void testClick() {
+    BLPattern silent;
+    bl_pattern_init(&silent, 16);
+    BLEngine *e = bl_engine_create(48000.0);
+    bl_engine_set_tempo(e, 120.0);
+    bl_engine_set_timeline(e, timelineOf({section(1, 2, silent)}));
+    bl_engine_set_click(e, true);
+    bl_engine_play_from(e, 0, false);
+    std::vector<float> l(4 * kBar), r(4 * kBar);
+    for (size_t done = 0; done < l.size(); done += 256) bl_engine_render(e, l.data() + done, r.data() + done, 256);
+    bl_engine_destroy(e);
+    int onsets = 0;
+    bool exact = true;
+    for (int64_t beat = 0; beat < 8; ++beat) {
+        const auto s = static_cast<size_t>(beat * kBeat);
+        exact = exact && (beat == 0 || l[s - 1] == 0.0f) && (l[s] != 0.0f || l[s + 1] != 0.0f);
+        ++onsets;
+    }
+    CHECK(exact && onsets == 8, "click onsets should sit on every beat");
+    CHECK(l[3 * kBar] == 0.0f, "no click after the song stops");
+}
+
 // How much faster than real time the engine renders (headroom for 5 ms buffers).
 static void reportSpeed() {
     const auto start = std::chrono::steady_clock::now();
@@ -777,6 +1022,18 @@ int main() {
         {"count-in", testCountIn},
         {"big ending", testBigEnding},
         {"seed follows the section", testSeedFollowsSection},
+        {"vamp loops", testVampLoops},
+        {"next section this bar", testNextSectionThisBar},
+        {"next section waits for room", testNextSectionWaitsForRoom},
+        {"next section at loop end", testNextSectionAtLoopEnd},
+        {"next section cancel", testNextSectionCancel},
+        {"restart and previous section", testRestartAndPreviousSection},
+        {"fill now", testFillNow},
+        {"big ending action", testBigEndingAction},
+        {"tap tempo at next bar", testTapTempoAtNextBar},
+        {"actions ignored outside the song", testActionsIgnoredOutsideTheSong},
+        {"next survives a swap", testNextSurvivesSwap},
+        {"click", testClick},
         {"render speed", reportSpeed},
     };
     for (const auto &t : tests) {

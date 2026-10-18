@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 /// Logo, song title (tap to rename or switch songs), tempo with tap tempo,

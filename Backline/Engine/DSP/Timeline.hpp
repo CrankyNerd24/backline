@@ -16,7 +16,9 @@ struct TimelineHit {
     uint8_t piece;
 };
 
-enum class BarKind : uint8_t { Song, CountIn, Ending };
+// Fill bars are spares only: built for each section but never in the play
+// order, swapped in by queued actions.
+enum class BarKind : uint8_t { Song, CountIn, Ending, Fill };
 
 struct TimelineBar {
     uint32_t sectionKey; // 0 for count-in bars
@@ -25,6 +27,14 @@ struct TimelineBar {
     uint32_t firstHit;
     uint32_t hitCount;
     BarKind kind;
+    bool vamp; // the section repeats until asked to move on
+};
+
+// Bars built for each section but not in the play order.
+struct SectionSpares {
+    TimelineBar fill;    // the fill into a change (the section's fill size, or small)
+    TimelineBar bigFill; // for "Fill now"
+    TimelineBar ending;  // the big ending
 };
 
 // The song flattened into bars of hits, with every feel transform applied.
@@ -51,6 +61,7 @@ public:
     // Index of the first / last song bar of the section containing `index`.
     uint32_t sectionStart(uint32_t index) const { return index - bars_[index].barInSection; }
     uint32_t sectionEnd(uint32_t index) const;
+    const SectionSpares &spares(uint16_t sectionIndex) const { return sectionSpares_[sectionIndex]; }
 
     static std::atomic<int32_t> live;
 
@@ -58,11 +69,12 @@ private:
     void addCountIn(uint8_t bars);
     void addSection(const BLSectionDesc &section, uint16_t index, bool crashOnOne);
     void addEnding(const BLSectionDesc &section, uint16_t index);
-    void pushBar(uint32_t key, uint16_t sectionIndex, uint16_t barInSection, BarKind kind,
-                 std::vector<TimelineHit> &hits);
+    TimelineBar storeHits(uint32_t key, uint16_t sectionIndex, uint16_t barInSection, BarKind kind, bool vamp,
+                          std::vector<TimelineHit> &hits);
 
     std::vector<TimelineBar> bars_;
     std::vector<TimelineHit> hits_;
+    std::vector<SectionSpares> sectionSpares_;
     uint32_t countInBars_ = 0;
     uint32_t songBars_ = 0;
 };

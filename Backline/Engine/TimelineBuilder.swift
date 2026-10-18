@@ -30,6 +30,7 @@ enum TimelineBuilder {
             desc.time = section.time.engineValue
             desc.cymbals = section.cymbals.engineValue
             desc.fillIntoNext = section.fillIntoNext.engineValue
+            desc.repeatUntilStep = section.repeatUntilStep
             // The outro ends with a big ending (spec §4.4).
             desc.bigEnding = section.kind == .outro && index == lastIndex
             return desc

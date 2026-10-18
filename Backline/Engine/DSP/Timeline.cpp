@@ -207,6 +207,81 @@ TimelineHit finish(const GridHit &h, const BLSectionDesc &section, uint16_t bar,
     return {h.beat, offset, s.amp, s.bright, static_cast<uint8_t>(h.piece)};
 }
 
+// Builds one bar of a section, with every feel transform applied. `fill`
+// replaces the bar with the section's small or big fill.
+std::vector<TimelineHit> buildBar(const BLSectionDesc &section, int b, uint8_t fill, bool crashOnOne) {
+    const BLPattern &main = section.main;
+    const auto bar = static_cast<uint16_t>(b);
+    const bool isFill = fill == BL_FILL_SMALL || fill == BL_FILL_BIG;
+    const BLPattern base = fill == BL_FILL_BIG && !isEmpty(section.fill) ? section.fill
+                           : fill == BL_FILL_SMALL                       ? smallFillOf(section)
+                                                                         : main;
+    const int steps = stepsOf(base);
+    const double stepBeats = 4.0 / steps;
+
+    std::vector<GridHit> grid = gridHits(base);
+    if (!isFill) applyBusy(grid, section, main, bar);
+    routeCymbals(grid, section.cymbals, main);
+
+    // Time feel. Fills always play as written so they land on the change.
+    const uint8_t time = isFill ? static_cast<uint8_t>(BL_TIME_NORMAL) : section.time;
+    double scale = 1.0;
+    if (time == BL_TIME_HALF) {
+        // The pattern stretches across two bars: even bars play its first
+        // half, odd bars its second.
+        scale = 2.0;
+        const int half = b % 2;
+        grid.erase(std::remove_if(grid.begin(), grid.end(),
+                                  [&](const GridHit &h) { return (h.step * 2 >= steps) != (half == 1); }),
+                   grid.end());
+        for (GridHit &h : grid) h.beat = 2.0 * h.step * stepBeats - 4.0 * half;
+        // Snare on 3 only (ghost notes stay).
+        grid.erase(std::remove_if(grid.begin(), grid.end(),
+                                  [](const GridHit &h) {
+                                      return h.piece == BL_PIECE_SNARE && h.velocity >= BL_VEL_NORMAL && !onBeatThree(h.beat);
+                                  }),
+                   grid.end());
+        const bool hasThree = std::any_of(grid.begin(), grid.end(),
+                                          [](const GridHit &h) { return h.piece == BL_PIECE_SNARE && onBeatThree(h.beat); });
+        if (!hasThree && hasHits(main, BL_PIECE_SNARE)) grid.push_back({steps / 2, 0, BL_PIECE_SNARE, BL_VEL_LOUD, 2.0});
+    } else if (time == BL_TIME_DOUBLE) {
+        // The pattern plays twice per bar.
+        scale = 0.5;
+        const size_t n = grid.size();
+        for (size_t i = 0; i < n; ++i) {
+            GridHit copy = grid[i];
+            copy.repeat = 1;
+            grid.push_back(copy);
+        }
+        for (GridHit &h : grid) h.beat = 0.5 * h.step * stepBeats + 2.0 * h.repeat;
+    } else {
+        for (GridHit &h : grid) h.beat = h.step * stepBeats;
+    }
+
+    // Swing delays every second sixteenth (every second eighth at half-time).
+    const double swing = std::clamp(static_cast<double>(section.swing), 0.0, 1.0);
+    if (steps == 16 && swing > 0.0)
+        for (GridHit &h : grid)
+            if (h.step % 2 == 1) h.beat += swing * kMaxSwing * stepBeats * scale;
+
+    if (crashOnOne) grid.push_back({0, 0, BL_PIECE_CRASH, BL_VEL_LOUD, 0.0});
+    dedupe(grid);
+
+    std::vector<TimelineHit> hits;
+    hits.reserve(grid.size());
+    for (const GridHit &h : grid) {
+        const uint32_t stepSeed = static_cast<uint32_t>(h.step + h.repeat * BL_MAX_STEPS) + (isFill ? 64u : 0u);
+        hits.push_back(finish(h, section, bar, stepSeed));
+    }
+    return hits;
+}
+
+// The big ending: a final crash and kick on beat 1, then everything rings out.
+std::vector<TimelineHit> endingHits(const BLSectionDesc &section) {
+    const Shaped s = shape(BL_VEL_LOUD, section.intensity);
+    return {{0.0, 0.0f, s.amp, s.bright, BL_PIECE_CRASH}, {0.0, 0.0f, s.amp, s.bright, BL_PIECE_KICK}};
+}
+
 } // namespace
 
 // MARK: - Timeline
@@ -215,8 +290,10 @@ Timeline::Timeline(const BLSongDesc &song, const BLSectionDesc *sections, uint32
     ++live;
     addCountIn(song.countInBars);
     for (uint32_t s = 0; s < count; ++s) {
-        // A crash on beat 1 follows any fill, unless the section already rides the crash.
-        const bool crashOnOne = s > 0 && sections[s - 1].fillIntoNext != BL_FILL_NONE &&
+        // A crash on beat 1 follows any fill, unless the section already rides
+        // the crash. A vamp never fills on its own, so it never sets one up.
+        const BLSectionDesc &previous = sections[s > 0 ? s - 1 : 0];
+        const bool crashOnOne = s > 0 && previous.fillIntoNext != BL_FILL_NONE && !previous.repeatUntilStep &&
                                 sections[s].cymbals != BL_CYMBALS_CRASH;
         addSection(sections[s], static_cast<uint16_t>(s), crashOnOne);
     }
@@ -225,15 +302,16 @@ Timeline::Timeline(const BLSongDesc &song, const BLSectionDesc *sections, uint32
 
 Timeline::~Timeline() { --live; }
 
-void Timeline::pushBar(uint32_t key, uint16_t sectionIndex, uint16_t barInSection, BarKind kind,
-                       std::vector<TimelineHit> &hits) {
+TimelineBar Timeline::storeHits(uint32_t key, uint16_t sectionIndex, uint16_t barInSection, BarKind kind, bool vamp,
+                                std::vector<TimelineHit> &hits) {
     std::sort(hits.begin(), hits.end(), [](const TimelineHit &a, const TimelineHit &b) {
         if (a.beat != b.beat) return a.beat < b.beat;
         return a.offsetSeconds < b.offsetSeconds;
     });
-    bars_.push_back({key, sectionIndex, barInSection, static_cast<uint32_t>(hits_.size()),
-                     static_cast<uint32_t>(hits.size()), kind});
+    const TimelineBar bar{key, sectionIndex, barInSection, static_cast<uint32_t>(hits_.size()),
+                          static_cast<uint32_t>(hits.size()), kind, vamp};
     hits_.insert(hits_.end(), hits.begin(), hits.end());
+    return bar;
 }
 
 void Timeline::addCountIn(uint8_t bars) {
@@ -244,91 +322,42 @@ void Timeline::addCountIn(uint8_t bars) {
             const uint8_t v = beat == 0 ? BL_VEL_LOUD : BL_VEL_NORMAL;
             hits.push_back({static_cast<double>(beat), 0.0f, kAmp[v], kBright[v], BL_PIECE_HI_HAT});
         }
-        pushBar(0, 0xFFFF, static_cast<uint16_t>(b), BarKind::CountIn, hits);
+        bars_.push_back(storeHits(0, 0xFFFF, static_cast<uint16_t>(b), BarKind::CountIn, false, hits));
     }
 }
 
 void Timeline::addSection(const BLSectionDesc &section, uint16_t index, bool crashOnOne) {
-    const BLPattern &main = section.main;
     const int bars = std::clamp<int>(section.bars, 1, 64);
+    const bool vamp = section.repeatUntilStep;
+    const uint8_t configuredFill = section.fillIntoNext;
 
     for (int b = 0; b < bars; ++b) {
-        const auto bar = static_cast<uint16_t>(b);
-        const uint8_t fill = b == bars - 1 ? section.fillIntoNext : static_cast<uint8_t>(BL_FILL_NONE);
-        const bool isFill = fill == BL_FILL_SMALL || fill == BL_FILL_BIG;
-        const BLPattern base = fill == BL_FILL_BIG && !isEmpty(section.fill) ? section.fill
-                               : fill == BL_FILL_SMALL                       ? smallFillOf(section)
-                                                                             : main;
-        const int steps = stepsOf(base);
-        const double stepBeats = 4.0 / steps;
-
-        std::vector<GridHit> grid = gridHits(base);
-        if (!isFill) applyBusy(grid, section, main, bar);
-        routeCymbals(grid, section.cymbals, main);
-
-        // Time feel. Fills always play as written so they land on the change.
-        const uint8_t time = isFill ? static_cast<uint8_t>(BL_TIME_NORMAL) : section.time;
-        double scale = 1.0;
-        if (time == BL_TIME_HALF) {
-            // The pattern stretches across two bars: even bars play its first
-            // half, odd bars its second.
-            scale = 2.0;
-            const int half = b % 2;
-            grid.erase(std::remove_if(grid.begin(), grid.end(),
-                                      [&](const GridHit &h) { return (h.step * 2 >= steps) != (half == 1); }),
-                       grid.end());
-            for (GridHit &h : grid) h.beat = 2.0 * h.step * stepBeats - 4.0 * half;
-            // Snare on 3 only (ghost notes stay).
-            grid.erase(std::remove_if(grid.begin(), grid.end(),
-                                      [](const GridHit &h) {
-                                          return h.piece == BL_PIECE_SNARE && h.velocity >= BL_VEL_NORMAL && !onBeatThree(h.beat);
-                                      }),
-                       grid.end());
-            const bool hasThree = std::any_of(grid.begin(), grid.end(),
-                                              [](const GridHit &h) { return h.piece == BL_PIECE_SNARE && onBeatThree(h.beat); });
-            if (!hasThree && hasHits(main, BL_PIECE_SNARE))
-                grid.push_back({steps / 2, 0, BL_PIECE_SNARE, BL_VEL_LOUD, 2.0});
-        } else if (time == BL_TIME_DOUBLE) {
-            // The pattern plays twice per bar.
-            scale = 0.5;
-            const size_t n = grid.size();
-            for (size_t i = 0; i < n; ++i) {
-                GridHit copy = grid[i];
-                copy.repeat = 1;
-                grid.push_back(copy);
-            }
-            for (GridHit &h : grid) h.beat = 0.5 * h.step * stepBeats + 2.0 * h.repeat;
-        } else {
-            for (GridHit &h : grid) h.beat = h.step * stepBeats;
-        }
-
-        // Swing delays every second sixteenth (every second eighth at half-time).
-        const double swing = std::clamp(static_cast<double>(section.swing), 0.0, 1.0);
-        if (steps == 16 && swing > 0.0)
-            for (GridHit &h : grid)
-                if (h.step % 2 == 1) h.beat += swing * kMaxSwing * stepBeats * scale;
-
-        if (b == 0 && crashOnOne) grid.push_back({0, 0, BL_PIECE_CRASH, BL_VEL_LOUD, 0.0});
-        dedupe(grid);
-
-        std::vector<TimelineHit> hits;
-        hits.reserve(grid.size());
-        for (const GridHit &h : grid) {
-            const uint32_t stepSeed = static_cast<uint32_t>(h.step + h.repeat * BL_MAX_STEPS) + (isFill ? 64u : 0u);
-            hits.push_back(finish(h, section, bar, stepSeed));
-        }
-        pushBar(section.key, index, bar, BarKind::Song, hits);
+        // A vamp loops until asked to move on, so its last bar only fills
+        // when that happens (the engine swaps in the spare fill bar).
+        const uint8_t fill = b == bars - 1 && !vamp ? configuredFill : static_cast<uint8_t>(BL_FILL_NONE);
+        std::vector<TimelineHit> hits = buildBar(section, b, fill, b == 0 && crashOnOne);
+        bars_.push_back(storeHits(section.key, index, static_cast<uint16_t>(b), BarKind::Song, vamp, hits));
         ++songBars_;
     }
+
+    // Spare bars for queued actions: the fill into a change (the section's own
+    // fill, or a small one if it has none), a big fill for "Fill now", and the
+    // big ending.
+    const auto last = static_cast<uint16_t>(bars - 1);
+    const uint8_t changeFill = configuredFill == BL_FILL_NONE ? static_cast<uint8_t>(BL_FILL_SMALL) : configuredFill;
+    std::vector<TimelineHit> fill = buildBar(section, bars - 1, changeFill, false);
+    std::vector<TimelineHit> bigFill = buildBar(section, bars - 1, BL_FILL_BIG, false);
+    std::vector<TimelineHit> ending = endingHits(section);
+    if (sectionSpares_.size() <= index) sectionSpares_.resize(index + 1u);
+    sectionSpares_[index] = {storeHits(section.key, index, last, BarKind::Fill, vamp, fill),
+                             storeHits(section.key, index, last, BarKind::Fill, vamp, bigFill),
+                             storeHits(section.key, index, static_cast<uint16_t>(bars), BarKind::Ending, false, ending)};
 }
 
 void Timeline::addEnding(const BLSectionDesc &section, uint16_t index) {
-    // The big ending: a final crash and kick on beat 1, then everything rings out.
-    std::vector<TimelineHit> hits;
-    const Shaped s = shape(BL_VEL_LOUD, section.intensity);
-    hits.push_back({0.0, 0.0f, s.amp, s.bright, BL_PIECE_CRASH});
-    hits.push_back({0.0, 0.0f, s.amp, s.bright, BL_PIECE_KICK});
-    pushBar(section.key, index, static_cast<uint16_t>(std::clamp<int>(section.bars, 1, 64)), BarKind::Ending, hits);
+    std::vector<TimelineHit> hits = endingHits(section);
+    bars_.push_back(storeHits(section.key, index, static_cast<uint16_t>(std::clamp<int>(section.bars, 1, 64)),
+                              BarKind::Ending, false, hits));
 }
 
 int32_t Timeline::find(uint32_t key, uint16_t barInSection, BarKind kind) const {

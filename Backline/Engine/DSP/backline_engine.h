@@ -77,6 +77,7 @@ typedef struct {
     uint8_t cymbals;       // BL_CYMBALS_*
     uint8_t fillIntoNext;  // BL_FILL_*
     bool bigEnding;        // add a final crash + kick bar after this section, then stop
+    bool repeatUntilStep;  // vamp: loop until a Next section action
 } BLSectionDesc;
 
 typedef struct {
@@ -97,6 +98,25 @@ uint32_t bl_timeline_bar_count(const BLTimeline *timeline);
 
 // MARK: Engine
 
+// MARK: Queued actions (spec §5)
+//
+// The player often asks for a change before the music should change, so
+// actions wait for the right moment. Asking for the same action again before
+// it lands cancels it; asking for a different navigation action replaces it.
+enum {
+    BL_ACTION_NONE = 0,
+    BL_ACTION_NEXT_SECTION,      // at the end of this bar (or this pass), with a fill into the change
+    BL_ACTION_PREVIOUS_SECTION,  // at the next bar line
+    BL_ACTION_RESTART_SECTION,   // at the next bar line, back to bar 1 of this section
+    BL_ACTION_FILL_NOW,          // the next bar becomes a big fill
+    BL_ACTION_BIG_ENDING,        // the next bar is the ending, then stop
+};
+// When Next section lands: at the end of the bar, or at the end of the
+// section's current pass (its loop).
+enum { BL_NEXT_AT_BAR_END = 0, BL_NEXT_AT_SECTION_END = 1 };
+// When a pending action lands, for the banner.
+enum { BL_WHEN_THIS_BAR = 0, BL_WHEN_NEXT_BAR = 1, BL_WHEN_SECTION_END = 2 };
+
 typedef struct {
     bool playing;
     bool countingIn;
@@ -106,6 +126,11 @@ typedef struct {
     double barPhase;       // 0…1 through the current bar
     double bpm;
     int64_t sampleTime;    // samples rendered since the engine was created
+    uint8_t pendingAction;     // BL_ACTION_* waiting to land (navigation only), or NONE
+    uint8_t pendingWhen;       // BL_WHEN_*
+    uint32_t pendingTargetKey; // section the pending action leads to; 0 for the end or an ending
+    bool fillPending;          // Fill now is waiting for the next bar
+    double pendingTempo;       // a tempo waiting to land, or 0
 } BLPosition;
 
 typedef struct BLEngine BLEngine;
@@ -128,12 +153,20 @@ void bl_engine_render(BLEngine *engine, float *left, float *right, uint32_t fram
 bool bl_engine_play_from(BLEngine *engine, uint32_t songBar, bool countIn);
 bool bl_engine_stop(BLEngine *engine);
 bool bl_engine_set_tempo(BLEngine *engine, double bpm);
+// Tap tempo: the new tempo lands on the next bar line instead of the next beat.
+bool bl_engine_set_tempo_at_next_bar(BLEngine *engine, double bpm);
 // The engine takes ownership of `timeline`, even if this returns false.
 bool bl_engine_set_timeline(BLEngine *engine, BLTimeline *timeline);
 // Loops the section with this key when playback reaches its end; 0 turns
 // looping off.
 bool bl_engine_set_loop_section(BLEngine *engine, uint32_t sectionKey);
 bool bl_engine_audition(BLEngine *engine, uint8_t piece, uint8_t velocity);
+// Queues an action while playing (ignored when stopped, during the count-in
+// and during an ending). `nextTiming` is BL_NEXT_AT_* and only matters for
+// Next section.
+bool bl_engine_queue_action(BLEngine *engine, uint8_t action, uint8_t nextTiming);
+// A metronome click on every beat, accented on beat 1.
+bool bl_engine_set_click(BLEngine *engine, bool on);
 
 // Frees timelines the render thread has finished with. Call regularly from
 // the control thread (the app does it on every position poll).

@@ -98,4 +98,22 @@ float HatVoice::process() {
     return out;
 }
 
+// MARK: Click
+
+void ClickVoice::trigger(bool accent) {
+    active_ = true;
+    phase_ = 0.0f;
+    increment_ = (accent ? 2000.0f : 1500.0f) / sr_;
+    env_.start(accent ? 0.9f : 0.6f, 0.012f, sr_);
+}
+
+float ClickVoice::process() {
+    if (!active_) return 0.0f;
+    phase_ += increment_;
+    if (phase_ >= 1.0f) phase_ -= 1.0f;
+    const float out = std::sin(kTwoPi * phase_) * env_.next();
+    if (env_.value < kSilence) active_ = false;
+    return out;
+}
+
 } // namespace backline

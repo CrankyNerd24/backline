@@ -4,7 +4,26 @@ An easy drum-track creator for iPad, for guitarists and other non-drummers. Buil
 
 The full product spec is in [`docs/spec.md`](docs/spec.md).
 
-## Status: milestone 4 (Groove Picker)
+## Status: milestone 5 (Play-Along and queued actions)
+
+**Milestone 5**
+- **Play-Along screen** (spec §6.3), opened with **Play-along mode** and built to be read from a metre or two away:
+  - the current section's name, very large, with "Bar 3 / 8" (or "Looping");
+  - four beat lights;
+  - a queued-action banner, e.g. "LEAVING THE LOOP AT END OF THIS BAR → VERSE 2";
+  - a song map showing where you are;
+  - big transport buttons: previous, restart, play/pause, next, loop;
+  - a side panel with practice speed (50–120 %), drum level, metronome click, the next-section timing, and Fill now / Big ending / Tap tempo.
+
+  The screen stays awake while playing.
+- **Queued actions** (spec §5) run inside the engine:
+  - **Next section** plays a fill into the change. It lands at the end of this bar, or at the end of the loop (a setting). If less than a beat is left, it waits a bar so the fill has room, and a crash lands on beat 1 of the new section.
+  - **Previous section** and **Restart section** at the next bar line.
+  - **Fill now** makes the next bar a big fill. **Big ending** makes the next bar a crash and kick, then stops.
+  - **Tap tempo** lands on the next bar line.
+  - Pressing an action again before it lands cancels it.
+- **Repeat until I step**: those sections loop until you ask for the next section, and never fill on their own.
+- **Practice speed** is in the Song Builder too. It scales the playback tempo; because every sound is synthesized, slower playback never sounds stretched.
 
 **Milestone 4**: **Change groove** now opens the Groove Picker (spec §6.2):
 - **Search** across groove names, styles and tags. Punctuation and spacing don't matter, so "half time", "half-time" and "halftime" all find the same grooves.
@@ -39,13 +58,13 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
   - Header: rename, switch, create, duplicate and delete songs; tempo with − / + and tap tempo.
 - **Engine**: plays a *timeline* (the whole song as bars of hits) instead of one looping pattern. Every edit builds a new timeline, which swaps in at the next bar line. Playback continues from the same bar of the same section even when sections are reordered, shortened or deleted mid-song. The engine also handles play-from-bar, loop-a-section, stop at the end of the song, and tempo changes on the next beat.
 
-Saved but not heard yet: repeat-until-I-step (milestone 5). Toms are silent and ride/crash use a hi-hat stand-in until the full kit (milestone 8).
+Toms are silent and ride/crash use a hi-hat stand-in until the full kit (milestone 8).
 
 **Milestone 1:** the C++ DSP core (synthesized kick, snare and hats, a sample-accurate clock, lock-free command queue) and the Swift `AVAudioEngine` wrapper.
 
 ### Tests
 
-`Tests/DSP/EngineTests.cpp` covers milestones 1–3:
+`Tests/DSP/EngineTests.cpp` covers milestones 1–5:
 - Every hit within ±1 sample over a 10-minute render (worst error: 0 samples), at awkward tempos and sample rates, and in triplets.
 - Audio onsets on the exact sample, output independent of buffer size, and bit-identical renders.
 - No allocations on the render thread, even while timelines are being swapped.
@@ -54,6 +73,7 @@ Saved but not heard yet: repeat-until-I-step (milestone 5). Toms are silent and 
 - Swaps after reordering, shortening or deleting sections.
 - Every timeline freed.
 - A song with every feel control switched on renders bit-identically twice (the milestone 3 acceptance test).
+- Every queued action, including cancelling, waiting for room, landing at the end of the loop, surviving a timeline swap and being ignored outside the song. Also vamp looping, tap tempo on the bar line, and the click landing exactly on the beat.
 - Separate checks for human, swing, busy, intensity, half and double time, cymbal routing, fills and the crash after them, count-in, the big ending, and sections sounding the same wherever they sit.
 
 Still to check on an iPad: no dropouts with a 5 ms buffer, using Instruments.
