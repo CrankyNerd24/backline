@@ -35,7 +35,8 @@ final class KeyboardPedalSource {
     nonisolated private static func makeKeyHandler(owner: KeyboardPedalSource) -> GCKeyboardValueChangedHandler {
         { [weak owner] _, _, keyCode, pressed in
             let source = InputSource.key(code: Int(keyCode.rawValue))
-            onMain { owner?.deliver(source, pressed) }
+            let target = owner // a weak capture is a var; hand the main thread a constant
+            onMain { target?.deliver(source, pressed) }
         }
     }
 
@@ -89,7 +90,8 @@ final class MIDIPedalSource {
     nonisolated private static func makeNotifyBlock(owner: MIDIPedalSource) -> MIDINotifyBlock {
         { [weak owner] notification in
             guard notification.pointee.messageID == .msgSetupChanged else { return }
-            KeyboardPedalSource.onMain { owner?.connectAll() }
+            let target = owner
+            KeyboardPedalSource.onMain { target?.connectAll() }
         }
     }
 
@@ -113,8 +115,9 @@ final class MIDIPedalSource {
                 }
             }
             guard !decoded.isEmpty else { return }
+            let events = decoded, target = owner // constants, safe to hand to the main thread
             KeyboardPedalSource.onMain {
-                for (source, down) in decoded { owner?.onEvent?(source, down) }
+                for (source, down) in events { target?.onEvent?(source, down) }
             }
         }
     }
