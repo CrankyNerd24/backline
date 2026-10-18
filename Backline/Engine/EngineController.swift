@@ -9,10 +9,11 @@ import Observation
 @Observable
 final class EngineController {
     struct Position: Equatable {
-        var sectionID: UUID
-        var barInSection: Int
-        var songBar: Int
-        var barPhase: Double // 0…1 through the current bar
+        var sectionID: UUID?  // nil during the count-in
+        var isCountIn: Bool
+        var barInSection: Int // the count-in bar while counting in
+        var songBar: Int      // -1 during the count-in
+        var barPhase: Double  // 0…1 through the current bar
     }
 
     private(set) var isPlaying = false
@@ -56,13 +57,14 @@ final class EngineController {
 
     // MARK: Transport
 
-    /// Plays from the start of a section (or the top of the song).
+    /// Plays from the start of a section (or the top of the song), after the
+    /// song's count-in.
     func play(from sectionID: UUID? = nil) {
         guard let core, let song, !song.sections.isEmpty else { return }
         startEngineIfNeeded()
         pushPendingChanges() // the engine must have the current timeline first
         let bar = sectionID.map { song.startBar(of: $0) } ?? 0
-        bl_engine_play_from(core, UInt32(bar))
+        bl_engine_play_from(core, UInt32(bar), true)
         isPlaying = true
         playRequestedAt = .now
     }
@@ -243,9 +245,12 @@ final class EngineController {
         }
 
         var newPosition: Position?
-        if raw.playing, raw.songBar >= 0, let id = sectionsByKey[raw.sectionKey] {
-            newPosition = Position(sectionID: id, barInSection: Int(raw.barInSection), songBar: Int(raw.songBar),
+        if raw.playing, raw.countingIn {
+            newPosition = Position(sectionID: nil, isCountIn: true, barInSection: Int(raw.barInSection), songBar: -1,
                                    barPhase: raw.barPhase)
+        } else if raw.playing, raw.songBar >= 0, let id = sectionsByKey[raw.sectionKey] {
+            newPosition = Position(sectionID: id, isCountIn: false, barInSection: Int(raw.barInSection),
+                                   songBar: Int(raw.songBar), barPhase: raw.barPhase)
         }
         // Only assign on change so SwiftUI isn't re-rendered for nothing.
         if position != newPosition { position = newPosition }

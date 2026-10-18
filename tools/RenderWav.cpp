@@ -1,7 +1,9 @@
-// Renders the Rock › Straight 8ths groove to a WAV file so the synthesized
-// kit can be heard without an iPad.
+// Renders a short demo song so the synthesized kit and the feel controls can
+// be heard without an iPad: a one-bar count-in, a humanized verse with a
+// small fill, a busier, harder chorus on the ride with a big fill (and a
+// crash after it), and a half-time outro with the big ending.
 //
-//   backline-render out.wav [bpm=112] [bars=8]
+//   backline-render out.wav [bpm=112]
 //
 // Writes 48 kHz, 24-bit stereo (the export format from spec §8).
 
@@ -19,24 +21,40 @@ static void put32(FILE *f, uint32_t v) { std::fwrite(&v, 4, 1, f); }
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        std::fprintf(stderr, "usage: %s out.wav [bpm] [bars]\n", argv[0]);
+        std::fprintf(stderr, "usage: %s out.wav [bpm]\n", argv[0]);
         return 2;
     }
     const double sr = 48000.0;
-    const double bpm = argc > 2 ? std::atof(argv[2]) : 112.0;
-    const int bars = std::max(1, std::min(argc > 3 ? std::atoi(argv[3]) : 8, 64));
-    const auto frames = static_cast<uint32_t>(bars * 240.0 / bpm * sr + 1.5 * sr); // plus ring-out
+    const double bpm = std::clamp(argc > 2 ? std::atof(argv[2]) : 112.0, BL_MIN_BPM, BL_MAX_BPM);
+
+    BLSectionDesc sections[3];
+    for (uint32_t i = 0; i < 3; ++i) {
+        bl_section_desc_init(&sections[i]);
+        sections[i].key = i + 1;
+        sections[i].main = rockStraight8ths();
+        sections[i].fill = rockStraight8thsFill();
+        sections[i].human = 0.35f;
+    }
+    sections[0].bars = 4;
+    sections[0].fillIntoNext = BL_FILL_SMALL;
+    sections[1].bars = 4;
+    sections[1].cymbals = BL_CYMBALS_RIDE;
+    sections[1].busy = 0.75f;
+    sections[1].intensity = 0.75f;
+    sections[1].fillIntoNext = BL_FILL_BIG;
+    sections[2].bars = 2;
+    sections[2].time = BL_TIME_HALF;
+    sections[2].bigEnding = true;
+    const BLSongDesc song{1};
 
     BLEngine *e = bl_engine_create(sr);
-    BLSectionDesc section;
-    section.key = 1;
-    section.bars = static_cast<uint16_t>(std::max(1, std::min(bars, 64)));
-    section.main = rockStraight8ths();
     bl_engine_set_tempo(e, bpm);
-    bl_engine_set_timeline(e, bl_timeline_create(&section, 1));
-    bl_engine_play_from(e, 0);
+    bl_engine_set_timeline(e, bl_timeline_create(&song, sections, 3));
+    bl_engine_play_from(e, 0, true);
 
-    // The song stops by itself after the last bar; the extra time is ring-out.
+    // 1 count-in + 10 song bars + the ending bar, plus time to ring out. The
+    // song stops by itself.
+    const auto frames = static_cast<uint32_t>(12 * 240.0 / bpm * sr + 2.0 * sr);
     std::vector<float> l(frames), r(frames);
     for (uint32_t done = 0; done < frames;) {
         const uint32_t n = std::min<uint32_t>(256, frames - done);
@@ -72,6 +90,6 @@ int main(int argc, char **argv) {
         }
     }
     std::fclose(f);
-    std::printf("wrote %s: %d bars at %.1f BPM\n", argv[1], bars, bpm);
+    std::printf("wrote %s: demo song at %.1f BPM\n", argv[1], bpm);
     return 0;
 }

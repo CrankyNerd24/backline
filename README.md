@@ -4,7 +4,21 @@ An easy drum-track creator for iPad, for guitarists and other non-drummers. Buil
 
 The full product spec is in [`docs/spec.md`](docs/spec.md).
 
-## Status: milestone 2 (song model, groove library, Song Builder)
+## Status: milestone 3 (feel, time, cymbals, fills, count-in, endings)
+
+**Milestone 3**: everything you set in a section is now heard. The C++ timeline builder applies it all (spec §4.3–4.5):
+- **Busy:** below the middle, the groove thins out in priority order (hat sixteenths, then ghost notes, extra kicks, hat eighths). Above it, extra notes fade in, from the groove's busy layer or one derived from the groove.
+- **Harder / Softer:** scales levels and brightness along a curve, so loud notes stay the loudest.
+- **Swing:** delays every second sixteenth by up to a third of a step (every second eighth in half-time).
+- **Human:** timing nudges of up to ±12 ms and level changes of up to ±10 %. The kick on beat 1 moves at most 3 ms, and nothing lands before the bar line.
+- **Time:** half-time stretches the groove across two bars with the snare on 3. Double-time plays it twice per bar.
+- **Cymbals:** moves the time-keeping part to the hi-hat, ride or crash. Picking a groove resets this to the cymbal the groove was written for.
+- **Fills:** a big fill replaces the section's last bar; a small one replaces only its last beat. A crash lands on beat 1 of the next section.
+- **Count-in:** 1 or 2 bars of hi-hat clicks before playback, wherever you start from.
+- **Big ending:** a song that ends with an outro finishes on a crash and kick, rings out and stops.
+- **Same every time:** randomness is seeded per section, so a song sounds identical on every play. A section also sounds the same wherever you move it.
+
+`./build/backline-render demo.wav` renders a short demo song that uses all of this.
 
 **Milestone 2**
 - **Song model** (`Backline/Model/`): `Song`, `Section`, `Feel`, `Groove`, `Kit` and the rest of spec §3, all `Codable`.
@@ -17,13 +31,13 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
   - Header: rename, switch, create, duplicate and delete songs; tempo with − / + and tap tempo.
 - **Engine**: plays a *timeline* (the whole song as bars of hits) instead of one looping pattern. Every edit builds a new timeline, which swaps in at the next bar line. Playback continues from the same bar of the same section even when sections are reordered, shortened or deleted mid-song. The engine also handles play-from-bar, loop-a-section, stop at the end of the song, and tempo changes on the next beat.
 
-Saved but not heard yet: feel, time, cymbals, fills and count-in (milestone 3), and repeat-until-I-step (milestone 5). Toms are silent and ride/crash use a hi-hat stand-in until the full kit (milestone 8).
+Saved but not heard yet: repeat-until-I-step (milestone 5). Toms are silent and ride/crash use a hi-hat stand-in until the full kit (milestone 8).
 
 **Milestone 1:** the C++ DSP core (synthesized kick, snare and hats, a sample-accurate clock, lock-free command queue) and the Swift `AVAudioEngine` wrapper.
 
 ### Tests
 
-`Tests/DSP/EngineTests.cpp` covers both milestones:
+`Tests/DSP/EngineTests.cpp` covers milestones 1–3:
 - Every hit within ±1 sample over a 10-minute render (worst error: 0 samples), at awkward tempos and sample rates, and in triplets.
 - Audio onsets on the exact sample, output independent of buffer size, and bit-identical renders.
 - No allocations on the render thread, even while timelines are being swapped.
@@ -31,6 +45,8 @@ Saved but not heard yet: feel, time, cymbals, fills and count-in (milestone 3), 
 - Section order, end of song, looping, and play-from-bar.
 - Swaps after reordering, shortening or deleting sections.
 - Every timeline freed.
+- A song with every feel control switched on renders bit-identically twice (the milestone 3 acceptance test).
+- Separate checks for human, swing, busy, intensity, half and double time, cymbal routing, fills and the crash after them, count-in, the big ending, and sections sounding the same wherever they sit.
 
 Still to check on an iPad: no dropouts with a 5 ms buffer, using Instruments.
 
@@ -55,7 +71,7 @@ python3 tools/check_grooves.py -v
 **Hear the kit without an iPad:**
 
 ```sh
-./build/backline-render rock.wav 112 8   # file, BPM, bars → 48 kHz / 24-bit WAV
+./build/backline-render demo.wav 112   # file, BPM → 48 kHz / 24-bit WAV of a short demo song
 ```
 
 ## Layout

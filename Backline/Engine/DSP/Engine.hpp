@@ -15,7 +15,8 @@ struct Command {
     Type type = Stop;
     uint8_t piece = 0;
     uint8_t velocity = 0;
-    uint32_t value32 = 0; // bar for PlayFrom, key for SetLoop
+    bool flag = false;    // count-in for PlayFrom
+    uint32_t value32 = 0; // song bar for PlayFrom, key for SetLoop
     double value = 0.0;   // bpm for SetTempo
     const Timeline *timeline = nullptr;
 };
@@ -54,16 +55,16 @@ public:
 
 private:
     void applyCommands();
-    void start(uint32_t songBar);
+    void start(uint32_t songBar, bool countIn);
     void stop();
     void installTimeline(const Timeline *timeline);
     void retire(const Timeline *timeline);
     void processEvents(int64_t sample);
     void advanceBar();
     void scheduleNextEvent();
-    int64_t sampleAt(double globalBeat) const;
+    int64_t sampleAt(double globalBeat, float offsetSeconds = 0.0f) const;
     double beatAt(int64_t sample) const;
-    void trigger(int piece, uint8_t velocity, uint32_t seed);
+    void trigger(int piece, float amp, float bright, uint32_t seed);
     void renderVoices(float *left, float *right, uint32_t frames);
     void publishPosition();
 
@@ -79,7 +80,8 @@ private:
     const Timeline *pendingTimeline_ = nullptr;
     uint32_t loopKey_ = 0;
 
-    uint32_t songBar_ = 0;  // timeline bar now playing
+    uint32_t songBar_ = 0;  // timeline bar now playing (count-in included)
+    uint32_t countInTarget_ = 0; // song bar to jump to after the count-in
     int64_t barCount_ = 0;  // bars played since start (drives timing; loops keep counting)
     uint32_t hitIndex_ = 0; // next hit within the current bar
     double anchorTime_ = 0.0;
@@ -102,6 +104,7 @@ private:
 
     // Published for the UI.
     std::atomic<bool> pubPlaying_{false};
+    std::atomic<bool> pubCountingIn_{false};
     std::atomic<int32_t> pubSongBar_{-1};
     std::atomic<uint32_t> pubSectionKey_{0};
     std::atomic<int32_t> pubBarInSection_{0};

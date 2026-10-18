@@ -18,3 +18,16 @@ struct Groove: Codable, Identifiable, Equatable {
     var patterns: GroovePatterns
     var smallFill: Pattern?        // optional; otherwise derived from fill (last beat only)
 }
+
+extension Groove {
+    /// The cymbal the groove was written to keep time on. A section switched
+    /// to this groove starts with it.
+    var naturalCymbals: CymbalChoice {
+        let main = patterns.main
+        func uses(_ piece: Piece) -> Bool { main.lanes[piece]?.contains { $0 != .off } ?? false }
+        if uses(.hiHat) { return .hihat }
+        if uses(.ride) { return .ride }
+        if uses(.crash) { return .crash }
+        return .hihat
+    }
+}

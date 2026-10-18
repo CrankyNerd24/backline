@@ -1,4 +1,4 @@
-// Acceptance tests for the DSP core (milestones 1–2). Plain C++ so they run on any
+// Acceptance tests for the DSP core (milestones 1–3). Plain C++ so they run on any
 // machine with a compiler (macOS or Linux): `cmake -B build && cmake --build
 // build && ctest --test-dir build --output-on-failure`.
 
@@ -52,15 +52,17 @@ using BufferHook = std::function<void(BLEngine *, int64_t)>;
 
 static BLSectionDesc section(uint32_t key, uint16_t bars, const BLPattern &p) {
     BLSectionDesc d;
+    bl_section_desc_init(&d);
     d.key = key;
     d.bars = bars;
     d.main = p;
     return d;
 }
 
-static BLTimeline *timelineOf(std::initializer_list<BLSectionDesc> sections) {
+static BLTimeline *timelineOf(std::initializer_list<BLSectionDesc> sections, uint8_t countIn = 0) {
     std::vector<BLSectionDesc> v(sections);
-    return bl_timeline_create(v.data(), static_cast<uint32_t>(v.size()));
+    BLSongDesc song{countIn};
+    return bl_timeline_create(&song, v.data(), static_cast<uint32_t>(v.size()));
 }
 
 // A pattern with one piece on the given steps.
@@ -75,12 +77,12 @@ static BLPattern only(int piece, std::initializer_list<int> steps, uint8_t resol
 // `nextBufferSize`. `atBuffer` runs before each buffer, for posting commands.
 static Render renderTimeline(BLTimeline *timeline, double bpm, double seconds, double sr,
                              const std::function<uint32_t()> &nextBufferSize, const BufferHook &atBuffer = nullptr,
-                             uint32_t loopKey = 0, uint32_t startBar = 0) {
+                             uint32_t loopKey = 0, uint32_t startBar = 0, bool countIn = false) {
     BLEngine *e = bl_engine_create(sr);
     bl_engine_set_tempo(e, bpm);
     bl_engine_set_timeline(e, timeline);
     bl_engine_set_loop_section(e, loopKey);
-    bl_engine_play_from(e, startBar);
+    bl_engine_play_from(e, startBar, countIn);
 
     const auto total = static_cast<size_t>(seconds * sr);
     Render r;
@@ -113,7 +115,7 @@ static Render renderPattern(const BLPattern &pattern, double bpm, double seconds
 static std::vector<int32_t> barsPlayed(const Render &r) {
     std::vector<int32_t> out;
     for (const auto &h : r.triggers)
-        if (out.empty() || out.back() != h.songBar) out.push_back(h.songBar);
+        if (out.empty() || out.back() != h.timelineBar) out.push_back(h.timelineBar);
     return out;
 }
 
@@ -270,7 +272,7 @@ static void testNoAllocationsWhileRendering() {
     gTrackAllocations = true;
     bl_engine_set_timeline(e, first);
     bl_engine_set_loop_section(e, 2);
-    bl_engine_play_from(e, 0);
+    bl_engine_play_from(e, 0, false);
     for (int i = 0; i < 2000; ++i) {
         if (i == 300) bl_engine_set_timeline(e, second);
         if (i == 500) bl_engine_set_tempo(e, 180.0);
@@ -335,7 +337,7 @@ static void testSongPlaysInOrderAndStops() {
     CHECK(join(barsPlayed(r)) == "0,1,2,3", "bars %s", join(barsPlayed(r)).c_str());
     bool piecesRight = true;
     for (const auto &h : r.triggers) {
-        const int expected = h.songBar <= 1 ? BL_PIECE_KICK : h.songBar == 2 ? BL_PIECE_SNARE : BL_PIECE_HI_HAT;
+        const int expected = h.timelineBar <= 1 ? BL_PIECE_KICK : h.timelineBar == 2 ? BL_PIECE_SNARE : BL_PIECE_HI_HAT;
         if (h.piece != expected) piecesRight = false;
     }
     CHECK(piecesRight, "a section played the wrong pattern");
@@ -435,6 +437,304 @@ static void testStopRingsOut() {
     CHECK(r.left.back() == 0.0f, "should be silent long after stop");
 }
 
+// MARK: - Milestone 3: feel, time, cymbals, fills, count-in, endings
+
+static BLSectionDesc rockSection(uint32_t key, uint16_t bars) {
+    BLSectionDesc d = section(key, bars, rockStraight8ths());
+    d.fill = rockStraight8thsFill();
+    return d;
+}
+
+static std::vector<BLTriggerRecord> inBar(const Render &r, int32_t bar) {
+    std::vector<BLTriggerRecord> out;
+    for (const auto &h : r.triggers)
+        if (h.timelineBar == bar) out.push_back(h);
+    return out;
+}
+
+static int countPiece(const std::vector<BLTriggerRecord> &hits, int piece) {
+    int n = 0;
+    for (const auto &h : hits) n += h.piece == piece;
+    return n;
+}
+
+// Spec §12 milestone 3: the same song renders bit-identically twice, with
+// every feel transform switched on.
+static void testRichSongRendersIdentically() {
+    auto build = [] {
+        BLSectionDesc a = rockSection(11, 4);
+        a.human = 0.8f;
+        a.swing = 0.6f;
+        a.busy = 0.8f;
+        a.intensity = 0.7f;
+        a.fillIntoNext = BL_FILL_SMALL;
+        BLSectionDesc b = rockSection(22, 3);
+        b.busy = 0.2f;
+        b.time = BL_TIME_HALF;
+        b.cymbals = BL_CYMBALS_RIDE;
+        b.human = 0.5f;
+        b.fillIntoNext = BL_FILL_BIG;
+        BLSectionDesc c = rockSection(33, 2);
+        c.time = BL_TIME_DOUBLE;
+        c.cymbals = BL_CYMBALS_CRASH;
+        c.human = 1.0f;
+        c.bigEnding = true;
+        return timelineOf({a, b, c}, 1);
+    };
+    std::mt19937 rng(7);
+    std::uniform_int_distribution<uint32_t> size(1, 700);
+    const Render x = renderTimeline(build(), 131.0, 20.0, 48000.0, fixed(256), nullptr, 0, 0, true);
+    const Render y = renderTimeline(build(), 131.0, 20.0, 48000.0, [&] { return size(rng); }, nullptr, 0, 0, true);
+    CHECK(x.left == y.left && x.right == y.right, "renders differ");
+    CHECK(x.triggers.size() == y.triggers.size() && x.triggers.size() > 100, "hit counts %zu vs %zu",
+          x.triggers.size(), y.triggers.size());
+    bool sameHits = true;
+    for (size_t i = 0; i < std::min(x.triggers.size(), y.triggers.size()); ++i)
+        sameHits = sameHits && x.triggers[i].sample == y.triggers[i].sample && x.triggers[i].amp == y.triggers[i].amp;
+    CHECK(sameHits, "hit lists differ");
+}
+
+// Human: timing within ±12 ms, the downbeat kick within 0…3 ms, nothing before
+// the bar line, and velocities within ±10 %.
+static void testHuman() {
+    const double sr = 48000.0, bpm = 120.0, bar = sr * 2.0, step = bar / 16.0;
+    BLSectionDesc d = rockSection(5, 16);
+    d.human = 1.0f;
+    const Render r = renderTimeline(timelineOf({d}), bpm, 33.0, sr, fixed(256));
+    double worst = 0.0, worstKick = 0.0, earliestDownbeat = 0.0;
+    float minLoudHat = 2.0f, maxLoudHat = 0.0f;
+    for (const auto &h : r.triggers) {
+        const double rel = static_cast<double>(h.sample) - h.timelineBar * bar;
+        const double grid = std::round(rel / step);
+        const double offsetMs = (rel - grid * step) / sr * 1000.0;
+        worst = std::max(worst, std::fabs(offsetMs));
+        if (grid == 0.0) {
+            earliestDownbeat = std::min(earliestDownbeat, offsetMs);
+            if (h.piece == BL_PIECE_KICK) worstKick = std::max(worstKick, std::fabs(offsetMs));
+            if (h.piece == BL_PIECE_HI_HAT) {
+                minLoudHat = std::min(minLoudHat, h.amp);
+                maxLoudHat = std::max(maxLoudHat, h.amp);
+            }
+        }
+    }
+    CHECK(worst <= 12.05 && worst > 6.0, "worst offset %.2f ms", worst);
+    CHECK(worstKick <= 3.05, "downbeat kick moved %.2f ms", worstKick);
+    CHECK(earliestDownbeat >= -0.03, "a downbeat landed %.2f ms early", earliestDownbeat);
+    CHECK(minLoudHat >= 0.9f && maxLoudHat <= 1.0f && minLoudHat < maxLoudHat, "loud hat amps %.3f…%.3f", minLoudHat,
+          maxLoudHat);
+}
+
+// Swing delays every second sixteenth by up to 33 % of a step (every second
+// eighth at half-time).
+static void testSwing() {
+    const double sr = 48000.0;
+    BLPattern hats;
+    bl_pattern_init(&hats, 16);
+    for (uint8_t s = 0; s < 16; ++s) bl_pattern_set(&hats, BL_PIECE_HI_HAT, s, BL_VEL_NORMAL);
+    for (int half = 0; half < 2; ++half) {
+        BLSectionDesc d = section(1, 4, hats);
+        d.swing = 1.0f;
+        d.time = half ? BL_TIME_HALF : BL_TIME_NORMAL;
+        const Render r = renderTimeline(timelineOf({d}), 120.0, 8.0, sr, fixed(256));
+        const double step = (half ? 2.0 : 1.0) * 6000.0;
+        size_t bad = 0;
+        for (size_t i = 0; i < r.triggers.size(); ++i) {
+            const double ideal = static_cast<double>(i) * step + (i % 2 ? 0.33 * step : 0.0);
+            if (std::fabs(static_cast<double>(r.triggers[i].sample) - ideal) > 1.0) ++bad;
+        }
+        CHECK(r.triggers.size() == (half ? 32u : 64u) && bad == 0, "half=%d: %zu hits, %zu off", half,
+              r.triggers.size(), bad);
+    }
+}
+
+// Busy: 0.5 plays the groove as written; lower thins it in priority order;
+// higher adds busy-layer notes (all of them at 1.0).
+static void testBusy() {
+    auto barHits = [](float busy) {
+        BLSectionDesc d = rockSection(9, 2);
+        d.busy = busy;
+        return inBar(renderTimeline(timelineOf({d}), 120.0, 4.0, 48000.0, fixed(256)), 1);
+    };
+    const auto asWritten = barHits(0.5f), simplest = barHits(0.0f), busiest = barHits(1.0f), half = barHits(0.25f);
+    CHECK(asWritten.size() == 15, "as written: %zu hits", asWritten.size());
+    CHECK(simplest.size() == 8 && countPiece(simplest, BL_PIECE_HI_HAT) == 4 && countPiece(simplest, BL_PIECE_SNARE) == 2,
+          "simplest: %zu hits, %d hats, %d snares", simplest.size(), countPiece(simplest, BL_PIECE_HI_HAT),
+          countPiece(simplest, BL_PIECE_SNARE));
+    CHECK(half.size() > simplest.size() && half.size() < asWritten.size(), "busy 0.25: %zu hits", half.size());
+    CHECK(busiest.size() == 25 && countPiece(busiest, BL_PIECE_HI_HAT) == 16, "busiest: %zu hits, %d hats",
+          busiest.size(), countPiece(busiest, BL_PIECE_HI_HAT));
+}
+
+// Intensity: louder and softer overall, but loud notes stay the loudest.
+static void testIntensity() {
+    auto levels = [](float intensity) {
+        BLSectionDesc d = rockSection(3, 1);
+        d.intensity = intensity;
+        const auto hits = inBar(renderTimeline(timelineOf({d}), 120.0, 2.5, 48000.0, fixed(256)), 0);
+        float loud = 0, normal = 0, soft = 0;
+        for (const auto &h : hits) {
+            if (h.piece == BL_PIECE_HI_HAT && h.sample == 0) loud = h.amp;
+            if (h.piece == BL_PIECE_HI_HAT && h.sample == 12000) normal = h.amp;
+            if (h.piece == BL_PIECE_SNARE && h.sample == 42000) soft = h.amp;
+        }
+        return std::vector<float>{loud, normal, soft};
+    };
+    const auto lo = levels(0.0f), mid = levels(0.5f), hi = levels(1.0f);
+    for (const auto &v : {lo, mid, hi}) CHECK(v[0] > v[1] && v[1] > v[2] && v[2] > 0, "order %.3f %.3f %.3f", v[0], v[1], v[2]);
+    CHECK(std::fabs(mid[0] - 1.0f) < 1e-6f && std::fabs(mid[1] - 0.68f) < 1e-6f, "0.5 should be as written");
+    CHECK(hi[1] > mid[1] && mid[1] > lo[1] && hi[2] > mid[2] && mid[2] > lo[2], "intensity should scale levels");
+}
+
+static std::vector<double> loudSnareBeats(const std::vector<BLTriggerRecord> &hits, double barStart) {
+    std::vector<double> out;
+    for (const auto &h : hits)
+        if (h.piece == BL_PIECE_SNARE && h.amp > 0.5f) out.push_back((static_cast<double>(h.sample) - barStart) / 24000.0);
+    return out;
+}
+
+// Half-time stretches the bar across two with the snare on 3; double-time
+// plays it twice per bar.
+static void testHalfAndDoubleTime() {
+    BLSectionDesc half = rockSection(4, 4);
+    half.time = BL_TIME_HALF;
+    const Render h = renderTimeline(timelineOf({half}), 120.0, 8.5, 48000.0, fixed(256));
+    for (int bar = 0; bar < 4; ++bar) {
+        const auto hits = inBar(h, bar);
+        const auto snares = loudSnareBeats(hits, bar * 96000.0);
+        CHECK(snares.size() == 1 && std::fabs(snares[0] - 2.0) < 1e-3, "half-time bar %d: %zu loud snares", bar,
+              snares.size());
+        CHECK(countPiece(hits, BL_PIECE_HI_HAT) == 4, "half-time bar %d: %d hats", bar, countPiece(hits, BL_PIECE_HI_HAT));
+    }
+
+    // A skate beat (snare on every "and") still gets one snare, on 3.
+    BLPattern skate = only(BL_PIECE_SNARE, {2, 6, 10, 14});
+    bl_pattern_set(&skate, BL_PIECE_KICK, 0, BL_VEL_LOUD);
+    BLSectionDesc halfSkate = section(4, 2, skate);
+    halfSkate.time = BL_TIME_HALF;
+    const Render hs = renderTimeline(timelineOf({halfSkate}), 120.0, 4.5, 48000.0, fixed(256));
+    for (int bar = 0; bar < 2; ++bar) {
+        const auto snares = loudSnareBeats(inBar(hs, bar), bar * 96000.0);
+        CHECK(snares.size() == 1 && std::fabs(snares[0] - 2.0) < 1e-3, "half-time skate bar %d: %zu loud snares", bar,
+              snares.size());
+    }
+
+    BLSectionDesc dbl = rockSection(4, 2);
+    dbl.time = BL_TIME_DOUBLE;
+    const auto hits = inBar(renderTimeline(timelineOf({dbl}), 120.0, 4.5, 48000.0, fixed(256)), 1);
+    const auto snares = loudSnareBeats(hits, 96000.0);
+    const double expected[] = {0.5, 1.5, 2.5, 3.5};
+    bool right = snares.size() == 4;
+    for (size_t i = 0; right && i < 4; ++i) right = std::fabs(snares[i] - expected[i]) < 1e-3;
+    CHECK(right, "double-time snares should land on every 'and' (%zu found)", snares.size());
+    CHECK(countPiece(hits, BL_PIECE_HI_HAT) == 16, "double-time: %d hats", countPiece(hits, BL_PIECE_HI_HAT));
+}
+
+// Cymbals: the time-keeping lane moves to the chosen cymbal.
+static void testCymbalRouting() {
+    for (uint8_t choice : {BL_CYMBALS_GROOVE, BL_CYMBALS_HIHAT, BL_CYMBALS_RIDE, BL_CYMBALS_CRASH}) {
+        BLSectionDesc d = rockSection(8, 1);
+        d.cymbals = choice;
+        const auto hits = inBar(renderTimeline(timelineOf({d}), 120.0, 2.5, 48000.0, fixed(256)), 0);
+        const int expected = choice == BL_CYMBALS_RIDE ? BL_PIECE_RIDE : choice == BL_CYMBALS_CRASH ? BL_PIECE_CRASH : BL_PIECE_HI_HAT;
+        CHECK(countPiece(hits, expected) == 8, "choice %d: %d hits on the routed cymbal", choice, countPiece(hits, expected));
+    }
+    // A ride groove switched to hi-hat.
+    BLPattern ride = only(BL_PIECE_RIDE, {0, 2, 4, 6, 8, 10, 12, 14});
+    BLSectionDesc d = section(8, 1, ride);
+    d.cymbals = BL_CYMBALS_HIHAT;
+    const auto hits = inBar(renderTimeline(timelineOf({d}), 120.0, 2.5, 48000.0, fixed(256)), 0);
+    CHECK(countPiece(hits, BL_PIECE_HI_HAT) == 8 && countPiece(hits, BL_PIECE_RIDE) == 0, "ride → hi-hat");
+}
+
+// Fills: a big fill replaces the last bar, a small one only its last beat, and
+// a crash lands on beat 1 of the next section.
+static void testFills() {
+    for (uint8_t size : {BL_FILL_SMALL, BL_FILL_BIG}) {
+        BLSectionDesc a = rockSection(1, 2);
+        a.fillIntoNext = size;
+        const Render r = renderTimeline(timelineOf({a, rockSection(2, 1)}), 120.0, 6.5, 48000.0, fixed(256));
+        const auto plain = inBar(r, 0), fill = inBar(r, 1), next = inBar(r, 2);
+        int toms = 0, runSnares = 0;
+        for (const auto &h : fill) {
+            const double beat = (static_cast<double>(h.sample) - 96000.0) / 24000.0;
+            if (h.piece == BL_PIECE_HIGH_TOM || h.piece == BL_PIECE_LOW_TOM || h.piece == BL_PIECE_FLOOR_TOM) ++toms;
+            if (h.piece == BL_PIECE_SNARE && beat >= 2.0 && beat < 3.0) ++runSnares;
+        }
+        CHECK(countPiece(plain, BL_PIECE_HIGH_TOM) == 0, "no fill before the last bar");
+        CHECK(toms == 4, "fill %d: %d tom hits", size, toms);
+        CHECK(runSnares == (size == BL_FILL_BIG ? 4 : 0), "fill %d: %d snares in beat 3", size, runSnares);
+        bool crashOnOne = false;
+        for (const auto &h : next) crashOnOne = crashOnOne || (h.piece == BL_PIECE_CRASH && h.sample == 2 * 96000);
+        CHECK(crashOnOne, "fill %d: no crash on beat 1 of the next section", size);
+    }
+    // No fill, no crash.
+    const Render r = renderTimeline(timelineOf({rockSection(1, 1), rockSection(2, 1)}), 120.0, 4.5, 48000.0, fixed(256));
+    CHECK(countPiece(r.triggers, BL_PIECE_CRASH) == 0, "crash without a fill");
+}
+
+// Count-in: hi-hat clicks before the song, part of the timeline, and the
+// position reports it.
+static void testCountIn() {
+    const double sr = 48000.0;
+    BLTimeline *t = timelineOf({section(1, 1, only(BL_PIECE_KICK, {0})), section(2, 1, only(BL_PIECE_SNARE, {0}))}, 2);
+    CHECK(bl_timeline_bar_count(t) == 2, "song bars %u", bl_timeline_bar_count(t));
+    BLEngine *e = bl_engine_create(sr);
+    bl_engine_set_tempo(e, 120.0);
+    bl_engine_set_timeline(e, t);
+    bl_engine_play_from(e, 1, true); // count in, then the second section
+    std::vector<BLTriggerRecord> log(64);
+    bl_engine_debug_set_trigger_log(e, log.data(), 64);
+    std::vector<float> l(256), rr(256);
+    bool sawCountingIn = false, sawSong = false;
+    for (int i = 0; i < 1200; ++i) {
+        bl_engine_render(e, l.data(), rr.data(), 256);
+        BLPosition pos;
+        bl_engine_get_position(e, &pos);
+        if (pos.playing && pos.countingIn && pos.songBar == -1 && pos.sectionKey == 0) sawCountingIn = true;
+        if (pos.playing && !pos.countingIn && pos.songBar == 1 && pos.sectionKey == 2) sawSong = true;
+    }
+    log.resize(bl_engine_debug_trigger_count(e));
+    bl_engine_destroy(e);
+    bool clicks = log.size() == 9;
+    for (size_t i = 0; clicks && i < 8; ++i) clicks = log[i].piece == BL_PIECE_HI_HAT && log[i].sample == static_cast<int64_t>(i) * 24000;
+    CHECK(clicks, "expected 8 clicks then the snare (%zu hits)", log.size());
+    CHECK(!log.empty() && log.back().piece == BL_PIECE_SNARE && log.back().sample == 192000, "snare should follow the count-in");
+    CHECK(sawCountingIn && sawSong, "position should report the count-in, then the song");
+}
+
+// The outro's big ending: a final crash and kick, then stop. Looping the
+// outro never reaches the ending.
+static void testBigEnding() {
+    BLSectionDesc outro = section(7, 1, only(BL_PIECE_HI_HAT, {0, 4, 8, 12}));
+    outro.bigEnding = true;
+    const Render r = renderTimeline(timelineOf({outro}), 120.0, 8.0, 48000.0, fixed(256));
+    const auto ending = inBar(r, 1);
+    CHECK(ending.size() == 2 && countPiece(ending, BL_PIECE_CRASH) == 1 && countPiece(ending, BL_PIECE_KICK) == 1 &&
+              ending[0].sample == 96000,
+          "ending bar: %zu hits", ending.size());
+    CHECK(r.triggers.back().timelineBar == 1, "nothing after the ending");
+    CHECK(r.left.back() == 0.0f, "should have rung out and stopped");
+
+    const Render looped = renderTimeline(timelineOf({outro}), 120.0, 8.0, 48000.0, fixed(256), nullptr, 7);
+    CHECK(countPiece(looped.triggers, BL_PIECE_CRASH) == 0 && join(barsPlayed(looped)) == "0", "looping the outro: %s",
+          join(barsPlayed(looped)).c_str());
+}
+
+// A section sounds the same wherever it sits: its randomness is seeded by the
+// section, not its position.
+static void testSeedFollowsSection() {
+    BLSectionDesc a = rockSection(42, 2);
+    a.human = 1.0f;
+    a.busy = 0.8f;
+    const Render alone = renderTimeline(timelineOf({a}), 120.0, 4.5, 48000.0, fixed(256));
+    const Render later = renderTimeline(timelineOf({rockSection(1, 3), a}), 120.0, 10.5, 48000.0, fixed(256));
+    std::vector<std::pair<int64_t, float>> x, y;
+    for (const auto &h : alone.triggers) x.push_back({h.sample, h.amp});
+    for (const auto &h : later.triggers)
+        if (h.timelineBar >= 3) y.push_back({h.sample - 3 * 96000, h.amp});
+    CHECK(x == y && !x.empty(), "section A changed when moved (%zu vs %zu hits)", x.size(), y.size());
+}
+
 // How much faster than real time the engine renders (headroom for 5 ms buffers).
 static void reportSpeed() {
     const auto start = std::chrono::steady_clock::now();
@@ -466,6 +766,17 @@ int main() {
         {"swap after delete and shorten", testSwapAfterDeleteAndShorten},
         {"timelines freed", testTimelinesFreed},
         {"stop rings out", testStopRingsOut},
+        {"rich song renders identically", testRichSongRendersIdentically},
+        {"human", testHuman},
+        {"swing", testSwing},
+        {"busy", testBusy},
+        {"intensity", testIntensity},
+        {"half and double time", testHalfAndDoubleTime},
+        {"cymbal routing", testCymbalRouting},
+        {"fills", testFills},
+        {"count-in", testCountIn},
+        {"big ending", testBigEnding},
+        {"seed follows the section", testSeedFollowsSection},
         {"render speed", reportSpeed},
     };
     for (const auto &t : tests) {

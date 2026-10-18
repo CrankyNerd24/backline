@@ -16,3 +16,23 @@ inline BLPattern rockStraight8ths() {
     }
     return p;
 }
+
+// Its fill (beats 1-2 as the main bar, then a snare and tom run), as in
+// Library/Grooves/grooves-rock.json.
+inline BLPattern rockStraight8thsFill() {
+    static const uint8_t hat[16] = {3, 0, 2, 0, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    static const uint8_t snare[16] = {0, 0, 0, 0, 3, 0, 0, 1, 2, 2, 2, 2, 0, 0, 0, 0};
+    static const uint8_t kick[16] = {3, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0};
+    BLPattern p;
+    bl_pattern_init(&p, 16);
+    for (uint8_t s = 0; s < 16; ++s) {
+        bl_pattern_set(&p, BL_PIECE_HI_HAT, s, hat[s]);
+        bl_pattern_set(&p, BL_PIECE_SNARE, s, snare[s]);
+        bl_pattern_set(&p, BL_PIECE_KICK, s, kick[s]);
+    }
+    bl_pattern_set(&p, BL_PIECE_HIGH_TOM, 12, 3);
+    bl_pattern_set(&p, BL_PIECE_HIGH_TOM, 13, 2);
+    bl_pattern_set(&p, BL_PIECE_LOW_TOM, 14, 3);
+    bl_pattern_set(&p, BL_PIECE_FLOOR_TOM, 15, 3);
+    return p;
+}

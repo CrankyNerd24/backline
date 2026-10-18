@@ -59,7 +59,7 @@ void Engine::applyCommands() {
     while (commands_.pop(c)) {
         switch (c.type) {
         case Command::PlayFrom:
-            start(c.value32);
+            start(c.value32, c.flag);
             break;
         case Command::Stop:
             stop();
@@ -87,7 +87,7 @@ void Engine::applyCommands() {
             break;
         case Command::Audition:
             if (c.piece < BL_PIECE_COUNT && c.velocity > 0 && c.velocity <= BL_VEL_LOUD)
-                trigger(c.piece, c.velocity, hitSeed(-1, c.piece));
+                trigger(c.piece, kAmp[c.velocity], kBright[c.velocity], hitSeed(-1, c.piece));
             break;
         }
     }
@@ -104,7 +104,7 @@ void Engine::retire(const Timeline *timeline) {
     if (timeline) retired_.push(timeline);
 }
 
-void Engine::start(uint32_t songBar) {
+void Engine::start(uint32_t songBar, bool countIn) {
     if (pendingTimeline_) {
         installTimeline(pendingTimeline_);
         pendingTimeline_ = nullptr;
@@ -113,12 +113,14 @@ void Engine::start(uint32_t songBar) {
         bpm_ = pendingTempo_;
         hasPendingTempo_ = false;
     }
-    if (!timeline_ || songBar >= timeline_->barCount()) {
+    if (!timeline_ || songBar >= timeline_->songBars()) {
         stop();
         return;
     }
     playing_ = true;
-    songBar_ = songBar;
+    const uint32_t countInBars = timeline_->countInBars();
+    countInTarget_ = songBar;
+    songBar_ = countIn && countInBars > 0 ? 0 : countInBars + songBar;
     barCount_ = 0;
     hitIndex_ = 0;
     anchorTime_ = static_cast<double>(now_);
@@ -142,8 +144,9 @@ void Engine::stop() {
 
 // MARK: Scheduling
 
-int64_t Engine::sampleAt(double globalBeat) const {
-    return static_cast<int64_t>(std::llround(anchorTime_ + (globalBeat - anchorBeat_) * beatLength_));
+int64_t Engine::sampleAt(double globalBeat, float offsetSeconds) const {
+    return static_cast<int64_t>(std::llround(anchorTime_ + (globalBeat - anchorBeat_) * beatLength_ +
+                                             static_cast<double>(offsetSeconds) * sampleRate_));
 }
 
 double Engine::beatAt(int64_t sample) const {
@@ -166,14 +169,15 @@ void Engine::processEvents(int64_t sample) {
         const TimelineBar &bar = timeline_->bar(songBar_);
         if (hitIndex_ < bar.hitCount) {
             const TimelineHit &h = timeline_->hit(bar.firstHit + hitIndex_);
-            const int64_t at = sampleAt(barBeat + h.beat);
+            const int64_t at = sampleAt(barBeat + h.beat, h.offsetSeconds);
             if (at <= sample) {
-                trigger(h.piece, h.velocity, hitSeed(static_cast<int64_t>(songBar_) * 256 + hitIndex_, h.piece));
+                trigger(h.piece, h.amp, h.bright, hitSeed(static_cast<int64_t>(songBar_) * 256 + hitIndex_, h.piece));
                 if (log_ && logCount_ < logCapacity_)
-                    log_[logCount_++] = {at, h.piece, h.velocity, static_cast<int32_t>(songBar_)};
+                    log_[logCount_++] = {at, h.piece, h.amp, static_cast<int32_t>(songBar_)};
                 ++hitIndex_;
                 continue;
             }
+            break; // the bar ends only once all of its hits have played
         }
 
         if (sampleAt(barBeat + kBeatsPerBar) <= sample) {
@@ -191,24 +195,38 @@ void Engine::advanceBar() {
     if (pendingTimeline_) {
         // Carry on from the same bar of the same section in the new timeline.
         // If the section got shorter, carry on from its last bar; if it was
-        // deleted, whatever now sits where it started plays next.
+        // deleted, whatever now sits where it started plays next. During the
+        // count-in, keep counting if the new timeline still has that bar.
         const TimelineBar old = timeline_->bar(songBar_);
-        int32_t mapped = pendingTimeline_->find(old.sectionKey, old.barInSection);
-        if (mapped < 0) {
-            const int32_t start = pendingTimeline_->findSection(old.sectionKey);
-            if (start >= 0) mapped = static_cast<int32_t>(pendingTimeline_->sectionEnd(static_cast<uint32_t>(start)));
+        const Timeline *next = pendingTimeline_;
+        int32_t mapped = next->find(old.sectionKey, old.barInSection, old.kind);
+        if (mapped < 0 && old.kind == BarKind::Song) {
+            const int32_t start = next->findSection(old.sectionKey);
+            if (start >= 0) mapped = static_cast<int32_t>(next->sectionEnd(static_cast<uint32_t>(start)));
         }
-        installTimeline(pendingTimeline_);
+        if (mapped >= 0) {
+            current = mapped;
+        } else if (old.kind == BarKind::CountIn) {
+            current = static_cast<int64_t>(next->countInBars()) + countInTarget_ - 1; // straight to the song
+        } else {
+            current = static_cast<int64_t>(songBar_) - timeline_->countInBars() + next->countInBars() -
+                      old.barInSection - 1;
+        }
+        installTimeline(next);
         pendingTimeline_ = nullptr;
-        current = mapped >= 0 ? mapped : static_cast<int64_t>(songBar_) - old.barInSection - 1;
     }
 
     const int64_t count = timeline_->barCount();
     int64_t next = current + 1;
-    if (loopKey_ != 0 && current >= 0 && current < count) {
+    if (current >= 0 && current < count) {
         const auto cur = static_cast<uint32_t>(current);
         const TimelineBar &bar = timeline_->bar(cur);
-        if (bar.sectionKey == loopKey_ && timeline_->sectionEnd(cur) == cur) next = timeline_->sectionStart(cur);
+        if (bar.kind == BarKind::CountIn && (next >= count || timeline_->bar(static_cast<uint32_t>(next)).kind != BarKind::CountIn)) {
+            next = static_cast<int64_t>(timeline_->countInBars()) + countInTarget_;
+        } else if (loopKey_ != 0 && bar.kind == BarKind::Song && bar.sectionKey == loopKey_ &&
+                   timeline_->sectionEnd(cur) == cur) {
+            next = timeline_->sectionStart(cur);
+        }
     }
     if (next < 0 || next >= count) {
         stop(); // end of song; the last hits ring out
@@ -221,17 +239,22 @@ void Engine::advanceBar() {
 
 void Engine::scheduleNextEvent() {
     const double barBeat = static_cast<double>(barCount_) * kBeatsPerBar;
-    int64_t next = sampleAt(barBeat + kBeatsPerBar);
     const TimelineBar &bar = timeline_->bar(songBar_);
-    if (hitIndex_ < bar.hitCount) next = std::min(next, sampleAt(barBeat + timeline_->hit(bar.firstHit + hitIndex_).beat));
+    int64_t next;
+    if (hitIndex_ < bar.hitCount) {
+        const TimelineHit &h = timeline_->hit(bar.firstHit + hitIndex_);
+        next = sampleAt(barBeat + h.beat, h.offsetSeconds);
+    } else {
+        next = sampleAt(barBeat + kBeatsPerBar);
+    }
     if (hasPendingTempo_) next = std::min(next, sampleAt(pendingTempoBeat_));
     nextEventSample_ = next;
 }
 
 // MARK: Voices
 
-void Engine::trigger(int piece, uint8_t velocity, uint32_t seed) {
-    const Hit hit{kAmp[velocity], kBright[velocity], seed};
+void Engine::trigger(int piece, float amp, float bright, uint32_t seed) {
+    const Hit hit{amp, bright, seed};
     switch (piece) {
     case BL_PIECE_KICK:
         kick_.trigger(hit);
@@ -298,11 +321,15 @@ void Engine::publishPosition() {
     if (playing_) {
         const TimelineBar &bar = timeline_->bar(songBar_);
         const double phase = (beatAt(now_) - static_cast<double>(barCount_) * kBeatsPerBar) / kBeatsPerBar;
-        pubSongBar_.store(static_cast<int32_t>(songBar_), std::memory_order_relaxed);
+        const bool countingIn = bar.kind == BarKind::CountIn;
+        pubCountingIn_.store(countingIn, std::memory_order_relaxed);
+        pubSongBar_.store(countingIn ? -1 : static_cast<int32_t>(songBar_ - timeline_->countInBars()),
+                          std::memory_order_relaxed);
         pubSectionKey_.store(bar.sectionKey, std::memory_order_relaxed);
         pubBarInSection_.store(bar.barInSection, std::memory_order_relaxed);
         pubBarPhase_.store(std::clamp(phase, 0.0, 1.0), std::memory_order_relaxed);
     } else {
+        pubCountingIn_.store(false, std::memory_order_relaxed);
         pubSongBar_.store(-1, std::memory_order_relaxed);
         pubSectionKey_.store(0, std::memory_order_relaxed);
         pubBarInSection_.store(0, std::memory_order_relaxed);
@@ -315,6 +342,7 @@ void Engine::publishPosition() {
 void Engine::readPosition(BLPosition &out) const {
     out.sampleTime = pubSampleTime_.load(std::memory_order_acquire);
     out.playing = pubPlaying_.load(std::memory_order_relaxed);
+    out.countingIn = pubCountingIn_.load(std::memory_order_relaxed);
     out.songBar = pubSongBar_.load(std::memory_order_relaxed);
     out.sectionKey = pubSectionKey_.load(std::memory_order_relaxed);
     out.barInSection = pubBarInSection_.load(std::memory_order_relaxed);
@@ -347,8 +375,20 @@ bool post(BLEngine *e, backline::Command::Type type) {
 
 extern "C" {
 
-BLTimeline *bl_timeline_create(const BLSectionDesc *sections, uint32_t count) {
-    return new BLTimeline{new backline::Timeline(sections, count)};
+void bl_section_desc_init(BLSectionDesc *d) {
+    std::memset(d, 0, sizeof(*d));
+    d->bars = 4;
+    d->main.steps = d->fill.steps = d->smallFill.steps = d->busyLayer.steps = 16;
+    d->busy = 0.5f;
+    d->intensity = 0.5f;
+    d->time = BL_TIME_NORMAL;
+    d->cymbals = BL_CYMBALS_GROOVE;
+    d->fillIntoNext = BL_FILL_NONE;
+}
+
+BLTimeline *bl_timeline_create(const BLSongDesc *song, const BLSectionDesc *sections, uint32_t count) {
+    BLSongDesc none{};
+    return new BLTimeline{new backline::Timeline(song ? *song : none, sections, count)};
 }
 
 void bl_timeline_destroy(BLTimeline *t) {
@@ -357,7 +397,7 @@ void bl_timeline_destroy(BLTimeline *t) {
     delete t;
 }
 
-uint32_t bl_timeline_bar_count(const BLTimeline *t) { return t->timeline->barCount(); }
+uint32_t bl_timeline_bar_count(const BLTimeline *t) { return t->timeline->songBars(); }
 
 BLEngine *bl_engine_create(double sampleRate) {
     if (!(sampleRate > 0.0)) return nullptr;
@@ -370,10 +410,11 @@ void bl_engine_render(BLEngine *e, float *left, float *right, uint32_t frames) {
     e->engine.render(left, right, frames);
 }
 
-bool bl_engine_play_from(BLEngine *e, uint32_t songBar) {
+bool bl_engine_play_from(BLEngine *e, uint32_t songBar, bool countIn) {
     backline::Command c;
     c.type = backline::Command::PlayFrom;
     c.value32 = songBar;
+    c.flag = countIn;
     return e->engine.post(c);
 }
 

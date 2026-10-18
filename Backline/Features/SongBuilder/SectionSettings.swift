@@ -116,6 +116,7 @@ struct SectionSettings: View {
                     GrooveMenu(selectedID: section.wrappedValue.grooveID) { id in
                         section.wrappedValue.grooveID = id
                         section.wrappedValue.patternOverride = nil // edits belonged to the old groove
+                        section.wrappedValue.cymbals = library.groove(id).naturalCymbals
                     }
                     // The Pattern Editor arrives in milestone 7.
                     Button {} label: { Label("Edit pattern", systemImage: "square.grid.3x3") }
@@ -136,9 +137,6 @@ struct SectionSettings: View {
                 FeelSlider(low: "Softer", high: "Harder", value: section.feel.intensity)
                 FeelSlider(low: "Straight", high: "Swung", value: section.feel.swing)
                 FeelSlider(low: "Locked in", high: "Human", value: section.feel.human)
-                Text("Feel, time, cymbals and fills are saved with the song. You'll hear them from milestone 3.")
-                    .font(Theme.body(12))
-                    .foregroundStyle(Theme.textMuted)
             }
         }
     }
@@ -147,7 +145,10 @@ struct SectionSettings: View {
 
     private func optionsCard(_ section: Binding<Section>, index: Int) -> some View {
         let sections = store.song.sections
-        let next = index + 1 < sections.count ? sections[index + 1].name : nil
+        // The last section fills into the next one, or into the big ending if
+        // it's an outro; any other last section has nothing to fill into.
+        let next = index + 1 < sections.count ? sections[index + 1].name
+            : sections[index].kind == .outro ? "ending" : nil
         return Card {
             HStack(alignment: .top, spacing: 24) {
                 option("Time") {

@@ -50,30 +50,59 @@ typedef struct {
 
 // MARK: Timeline
 //
-// A timeline is the whole song flattened into bars of hits. It is immutable
-// once built: the control thread builds a new one on every song change and
-// hands it to the engine, which swaps it in at the next bar line.
+// A timeline is the whole song flattened into bars of hits, with the feel
+// transforms (spec §4.3), fills and transitions (§4.4) and count-in (§4.5)
+// already applied. It is immutable once built: the control thread builds a
+// new one on every song change and hands it to the engine, which swaps it in
+// at the next bar line. Building is deterministic (randomness is seeded per
+// section), so the same song always produces the same timeline.
+
+enum { BL_TIME_NORMAL = 0, BL_TIME_HALF = 1, BL_TIME_DOUBLE = 2 };
+// BL_CYMBALS_GROOVE keeps whatever cymbal the groove was written with.
+enum { BL_CYMBALS_GROOVE = 0, BL_CYMBALS_HIHAT = 1, BL_CYMBALS_RIDE = 2, BL_CYMBALS_CRASH = 3 };
+enum { BL_FILL_NONE = 0, BL_FILL_SMALL = 1, BL_FILL_BIG = 2 };
 
 typedef struct {
-    uint32_t key;    // stable, non-zero id for the section (e.g. a hashed UUID)
-    uint16_t bars;   // 1…64
-    BLPattern main;  // played on every bar of the section
+    uint32_t key;          // stable, non-zero id for the section (e.g. a hashed UUID)
+    uint16_t bars;         // 1…64
+    BLPattern main;        // the groove's main bar
+    BLPattern fill;        // the groove's fill bar (used for the last bar when a fill is due)
+    BLPattern smallFill;   // optional; when empty, the last beat of `fill` is used
+    BLPattern busyLayer;   // optional extra notes for Busy > 0.5; when empty, one is derived
+    float busy;            // 0…1, Simpler ↔ Busier (0.5 = as written)
+    float intensity;       // 0…1, Softer ↔ Harder (0.5 = as written)
+    float swing;           // 0…1, Straight ↔ Swung
+    float human;           // 0…1, Locked in ↔ Human
+    uint8_t time;          // BL_TIME_*
+    uint8_t cymbals;       // BL_CYMBALS_*
+    uint8_t fillIntoNext;  // BL_FILL_*
+    bool bigEnding;        // add a final crash + kick bar after this section, then stop
 } BLSectionDesc;
+
+typedef struct {
+    uint8_t countInBars;   // 0…2 bars of hi-hat click before the song
+} BLSongDesc;
+
+// Sets every field to its neutral default: feel as written, normal time, the
+// groove's own cymbals, no fill, no ending. Patterns are emptied.
+void bl_section_desc_init(BLSectionDesc *section);
 
 typedef struct BLTimeline BLTimeline;
 
-BLTimeline *bl_timeline_create(const BLSectionDesc *sections, uint32_t count);
+BLTimeline *bl_timeline_create(const BLSongDesc *song, const BLSectionDesc *sections, uint32_t count);
 // Only for a timeline that was never handed to an engine.
 void bl_timeline_destroy(BLTimeline *timeline);
+// Bars of song (count-in and the ending bar not included).
 uint32_t bl_timeline_bar_count(const BLTimeline *timeline);
 
 // MARK: Engine
 
 typedef struct {
     bool playing;
-    int32_t songBar;       // timeline bar now playing, -1 when stopped
+    bool countingIn;
+    int32_t songBar;       // song bar now playing (count-in not counted), -1 when stopped or counting in
     uint32_t sectionKey;   // key of the section now playing, 0 when stopped
-    int32_t barInSection;  // 0-based
+    int32_t barInSection;  // 0-based (the count-in bar while counting in)
     double barPhase;       // 0…1 through the current bar
     double bpm;
     int64_t sampleTime;    // samples rendered since the engine was created
@@ -90,11 +119,13 @@ void bl_engine_render(BLEngine *engine, float *left, float *right, uint32_t fram
 // Control thread. Each returns false only if the command queue is full.
 //
 // Play and stop take effect at the start of the next render buffer; stop lets
-// ringing hits decay naturally. Playback stops by itself after the last bar.
+// ringing hits decay naturally. Playback stops by itself after the last bar
+// (or after the ending bar). `songBar` counts song bars only; with
+// `countIn`, the timeline's count-in plays first and then jumps there.
 // While playing, a tempo change lands on the next beat and a new timeline
 // lands on the next bar line, continuing from the same bar of the same
 // section where it still exists. While stopped, both apply immediately.
-bool bl_engine_play_from(BLEngine *engine, uint32_t songBar);
+bool bl_engine_play_from(BLEngine *engine, uint32_t songBar, bool countIn);
 bool bl_engine_stop(BLEngine *engine);
 bool bl_engine_set_tempo(BLEngine *engine, double bpm);
 // The engine takes ownership of `timeline`, even if this returns false.
@@ -118,8 +149,8 @@ void bl_pattern_set(BLPattern *pattern, uint8_t piece, uint8_t step, uint8_t vel
 typedef struct {
     int64_t sample;
     uint8_t piece;
-    uint8_t velocity;
-    int32_t songBar;
+    float amp;          // 0…1 after feel transforms
+    int32_t timelineBar; // index into the whole timeline, count-in included
 } BLTriggerRecord;
 
 void bl_engine_debug_set_trigger_log(BLEngine *engine, BLTriggerRecord *buffer, uint32_t capacity);

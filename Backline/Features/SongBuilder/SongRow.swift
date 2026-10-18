@@ -29,7 +29,7 @@ struct SongRow: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Self.spacing) {
                         if song.countInBars > 0 {
-                            CountInBlock(bars: song.countInBars)
+                            CountInBlock(bars: song.countInBars, progress: countInProgress(song))
                                 .frame(width: max(Self.minBlockWidth, CGFloat(song.countInBars) * unit))
                         }
                         ForEach(Array(song.sections.enumerated()), id: \.element.id) { index, section in
@@ -101,12 +101,19 @@ struct SongRow: View {
         return min(1, (Double(position.barInSection) + position.barPhase) / Double(section.bars))
     }
 
+    private func countInProgress(_ song: Song) -> Double? {
+        guard let position = engine.position, position.isCountIn, song.countInBars > 0 else { return nil }
+        return min(1, (Double(position.barInSection) + position.barPhase) / Double(song.countInBars))
+    }
+
     // MARK: Editing
 
     private func add(_ kind: SectionKind) {
         let song = store.song
         let groove = selection.flatMap { id in song.sections.first { $0.id == id }?.grooveID } ?? GrooveLibrary.fallbackID
-        let section = Section(kind: kind, name: song.nextName(for: kind), grooveID: groove)
+        var section = Section(kind: kind, name: song.nextName(for: kind), grooveID: groove)
+        section.cymbals = library.groove(groove).naturalCymbals
+        if kind == .outro { section.fillIntoNext = .none }
         let insertAt = selection.flatMap { song.index(of: $0) }.map { $0 + 1 } ?? song.sections.count
         store.song.sections.insert(section, at: insertAt)
         selectedID = section.id
@@ -208,10 +215,21 @@ struct SectionBlock: View {
 
 struct CountInBlock: View {
     let bars: Int
+    /// 0…1 through the count-in while it plays, else nil.
+    var progress: Double?
 
     var body: some View {
-        RoundedRectangle(cornerRadius: Theme.Radius.card)
+        let shape = RoundedRectangle(cornerRadius: Theme.Radius.card)
+        shape
             .stroke(Theme.textMuted, style: StrokeStyle(lineWidth: 2, dash: [6, 5]))
+            .background {
+                if let progress {
+                    GeometryReader { geo in
+                        Rectangle().fill(Theme.surfaceHi).frame(width: geo.size.width * progress)
+                    }
+                    .clipShape(shape)
+                }
+            }
             .overlay(alignment: .topLeading) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Count-in").font(Theme.condensed(16, weight: .bold))
