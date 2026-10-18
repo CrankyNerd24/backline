@@ -93,8 +93,6 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
   - Header: rename, switch, create, duplicate and delete songs; tempo with − / + and tap tempo.
 - **Engine**: plays a *timeline* (the whole song as bars of hits) instead of one looping pattern. Every edit builds a new timeline, which swaps in at the next bar line. Playback continues from the same bar of the same section even when sections are reordered, shortened or deleted mid-song. The engine also handles play-from-bar, loop-a-section, stop at the end of the song, and tempo changes on the next beat.
 
-Toms are silent and ride/crash use a hi-hat stand-in until the full kit (milestone 8).
-
 **Milestone 1:** the C++ DSP core (synthesized kick, snare and hats, a sample-accurate clock, lock-free command queue) and the Swift `AVAudioEngine` wrapper.
 
 ### Tests
