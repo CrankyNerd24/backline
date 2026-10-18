@@ -1,4 +1,4 @@
-// Acceptance tests for the DSP core (milestones 1–6). Plain C++ so they run on any
+// Acceptance tests for the DSP core (milestones 1–7). Plain C++ so they run on any
 // machine with a compiler (macOS or Linux): `cmake -B build && cmake --build
 // build && ctest --test-dir build --output-on-failure`.
 
@@ -1019,6 +1019,51 @@ static void testCueTick() {
     CHECK(silentBefore && l[1] != 0.0f && peak > 0.05f && peak < 0.3f, "cue peak %.3f", peak);
 }
 
+// MARK: - Milestone 7: re-gridding for the Pattern Editor
+
+static std::string laneString(const BLPattern &p, int piece) {
+    std::string s;
+    for (int i = 0; i < p.steps; ++i) s += ".123"[p.velocity[piece][i]];
+    return s;
+}
+
+static BLPattern laneFrom(int piece, const char *lane) {
+    BLPattern p;
+    bl_pattern_init(&p, static_cast<uint8_t>(std::strlen(lane)));
+    for (uint8_t i = 0; lane[i]; ++i)
+        if (lane[i] != '.') bl_pattern_set(&p, static_cast<uint8_t>(piece), i, static_cast<uint8_t>(lane[i] - '0'));
+    return p;
+}
+
+static void testPatternConvert() {
+    BLPattern out;
+    // Straight eighths become a shuffle: beats stay put, offbeats move to the third triplet.
+    const BLPattern eighths = laneFrom(BL_PIECE_HI_HAT, "3.2.3.2.3.2.3.2.");
+    bl_pattern_convert(&eighths, 12, &out);
+    CHECK(out.steps == 12 && laneString(out, BL_PIECE_HI_HAT) == "3.23.23.23.2", "8ths → triplets: %s",
+          laneString(out, BL_PIECE_HI_HAT).c_str());
+    // Sixteenths collide on the way to triplets: the louder note wins.
+    const BLPattern sixteenths = laneFrom(BL_PIECE_HI_HAT, "3121312131213121");
+    bl_pattern_convert(&sixteenths, 12, &out);
+    CHECK(laneString(out, BL_PIECE_HI_HAT) == "312312312312", "16ths → triplets: %s", laneString(out, BL_PIECE_HI_HAT).c_str());
+    // Back again: triplets land on the e and a.
+    const BLPattern triplets = laneFrom(BL_PIECE_SNARE, "3.23.23.23.2");
+    bl_pattern_convert(&triplets, 16, &out);
+    CHECK(out.steps == 16 && laneString(out, BL_PIECE_SNARE) == "3..23..23..23..2", "triplets → 16ths: %s",
+          laneString(out, BL_PIECE_SNARE).c_str());
+    // Beats survive a round trip; other pieces are untouched; in-place works.
+    BLPattern rock = rockStraight8ths();
+    bl_pattern_convert(&rock, 12, &rock);
+    bl_pattern_convert(&rock, 16, &rock);
+    CHECK(laneString(rock, BL_PIECE_KICK).substr(0, 1) == "3" && rock.velocity[BL_PIECE_SNARE][4] == 3 &&
+              rock.velocity[BL_PIECE_SNARE][12] == 3 && laneString(rock, BL_PIECE_CRASH) == "................",
+          "round trip lost the backbeat");
+    // Same resolution is a no-op.
+    const BLPattern same = rockStraight8ths();
+    bl_pattern_convert(&same, 16, &out);
+    CHECK(std::memcmp(&same, &out, sizeof(out)) == 0, "16 → 16 should change nothing");
+}
+
 // How much faster than real time the engine renders (headroom for 5 ms buffers).
 static void reportSpeed() {
     const auto start = std::chrono::steady_clock::now();
@@ -1075,6 +1120,7 @@ int main() {
         {"click", testClick},
         {"action lands within one buffer", testActionLandsWithinOneBuffer},
         {"cue tick", testCueTick},
+        {"pattern convert", testPatternConvert},
         {"render speed", reportSpeed},
     };
     for (const auto &t : tests) {

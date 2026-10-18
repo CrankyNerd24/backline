@@ -10,6 +10,7 @@ struct SectionSettings: View {
     @Binding var selectedID: UUID?
     @State private var confirmingDelete = false
     @State private var choosingGroove = false
+    @State private var editingPattern = false
 
     var body: some View {
         @Bindable var store = store
@@ -29,6 +30,12 @@ struct SectionSettings: View {
             }
             .fullScreenCover(isPresented: $choosingGroove) {
                 GroovePickerView(section: section.wrappedValue)
+                    .environment(store)
+                    .environment(library)
+                    .environment(engine)
+            }
+            .fullScreenCover(isPresented: $editingPattern) {
+                PatternEditorView(sectionID: sectionID)
                     .environment(store)
                     .environment(library)
                     .environment(engine)
@@ -127,10 +134,12 @@ struct SectionSettings: View {
                         Label("Change groove", systemImage: "music.note.list")
                     }
                     .buttonStyle(ChipButtonStyle(prominent: true))
-                    // The Pattern Editor arrives in milestone 7.
-                    Button {} label: { Label("Edit pattern", systemImage: "square.grid.3x3") }
-                        .buttonStyle(ChipButtonStyle())
-                        .disabled(true)
+                    Button {
+                        editingPattern = true
+                    } label: {
+                        Label("Edit pattern", systemImage: "square.grid.3x3")
+                    }
+                    .buttonStyle(ChipButtonStyle())
                 }
             }
         }

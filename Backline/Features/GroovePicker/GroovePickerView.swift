@@ -96,7 +96,7 @@ struct GroovePickerView: View {
         return ScrollView {
             VStack(alignment: .leading, spacing: 2) {
                 styleRow("All grooves", count: total, value: nil)
-                ForEach(GrooveLibrary.styles, id: \.self) { name in
+                ForEach(library.allStyles, id: \.self) { name in
                     styleRow(name, count: counts[name] ?? 0, value: name)
                 }
             }

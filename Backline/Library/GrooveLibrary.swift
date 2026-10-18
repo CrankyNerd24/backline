@@ -2,18 +2,26 @@ import Foundation
 import Observation
 
 /// The built-in grooves, loaded once from the `grooves-*.json` files in the
-/// app bundle.
+/// app bundle, plus the player's own ("Save as my groove"), kept in
+/// Application Support/MyGrooves.json.
 @Observable
 final class GrooveLibrary {
     /// Style order from spec §6.2.
     static let styles = ["Rock", "Blues & Shuffle", "Funk", "Country", "Metal", "Punk", "Pop", "Ballad", "Reggae",
                          "Jazz & Swing", "Hip-hop", "Latin"]
     static let fallbackID = "rock.straight8ths"
+    static let myGroovesStyle = "My grooves"
 
-    let grooves: [Groove]
-    private let byID: [String: Groove]
+    private(set) var grooves: [Groove]
+    private(set) var userGrooves: [Groove]
+    @ObservationIgnored private var byID: [String: Groove]
+    @ObservationIgnored private let builtIn: [Groove]
+    @ObservationIgnored private let userFile: URL
 
-    init(bundle: Bundle = .main) {
+    /// Built-in styles, then "My grooves" once there are any.
+    var allStyles: [String] { Self.styles + (userGrooves.isEmpty ? [] : [Self.myGroovesStyle]) }
+
+    init(bundle: Bundle = .main, userFile: URL? = nil) {
         var loaded: [Groove] = []
         for url in Self.grooveFiles(in: bundle) {
             do {
@@ -28,9 +36,48 @@ final class GrooveLibrary {
                                  patterns: GroovePatterns(main: .rockStraight8ths, fill: .rockStraight8ths),
                                  smallFill: nil))
         }
+        // Locals only until every property is set (observed properties can't
+        // be read during init).
         let order = Dictionary(uniqueKeysWithValues: Self.styles.enumerated().map { ($1, $0) })
-        grooves = loaded.sorted { (order[$0.style] ?? 99, $0.name) < (order[$1.style] ?? 99, $1.name) }
+        let sorted = loaded.sorted { (order[$0.style] ?? 99, $0.name) < (order[$1.style] ?? 99, $1.name) }
+        let file = userFile ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("MyGrooves.json")
+        let mine = (try? JSONDecoder().decode([Groove].self, from: Data(contentsOf: file))) ?? []
+        let all = sorted + mine
+        builtIn = sorted
+        self.userFile = file
+        userGrooves = mine
+        grooves = all
+        byID = Dictionary(all.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    // MARK: My grooves
+
+    /// Saves edited patterns as a new groove in "My grooves".
+    func saveUserGroove(named name: String, patterns: GroovePatterns, basedOn original: Groove) -> Groove {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let groove = Groove(
+            id: "my.\(UUID().uuidString)", style: Self.myGroovesStyle,
+            name: trimmed.isEmpty ? "\(original.name) (mine)" : trimmed,
+            summary: "Your own groove, started from \(original.style) › \(original.name).",
+            tags: ["mine"] + (original.tags ?? []), tempoRange: original.tempoRange, patterns: patterns,
+            smallFill: nil)
+        userGrooves.append(groove)
+        rebuild()
+        return groove
+    }
+
+    func deleteUserGroove(_ id: String) {
+        userGrooves.removeAll { $0.id == id }
+        rebuild()
+    }
+
+    private func rebuild() {
+        grooves = builtIn + userGrooves
         byID = Dictionary(grooves.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        try? encoder.encode(userGrooves).write(to: userFile, options: .atomic)
     }
 
     /// The groove with this id, or Straight 8ths if it's missing (e.g. a song

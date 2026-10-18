@@ -22,9 +22,13 @@ struct Groove: Codable, Identifiable, Equatable {
 extension Groove {
     /// The cymbal the groove was written to keep time on. A section switched
     /// to this groove starts with it.
+    var naturalCymbals: CymbalChoice { patterns.main.naturalCymbals }
+}
+
+extension Pattern {
+    /// The cymbal this bar keeps time on.
     var naturalCymbals: CymbalChoice {
-        let main = patterns.main
-        func uses(_ piece: Piece) -> Bool { main.lanes[piece]?.contains { $0 != .off } ?? false }
+        func uses(_ piece: Piece) -> Bool { lanes[piece]?.contains { $0 != .off } ?? false }
         if uses(.hiHat) { return .hihat }
         if uses(.ride) { return .ride }
         if uses(.crash) { return .crash }

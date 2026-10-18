@@ -55,6 +55,32 @@ extension Section {
     }
 }
 
+extension Pattern {
+    /// Reads a bar back from the engine's C struct.
+    init(engineValue raw: BLPattern) {
+        let steps = Int(raw.steps) == 12 ? 12 : 16
+        var lanes: [Piece: [Velocity]] = [:]
+        withUnsafeBytes(of: raw.velocity) { bytes in
+            for (index, piece) in Piece.allCases.enumerated() {
+                let lane = (0..<steps).map { Velocity(rawValue: bytes[index * Int(BL_MAX_STEPS) + $0]) ?? .off }
+                if lane.contains(where: { $0 != .off }) { lanes[piece] = lane }
+            }
+        }
+        self.init(resolution: steps == 12 ? .triplets : .sixteenths, lanes: lanes)
+    }
+
+    /// The bar re-gridded to 16ths or triplets: every hit moves to the
+    /// nearest new step (straight offbeats become shuffled). The busy layer
+    /// doesn't survive; a derived one takes its place.
+    func converted(to resolution: Resolution) -> Pattern {
+        guard resolution != self.resolution else { return self }
+        var raw = engineValue
+        var out = BLPattern()
+        bl_pattern_convert(&raw, UInt8(resolution.steps), &out)
+        return Pattern(engineValue: out)
+    }
+}
+
 private extension TimeFeel {
     var engineValue: UInt8 {
         switch self {

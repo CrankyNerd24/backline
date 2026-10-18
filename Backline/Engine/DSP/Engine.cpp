@@ -671,6 +671,24 @@ void bl_pattern_set(BLPattern *p, uint8_t piece, uint8_t step, uint8_t velocity)
     if (piece < BL_PIECE_COUNT && step < BL_MAX_STEPS) p->velocity[piece][step] = velocity;
 }
 
+void bl_pattern_convert(const BLPattern *in, uint8_t steps, BLPattern *out) {
+    const int from = in->steps >= 1 && in->steps <= BL_MAX_STEPS ? in->steps : 16;
+    const int to = steps >= 1 && steps <= BL_MAX_STEPS ? steps : 16;
+    BLPattern result;
+    bl_pattern_init(&result, static_cast<uint8_t>(to));
+    for (int piece = 0; piece < BL_PIECE_COUNT; ++piece) {
+        for (int s = 0; s < from; ++s) {
+            const uint8_t v = in->velocity[piece][s];
+            if (v == BL_VEL_OFF || v > BL_VEL_LOUD) continue;
+            // Nearest new step; exact halves round up (later), which is what
+            // turns a straight offbeat into a shuffled one.
+            const int target = static_cast<int>(std::floor(static_cast<double>(s) * to / from + 0.5)) % to;
+            result.velocity[piece][target] = std::max(result.velocity[piece][target], v);
+        }
+    }
+    *out = result; // safe when `out` is `in`
+}
+
 void bl_engine_debug_set_trigger_log(BLEngine *e, BLTriggerRecord *buffer, uint32_t capacity) {
     e->engine.setTriggerLog(buffer, capacity);
 }

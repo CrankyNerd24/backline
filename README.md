@@ -4,7 +4,13 @@ An easy drum-track creator for iPad, for guitarists and other non-drummers. Buil
 
 The full product spec is in [`docs/spec.md`](docs/spec.md).
 
-## Status: milestone 6 (foot pedals)
+## Status: milestone 7 (Pattern Editor)
+
+**Milestone 7**: **Edit pattern** opens the Pattern Editor (spec §6.4):
+- **Grid:** nine rows (crash, ride, open hat, hi-hat, snare, three toms, kick), grouped with a little space between them, under a "1 e & a…" ruler. Tapping a step cycles off → normal → loud → soft (ghost) → off. The fill height shows the level (a third, two thirds, full), loud steps get a white outline, and alternate beats sit on a slightly different background. Every row has a speaker button to hear that drum.
+- **Groove bars or the fill bar**, and **16ths / Triplets**. Switching re-grids both bars, moving each hit to the nearest step, so straight eighths become a shuffle.
+- **Undo / Redo**, **Clear bar**, **Reset to *groove***, **Save as my groove** (it joins a "My grooves" style in the Groove Picker), and **Loop it**, which plays the bar on repeat; edits are heard from the next bar line.
+- Edits are stored in the section's own copy of the pattern. The library groove is never changed, and the copy is dropped when it matches the groove again.
 
 **Milestone 6**: hands stay on the guitar.
 - **Page-turner pedals** (Bluetooth keyboards) are read through GCKeyboard, which gives real key-down and key-up wherever the app's focus is. The pedals are ignored while you're typing in a text field.
@@ -78,7 +84,7 @@ Toms are silent and ride/crash use a hi-hat stand-in until the full kit (milesto
 
 `Tests/Pedal/PedalTests.cpp` covers gesture detection and MIDI decoding. That includes the milestone 6 acceptance test: a tap-only action fires on key-down with nothing added. The engine then applies any queued action at the start of the next audio buffer, which `EngineTests` checks.
 
-`Tests/DSP/EngineTests.cpp` covers milestones 1–6:
+`Tests/DSP/EngineTests.cpp` covers milestones 1–7:
 - Every hit within ±1 sample over a 10-minute render (worst error: 0 samples), at awkward tempos and sample rates, and in triplets.
 - Audio onsets on the exact sample, output independent of buffer size, and bit-identical renders.
 - No allocations on the render thread, even while timelines are being swapped.
@@ -86,6 +92,7 @@ Toms are silent and ride/crash use a hi-hat stand-in until the full kit (milesto
 - Section order, end of song, looping, and play-from-bar.
 - Swaps after reordering, shortening or deleting sections.
 - Every timeline freed.
+- Re-gridding between 16ths and triplets: offbeats shuffle, colliding notes keep the louder one, and the backbeat survives a round trip.
 - A song with every feel control switched on renders bit-identically twice (the milestone 3 acceptance test).
 - Every queued action, including cancelling, waiting for room, landing at the end of the loop, surviving a timeline swap and being ignored outside the song. Also vamp looping, tap tempo on the bar line, and the click landing exactly on the beat.
 - Separate checks for human, swing, busy, intensity, half and double time, cymbal routing, fills and the crash after them, count-in, the big ending, and sections sounding the same wherever they sit.

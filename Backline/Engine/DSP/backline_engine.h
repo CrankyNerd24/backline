@@ -179,6 +179,10 @@ void bl_engine_get_position(const BLEngine *engine, BLPosition *out);
 
 void bl_pattern_init(BLPattern *pattern, uint8_t steps);
 void bl_pattern_set(BLPattern *pattern, uint8_t piece, uint8_t step, uint8_t velocity);
+// Re-grids a bar to `steps` (16 or 12), moving every hit to the nearest new
+// step; where two hits of one piece land together, the louder wins. An
+// offbeat eighth moves to the third triplet, so straight becomes shuffled.
+void bl_pattern_convert(const BLPattern *in, uint8_t steps, BLPattern *out);
 
 // Offline testing only: records every scheduled hit into `buffer`. Not
 // thread-safe; set it before rendering and read it after.
