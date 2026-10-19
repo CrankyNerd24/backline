@@ -4,7 +4,14 @@ An easy drum-track creator for iPad, for guitarists and other non-drummers. Buil
 
 The full product spec is in [`docs/spec.md`](docs/spec.md).
 
-## Status: milestone 8 (full kit and Kit Editor)
+## Status: milestone 9 (WAV export)
+
+**Milestone 9**: **Export** in the header saves the song as a WAV (spec §8).
+- 48 kHz, 24-bit stereo, rendered offline (much faster than real time) on a private copy of the C++ engine, so playback isn't interrupted. The export plays the song from the top and is bit-identical to what you hear when you press Play.
+- The song plays to its end and rings out: the file stops once the last hit has decayed to silence (−80 dB), not at a fixed length.
+- Count-in is optional. Repeat-until-I-step sections play their set bars once. The export uses the song's tempo, not the practice Speed.
+- When it's done, **Share or Save to Files** opens the share sheet (Files, AirDrop, and so on). Progress and Cancel while it renders.
+- The spec suggests `AVAudioEngine` manual rendering. The engine is our own C++ code, so the export drives it directly and writes the WAV itself. The result is the same, and it's covered by the CMake tests.
 
 **Milestone 8**: every piece now has its own synthesized voice (spec §4.1).
 - **Starting sounds:** kicks (Big Room, Tight, Vintage, Punchy); snares (Tight Funk, Fat 70s, Rimshot Crack, Piccolo, Brushes, Cross-stick); hi-hats (Bright 14", Dark 15", Trashy); ride and crash (Dark Ride, Bell Ride, Thin Crash, Big Crash); toms (Rack 12", Rack 13", Floor 16").
@@ -99,7 +106,7 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 
 `Tests/Pedal/PedalTests.cpp` covers gesture detection and MIDI decoding. That includes the milestone 6 acceptance test: a tap-only action fires on key-down with nothing added. The engine then applies any queued action at the start of the next audio buffer, which `EngineTests` checks.
 
-`Tests/DSP/EngineTests.cpp` covers milestones 1–8:
+`Tests/DSP/EngineTests.cpp` covers milestones 1–9:
 - Every hit within ±1 sample over a 10-minute render (worst error: 0 samples), at awkward tempos and sample rates, and in triplets.
 - Audio onsets on the exact sample, output independent of buffer size, and bit-identical renders.
 - No allocations on the render thread, even while timelines are being swapped.
@@ -110,6 +117,7 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 - Every starting sound of every piece plays, stays in range and ends. Tune moves by octaves; decay, tone, openness and volume do what they say. The room adds a stereo tail only where a piece sends to it. Punch makes the kit louder without clipping. The six built-in kits render deterministically.
 - Re-gridding between 16ths and triplets: offbeats shuffle, colliding notes keep the louder one, and the backbeat survives a round trip.
 - A song with every feel control switched on renders bit-identically twice (the milestone 3 acceptance test).
+- Export matches playback sample for sample, whatever the buffer size. It covers the count-in and the ending bar, rings out to silence, plays vamps once, and stops after a song with no outro on every kit. The WAV header and 24-bit samples (with clipping) are byte-checked.
 - Every queued action, including cancelling, waiting for room, landing at the end of the loop, surviving a timeline swap and being ignored outside the song. Also vamp looping, tap tempo on the bar line, and the click landing exactly on the beat.
 - Separate checks for human, swing, busy, intensity, half and double time, cymbal routing, fills and the crash after them, count-in, the big ending, and sections sounding the same wherever they sit.
 
@@ -149,9 +157,10 @@ Backline/            app sources (Xcode synchronized folder: new files are picke
   Model/             Codable model types, SongStore (saving)
   Library/           GrooveLibrary + Grooves/*.json
   Engine/            EngineController, TimelineBuilder (Swift) + DSP/ (C++)
+  Export/            WAV export sheet and background render
   Input/             PedalController, keyboard and MIDI sources (Swift) + PedalCore/ (C++ gestures, MIDI)
 Tests/DSP/           C++ engine tests (CMake)
 Tests/Pedal/         C++ gesture and MIDI tests (CMake)
-tools/               offline render tool
+tools/               offline render tool (uses the same export path as the app)
 docs/spec.md         product spec
 ```
