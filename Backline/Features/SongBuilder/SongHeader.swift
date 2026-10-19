@@ -112,6 +112,7 @@ struct SongHeader: View {
             }
             Divider()
             Button("New Song", systemImage: "plus") { store.newSong() }
+            Button("New Empty Song", systemImage: "doc") { store.newSong(empty: true) }
             Button("Rename…", systemImage: "pencil") {
                 newName = store.song.name
                 renaming = true

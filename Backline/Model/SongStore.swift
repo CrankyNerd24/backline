@@ -61,9 +61,11 @@ final class SongStore {
         defaults.set(id.uuidString, forKey: Self.lastSongKey)
     }
 
-    func newSong() {
+    /// A new song with the starter sections, or with none when `empty`.
+    func newSong(empty: Bool = false) {
         saveNow()
         song = .blank(named: uniqueName("New Song"))
+        if empty { song.sections = [] }
         saveNow()
         defaults.set(song.id.uuidString, forKey: Self.lastSongKey)
     }
