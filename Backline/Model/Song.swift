@@ -167,15 +167,20 @@ extension Song {
     static func starter() -> Song {
         var song = Song(id: UUID(), name: "My First Song", bpm: 112, timeSignature: .fourFour,
                         kitID: Kit.garageKitID, countInBars: 1, sections: [])
+        song.addStarterSections()
+        return song
+    }
+
+    /// Appends the starter layout, numbering after any sections already there.
+    mutating func addStarterSections() {
         let plan: [(SectionKind, String)] = [
             (.intro, "rock.straight8ths"), (.verse, "rock.straight8ths"), (.chorus, "rock.driving"),
             (.verse, "rock.straight8ths"), (.chorus, "rock.driving"), (.outro, "rock.halfTime"),
         ]
         for (kind, groove) in plan {
-            song.sections.append(Section(kind: kind, name: song.nextName(for: kind), grooveID: groove))
+            sections.append(Section(kind: kind, name: nextName(for: kind), grooveID: groove))
         }
-        song.sections[song.sections.count - 1].fillIntoNext = .none
-        return song
+        sections[sections.count - 1].fillIntoNext = .none
     }
 
     static func blank(named name: String) -> Song {

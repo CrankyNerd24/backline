@@ -161,7 +161,8 @@ struct SectionBlock: View {
                 GeometryReader { geo in
                     let x = geo.size.width * progress
                     ZStack(alignment: .leading) {
-                        Rectangle().fill(.black.opacity(0.2)).frame(width: x)
+                        // Lighten, not darken: the dark label keeps its contrast (spec §11).
+                        Rectangle().fill(.white.opacity(0.25)).frame(width: x)
                         Rectangle().fill(Theme.SectionColor.onColor).frame(width: 2).offset(x: max(0, x - 1))
                     }
                 }
@@ -175,7 +176,6 @@ struct SectionBlock: View {
                 Spacer(minLength: 0)
                 Text(grooveName)
                     .font(Theme.body(12, weight: .medium))
-                    .opacity(0.8)
             }
             .lineLimit(1)
             .padding(10)

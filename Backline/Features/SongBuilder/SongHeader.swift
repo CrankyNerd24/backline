@@ -16,6 +16,7 @@ struct SongHeader: View {
     @State private var newName = ""
     @State private var confirmingDelete = false
     @State private var tapTempo = TapTempo()
+    @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
 
     var body: some View {
         HStack(spacing: 16) {
@@ -117,6 +118,8 @@ struct SongHeader: View {
             }
             Button("Duplicate", systemImage: "plus.square.on.square") { store.duplicateSong() }
             Button("Delete…", systemImage: "trash", role: .destructive) { confirmingDelete = true }
+            Divider()
+            Button("How Backline Works", systemImage: "questionmark.circle") { hasSeenWelcome = false }
         } label: {
             HStack(spacing: 6) {
                 Text(store.song.name)

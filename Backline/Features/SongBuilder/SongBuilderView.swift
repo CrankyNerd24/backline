@@ -6,6 +6,14 @@ struct SongBuilderView: View {
     @Environment(SongStore.self) private var store
     @Environment(EngineController.self) private var engine
     @State private var selectedID: UUID?
+    @State private var dismissedError: String?
+    @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
+
+    /// Something that went wrong saving or with audio, until it's dismissed.
+    private var error: String? {
+        let error = engine.lastError ?? store.lastError
+        return error == dismissedError ? nil : error
+    }
 
     /// The selection, falling back to the first section if it went away.
     private var selection: UUID? {
@@ -16,6 +24,7 @@ struct SongBuilderView: View {
     var body: some View {
         VStack(spacing: 0) {
             SongHeader()
+            if let error { errorBanner(error) }
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     SongRow(selectedID: $selectedID, selection: selection)
@@ -38,6 +47,9 @@ struct SongBuilderView: View {
             engine.cuedSectionID = id // where a pedal's Play starts
         }
         .pedalConfirmations()
+        .sheet(isPresented: Binding(get: { !hasSeenWelcome }, set: { hasSeenWelcome = !$0 })) {
+            WelcomeView()
+        }
         .onChange(of: store.song.id) {
             engine.stop()
             engine.setLoop(nil)
@@ -50,10 +62,49 @@ struct SongBuilderView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("No sections yet")
                     .font(Theme.condensed(28, weight: .bold))
-                Text("Tap + in the song row to add an intro, verse, chorus or any other section.")
+                    .accessibilityAddTraits(.isHeader)
+                Text("Start from a ready-made layout, or tap + in the song row to add any section.")
                     .font(Theme.body(16))
                     .foregroundStyle(Theme.textMuted)
+                HStack(spacing: 12) {
+                    Button {
+                        store.song.addStarterSections()
+                        selectedID = store.song.sections.first?.id
+                    } label: {
+                        Label("Intro, verses, choruses and outro", systemImage: "rectangle.split.3x1")
+                    }
+                    .buttonStyle(ChipButtonStyle(prominent: true))
+                    Button {
+                        let section = Section(kind: .verse, name: store.song.nextName(for: .verse),
+                                              grooveID: GrooveLibrary.fallbackID)
+                        store.song.sections.append(section)
+                        selectedID = section.id
+                    } label: {
+                        Label("Just a verse", systemImage: "plus")
+                    }
+                    .buttonStyle(ChipButtonStyle())
+                }
+                .padding(.top, 8)
             }
         }
+    }
+
+    private func errorBanner(_ message: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(Theme.accent)
+                .accessibilityHidden(true)
+            Text(message)
+                .font(Theme.body(15, weight: .medium))
+                .lineLimit(2)
+            Spacer()
+            Button("Dismiss") { dismissedError = message }
+                .buttonStyle(ChipButtonStyle())
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 8)
+        .background(Theme.panel)
+        .overlay(alignment: .bottom) { Theme.line.frame(height: 1) }
+        .accessibilityElement(children: .combine)
     }
 }

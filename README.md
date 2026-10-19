@@ -4,7 +4,13 @@ An easy drum-track creator for iPad, for guitarists and other non-drummers. Buil
 
 The full product spec is in [`docs/spec.md`](docs/spec.md).
 
-## Status: milestone 9 (WAV export)
+## Status: milestone 10 (polish): all v1 milestones built
+
+**Milestone 10**: polish.
+- **Onboarding:** on first launch, a short welcome explains the starter song (Intro, Verse, Chorus, Verse, Chorus, Outro in Rock), the Groove Picker, and Play-along with pedals. **How Backline Works** in the song menu shows it again.
+- **Empty states:** a song with no sections offers the starter layout or a single verse in one tap. Pedal Setup says when no pedal is connected. The Groove Picker has a message for an empty list.
+- **Errors are shown:** save and audio problems, which were recorded but never displayed, now show as a dismissible banner.
+- **Accessibility (spec §11):** every text and background token pair meets 4.5:1. The played part of a section block is now lightened rather than darkened, which had dropped labels to about 3.6:1. In Play-along, VoiceOver reads "Chorus 1, bar 3 of 8" whenever it's focused, and the song map says which section this is and what's next. Two-finger double tap (Magic Tap) plays and stops.
 
 **Milestone 9**: **Export** in the header saves the song as a WAV (spec §8).
 - 48 kHz, 24-bit stereo, rendered offline (much faster than real time) on a private copy of the C++ engine, so playback isn't interrupted. The export plays the song from the top and is bit-identical to what you hear when you press Play.

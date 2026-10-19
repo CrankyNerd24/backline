@@ -136,7 +136,7 @@ struct GroovePickerView: View {
         return ScrollView {
             if results.isEmpty {
                 VStack(spacing: 8) {
-                    Text("No grooves match “\(query)”")
+                    Text(query.isEmpty ? "No grooves here yet" : "No grooves match “\(query)”")
                         .font(Theme.condensed(24, weight: .bold))
                     Text("Try a style or a feel, like rock, shuffle or half-time.")
                         .font(Theme.body(15))

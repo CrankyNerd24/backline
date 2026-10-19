@@ -75,7 +75,9 @@ struct PedalSetupView: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     Eyebrow("Test it")
-                    Text(pedals.lastTest ?? "Step on a pedal to see what it does.")
+                    Text(pedals.lastTest ?? (pedals.deviceDescription == nil
+                            ? "No pedal connected yet. Turn yours on, or use Add a pedal."
+                            : "Step on a pedal to see what it does."))
                         .font(Theme.body(16, weight: .semibold))
                         .foregroundStyle(pedals.lastTest == nil ? Theme.textMuted : Theme.text)
                         .padding(.horizontal, 14)
