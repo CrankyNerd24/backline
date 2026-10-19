@@ -45,22 +45,24 @@ BLOfflineRender *bl_offline_create(double sampleRate, double bpm, const BLKit *k
 
     // Vamps play their set bar count once: there is no one to step them on.
     std::vector<BLSectionDesc> once(sections, sections + count);
-    uint64_t bars = 0;
-    bool ending = false;
+    uint64_t beats = 0;
     for (auto &s : once) {
         s.repeatUntilStep = false;
-        bars += s.bars;
-        ending = ending || s.bigEnding;
+        beats += static_cast<uint64_t>(s.bars) * bl_meter_beats(s.meter);
+    }
+    for (const auto &s : once) {
+        if (!s.bigEnding) continue;
+        beats += bl_meter_beats(s.meter); // playback stops after the first ending bar
+        break;
     }
     const BLSongDesc songDesc = song ? *song : BLSongDesc{};
     const bool withCountIn = countIn && songDesc.countInBars > 0;
-    if (withCountIn) bars += songDesc.countInBars;
-    if (ending) bars += 1; // playback stops after the first ending bar
+    if (withCountIn) beats += static_cast<uint64_t>(songDesc.countInBars) * bl_meter_beats(once[0].meter);
 
     auto *r = new BLOfflineRender;
     r->engine = bl_engine_create(sampleRate);
     r->sampleRate = sampleRate;
-    r->songFrames = static_cast<uint64_t>(std::llround(static_cast<double>(bars) * 240.0 / bpm * sampleRate));
+    r->songFrames = static_cast<uint64_t>(std::llround(static_cast<double>(beats) * 60.0 / bpm * sampleRate));
     if (kit) bl_engine_set_kit(r->engine, kit);
     bl_engine_set_tempo(r->engine, bpm);
     bl_engine_set_timeline(r->engine, bl_timeline_create(&songDesc, once.data(), count));

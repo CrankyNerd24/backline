@@ -47,6 +47,11 @@ enum Salt : uint32_t { kSaltBusy = 1, kSaltTime = 2, kSaltTimeB = 3, kSaltVeloci
 
 int stepsOf(const BLPattern &p) { return p.steps >= 1 && p.steps <= BL_MAX_STEPS ? p.steps : 16; }
 
+int beatsOf(const BLSectionDesc &section) { return bl_meter_beats(section.meter); }
+
+// Steps per beat of the bar's grid, at least 1.
+int perBeatOf(int steps, int beats) { return std::max(1, steps / beats); }
+
 bool hasHits(const BLPattern &p, int piece) {
     for (int s = 0; s < stepsOf(p); ++s)
         if (p.velocity[piece][s] != BL_VEL_OFF) return true;
@@ -82,59 +87,70 @@ BLPattern smallFillOf(const BLSectionDesc &section) {
     BLPattern out = section.main;
     const int steps = stepsOf(section.main);
     if (stepsOf(section.fill) != steps || isEmpty(section.fill)) return out;
+    const int beats = beatsOf(section);
     for (int piece = 0; piece < BL_PIECE_COUNT; ++piece)
-        for (int s = steps * 3 / 4; s < steps; ++s) out.velocity[piece][s] = section.fill.velocity[piece][s];
+        for (int s = steps * (beats - 1) / beats; s < steps; ++s) out.velocity[piece][s] = section.fill.velocity[piece][s];
     return out;
 }
 
 // Extra notes for Busy > 0.5 when the groove doesn't supply a busy layer:
 // in-between notes on the time-keeper and ghost notes before the backbeats.
-BLPattern derivedBusyLayer(const BLPattern &main) {
+BLPattern derivedBusyLayer(const BLPattern &main, int beats) {
     BLPattern layer;
     std::memset(&layer, 0, sizeof(layer));
     const int steps = stepsOf(main);
     layer.steps = static_cast<uint8_t>(steps);
     const int keeper = keeperOf(main);
-    const int perBeat = steps / 4;
+    const int perBeat = perBeatOf(steps, beats);
     auto on = [&](int piece, int s) { return main.velocity[piece][(s + steps) % steps] != BL_VEL_OFF; };
     if (keeper >= 0)
         for (int s = 0; s < steps; ++s)
             if (!on(keeper, s) && on(keeper, s - 1)) layer.velocity[keeper][s] = BL_VEL_SOFT;
-    for (int backbeat : {perBeat, perBeat * 3}) {
+    // Ghost notes before the backbeats: 2 and 4 in four beats, any beat after
+    // the first otherwise.
+    for (int beat = 1; beat < beats; ++beat) {
+        if (beats == 4 && beat == 2) continue;
+        const int backbeat = beat * perBeat;
         const int before = backbeat - 1;
         if (on(BL_PIECE_SNARE, backbeat) && !on(BL_PIECE_SNARE, before)) layer.velocity[BL_PIECE_SNARE][before] = BL_VEL_SOFT;
     }
-    if (steps == 16 && !on(BL_PIECE_KICK, 14) && !on(BL_PIECE_SNARE, 14)) layer.velocity[BL_PIECE_KICK][14] = BL_VEL_NORMAL;
+    if (steps == 16 && beats == 4 && !on(BL_PIECE_KICK, 14) && !on(BL_PIECE_SNARE, 14))
+        layer.velocity[BL_PIECE_KICK][14] = BL_VEL_NORMAL;
     return layer;
 }
 
 // How readily a note is dropped when Busy < 0.5 (0 = never). Lowest-priority
 // first: hat sixteenths, ghost notes, extra kicks, hat eighths.
-float removability(const GridHit &h, int steps, int keeper) {
-    const int perBeat = steps / 4;
+float removability(const GridHit &h, int steps, int beats, int keeper) {
+    const int perBeat = perBeatOf(steps, beats);
     const bool onBeat = h.step % perBeat == 0;
-    if (h.piece == keeper && steps == 16 && h.step % 2 == 1) return 1.0f;
+    const bool sixteenths = perBeat % 2 == 0; // 4 a beat in 4/4 and 3/4, 6 in 6/8
+    const bool strongKick = h.step == 0 || (beats % 2 == 0 && h.step == steps / 2);
+    const int beat = h.step / perBeat;
+    const bool backbeat = onBeat && (beats == 4 ? beat == 1 || beat == 3 : beat != 0);
+    if (h.piece == keeper && sixteenths && h.step % 2 == 1) return 1.0f;
     if (h.velocity == BL_VEL_SOFT) return 0.9f;
-    if (h.piece == BL_PIECE_KICK && h.step != 0 && h.step != steps / 2) return 0.7f;
-    if (h.piece == keeper && !onBeat) return steps == 16 ? 0.5f : 0.6f;
+    if (h.piece == BL_PIECE_KICK && !strongKick) return 0.7f;
+    if (h.piece == keeper && !onBeat) return sixteenths ? 0.5f : 0.6f;
     if (h.piece == BL_PIECE_OPEN_HAT) return 0.4f;
-    if (h.piece == BL_PIECE_SNARE && h.step != perBeat && h.step != perBeat * 3) return 0.3f;
+    if (h.piece == BL_PIECE_SNARE && !backbeat) return 0.3f;
     return 0.0f;
 }
 
 void applyBusy(std::vector<GridHit> &hits, const BLSectionDesc &section, const BLPattern &main, uint16_t bar) {
     const float busy = std::clamp(section.busy, 0.0f, 1.0f);
     const int steps = stepsOf(main);
+    const int beats = beatsOf(section);
     if (busy < 0.5f) {
         const float thin = (0.5f - busy) / 0.5f;
         const int keeper = keeperOf(main);
         hits.erase(std::remove_if(hits.begin(), hits.end(),
-                                  [&](const GridHit &h) { return removability(h, steps, keeper) > 1.0f - thin + 1e-4f; }),
+                                  [&](const GridHit &h) { return removability(h, steps, beats, keeper) > 1.0f - thin + 1e-4f; }),
                    hits.end());
     } else if (busy > 0.5f) {
         const float chance = (busy - 0.5f) / 0.5f;
         const BLPattern layer = isEmpty(section.busyLayer) || stepsOf(section.busyLayer) != steps
-                                    ? derivedBusyLayer(main)
+                                    ? derivedBusyLayer(main, beats)
                                     : section.busyLayer;
         for (const GridHit &h : gridHits(layer)) {
             if (main.velocity[h.piece][h.step] != BL_VEL_OFF) continue;
@@ -217,14 +233,16 @@ std::vector<TimelineHit> buildBar(const BLSectionDesc &section, int b, uint8_t f
                            : fill == BL_FILL_SMALL                       ? smallFillOf(section)
                                                                          : main;
     const int steps = stepsOf(base);
-    const double stepBeats = 4.0 / steps;
+    const int beats = beatsOf(section);
+    const double stepBeats = static_cast<double>(beats) / steps;
 
     std::vector<GridHit> grid = gridHits(base);
     if (!isFill) applyBusy(grid, section, main, bar);
     routeCymbals(grid, section.cymbals, main);
 
-    // Time feel. Fills always play as written so they land on the change.
-    const uint8_t time = isFill ? static_cast<uint8_t>(BL_TIME_NORMAL) : section.time;
+    // Time feel. Fills always play as written so they land on the change,
+    // and only four-beat bars have a half or double time.
+    const uint8_t time = isFill || beats != 4 ? static_cast<uint8_t>(BL_TIME_NORMAL) : section.time;
     double scale = 1.0;
     if (time == BL_TIME_HALF) {
         // The pattern stretches across two bars: even bars play its first
@@ -259,8 +277,9 @@ std::vector<TimelineHit> buildBar(const BLSectionDesc &section, int b, uint8_t f
     }
 
     // Swing delays every second sixteenth (every second eighth at half-time).
+    // Triplet and compound grids already swing.
     const double swing = std::clamp(static_cast<double>(section.swing), 0.0, 1.0);
-    if (steps == 16 && swing > 0.0)
+    if (perBeatOf(steps, beats) == 4 && swing > 0.0)
         for (GridHit &h : grid)
             if (h.step % 2 == 1) h.beat += swing * kMaxSwing * stepBeats * scale;
 
@@ -288,7 +307,7 @@ std::vector<TimelineHit> endingHits(const BLSectionDesc &section) {
 
 Timeline::Timeline(const BLSongDesc &song, const BLSectionDesc *sections, uint32_t count) {
     ++live;
-    addCountIn(song.countInBars);
+    addCountIn(song.countInBars, count > 0 ? sections[0].meter : static_cast<uint8_t>(BL_METER_4_4));
     for (uint32_t s = 0; s < count; ++s) {
         // A crash on beat 1 follows any fill, unless the section already rides
         // the crash. A vamp never fills on its own, so it never sets one up.
@@ -303,32 +322,40 @@ Timeline::Timeline(const BLSongDesc &song, const BLSectionDesc *sections, uint32
 Timeline::~Timeline() { --live; }
 
 TimelineBar Timeline::storeHits(uint32_t key, uint16_t sectionIndex, uint16_t barInSection, BarKind kind, bool vamp,
-                                std::vector<TimelineHit> &hits) {
+                                uint8_t beats, std::vector<TimelineHit> &hits) {
     std::sort(hits.begin(), hits.end(), [](const TimelineHit &a, const TimelineHit &b) {
         if (a.beat != b.beat) return a.beat < b.beat;
         return a.offsetSeconds < b.offsetSeconds;
     });
     const TimelineBar bar{key, sectionIndex, barInSection, static_cast<uint32_t>(hits_.size()),
-                          static_cast<uint32_t>(hits.size()), kind, vamp};
+                          static_cast<uint32_t>(hits.size()), kind, vamp, beats};
     hits_.insert(hits_.end(), hits.begin(), hits.end());
     return bar;
 }
 
-void Timeline::addCountIn(uint8_t bars) {
+// Counts in the way a player would: every beat in 4/4 and 3/4; every eighth
+// in 6/8 and 12/8, louder on the beats.
+void Timeline::addCountIn(uint8_t bars, uint8_t meter) {
     countInBars_ = std::min<uint8_t>(bars, 2);
+    const uint8_t beats = bl_meter_beats(meter);
+    const bool compound = meter == BL_METER_6_8 || meter == BL_METER_12_8;
+    const int clicks = compound ? beats * 3 : beats;
     for (uint32_t b = 0; b < countInBars_; ++b) {
         std::vector<TimelineHit> hits;
-        for (int beat = 0; beat < 4; ++beat) {
-            const uint8_t v = beat == 0 ? BL_VEL_LOUD : BL_VEL_NORMAL;
-            hits.push_back({static_cast<double>(beat), 0.0f, kAmp[v], kBright[v], BL_PIECE_HI_HAT});
+        for (int c = 0; c < clicks; ++c) {
+            const bool onBeat = !compound || c % 3 == 0;
+            const uint8_t v = c == 0 ? BL_VEL_LOUD : onBeat ? BL_VEL_NORMAL : BL_VEL_SOFT;
+            const double beat = compound ? c / 3.0 : static_cast<double>(c);
+            hits.push_back({beat, 0.0f, kAmp[v], kBright[v], BL_PIECE_HI_HAT});
         }
-        bars_.push_back(storeHits(0, 0xFFFF, static_cast<uint16_t>(b), BarKind::CountIn, false, hits));
+        bars_.push_back(storeHits(0, 0xFFFF, static_cast<uint16_t>(b), BarKind::CountIn, false, beats, hits));
     }
 }
 
 void Timeline::addSection(const BLSectionDesc &section, uint16_t index, bool crashOnOne) {
     const int bars = std::clamp<int>(section.bars, 1, 64);
     const bool vamp = section.repeatUntilStep;
+    const uint8_t beats = bl_meter_beats(section.meter);
     const uint8_t configuredFill = section.fillIntoNext;
 
     for (int b = 0; b < bars; ++b) {
@@ -336,7 +363,7 @@ void Timeline::addSection(const BLSectionDesc &section, uint16_t index, bool cra
         // when that happens (the engine swaps in the spare fill bar).
         const uint8_t fill = b == bars - 1 && !vamp ? configuredFill : static_cast<uint8_t>(BL_FILL_NONE);
         std::vector<TimelineHit> hits = buildBar(section, b, fill, b == 0 && crashOnOne);
-        bars_.push_back(storeHits(section.key, index, static_cast<uint16_t>(b), BarKind::Song, vamp, hits));
+        bars_.push_back(storeHits(section.key, index, static_cast<uint16_t>(b), BarKind::Song, vamp, beats, hits));
         ++songBars_;
     }
 
@@ -349,15 +376,15 @@ void Timeline::addSection(const BLSectionDesc &section, uint16_t index, bool cra
     std::vector<TimelineHit> bigFill = buildBar(section, bars - 1, BL_FILL_BIG, false);
     std::vector<TimelineHit> ending = endingHits(section);
     if (sectionSpares_.size() <= index) sectionSpares_.resize(index + 1u);
-    sectionSpares_[index] = {storeHits(section.key, index, last, BarKind::Fill, vamp, fill),
-                             storeHits(section.key, index, last, BarKind::Fill, vamp, bigFill),
-                             storeHits(section.key, index, static_cast<uint16_t>(bars), BarKind::Ending, false, ending)};
+    sectionSpares_[index] = {storeHits(section.key, index, last, BarKind::Fill, vamp, beats, fill),
+                             storeHits(section.key, index, last, BarKind::Fill, vamp, beats, bigFill),
+                             storeHits(section.key, index, static_cast<uint16_t>(bars), BarKind::Ending, false, beats, ending)};
 }
 
 void Timeline::addEnding(const BLSectionDesc &section, uint16_t index) {
     std::vector<TimelineHit> hits = endingHits(section);
     bars_.push_back(storeHits(section.key, index, static_cast<uint16_t>(std::clamp<int>(section.bars, 1, 64)),
-                              BarKind::Ending, false, hits));
+                              BarKind::Ending, false, bl_meter_beats(section.meter), hits));
 }
 
 int32_t Timeline::find(uint32_t key, uint16_t barInSection, BarKind kind) const {
@@ -376,3 +403,11 @@ uint32_t Timeline::sectionEnd(uint32_t index) const {
 }
 
 } // namespace backline
+
+extern "C" uint8_t bl_meter_beats(uint8_t meter) {
+    switch (meter) {
+    case BL_METER_3_4: return 3;
+    case BL_METER_6_8: return 2;
+    default: return 4;
+    }
+}

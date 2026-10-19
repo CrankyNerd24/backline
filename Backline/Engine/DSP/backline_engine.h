@@ -96,6 +96,14 @@ void bl_kit_builtin(uint8_t index, BLKit *out);
 // section), so the same song always produces the same timeline.
 
 enum { BL_TIME_NORMAL = 0, BL_TIME_HALF = 1, BL_TIME_DOUBLE = 2 };
+// Time signatures. Tempo counts the beat a player taps: a quarter note in 4/4
+// and 3/4, a dotted quarter in 6/8 and 12/8. A bar's steps divide its beats
+// evenly: 16 (sixteenths) or 12 (triplets) in 4/4; 12 or 9 in 3/4; 12
+// (sixteenths) in 6/8; 12 (eighths) in 12/8. Half and double time apply to
+// four-beat bars (4/4 and 12/8) only.
+enum { BL_METER_4_4 = 0, BL_METER_3_4 = 1, BL_METER_6_8 = 2, BL_METER_12_8 = 3 };
+// Beats per bar: 4, 3, 2 or 4 (4 for anything unknown).
+uint8_t bl_meter_beats(uint8_t meter);
 // BL_CYMBALS_GROOVE keeps whatever cymbal the groove was written with.
 enum { BL_CYMBALS_GROOVE = 0, BL_CYMBALS_HIHAT = 1, BL_CYMBALS_RIDE = 2, BL_CYMBALS_CRASH = 3 };
 enum { BL_FILL_NONE = 0, BL_FILL_SMALL = 1, BL_FILL_BIG = 2 };
@@ -116,10 +124,11 @@ typedef struct {
     uint8_t fillIntoNext;  // BL_FILL_*
     bool bigEnding;        // add a final crash + kick bar after this section, then stop
     bool repeatUntilStep;  // vamp: loop until a Next section action
+    uint8_t meter;         // BL_METER_*; sections of one song may differ
 } BLSectionDesc;
 
 typedef struct {
-    uint8_t countInBars;   // 0…2 bars of hi-hat click before the song
+    uint8_t countInBars;   // 0…2 bars of hi-hat click before the song, in the first section's meter
 } BLSongDesc;
 
 // Sets every field to its neutral default: feel as written, normal time, the
@@ -162,6 +171,7 @@ typedef struct {
     uint32_t sectionKey;   // key of the section now playing, 0 when stopped
     int32_t barInSection;  // 0-based (the count-in bar while counting in)
     double barPhase;       // 0…1 through the current bar
+    uint8_t beatsInBar;    // beats in the current bar (its meter), 4 when stopped
     double bpm;
     int64_t sampleTime;    // samples rendered since the engine was created
     uint8_t pendingAction;     // BL_ACTION_* waiting to land (navigation only), or NONE

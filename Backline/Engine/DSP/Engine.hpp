@@ -70,7 +70,8 @@ private:
     void scheduleNextEvent();
     int64_t sampleAt(double globalBeat, float offsetSeconds = 0.0f) const;
     double beatAt(int64_t sample) const;
-    double barBeat() const { return static_cast<double>(barCount_) * 4.0; }
+    double barBeat() const { return barStartBeat_; }
+    double barBeats() const { return playBar_ ? playBar_->beats : 4.0; }
 
     void queueAction(uint8_t action, uint8_t timing);
     void clearActions();
@@ -98,7 +99,8 @@ private:
     uint32_t songBar_ = 0;                 // timeline bar now playing (count-in included)
     const TimelineBar *playBar_ = nullptr; // whose hits are playing
     uint32_t countInTarget_ = 0;           // song bar to jump to after the count-in
-    int64_t barCount_ = 0;                 // bars played since start (drives timing; loops keep counting)
+    int64_t barCount_ = 0;                 // bars played since start (loops keep counting)
+    double barStartBeat_ = 0.0;            // beats since start at the current bar line (drives timing)
     uint32_t hitIndex_ = 0;                // next hit within playBar_
     double anchorTime_ = 0.0;
     double anchorBeat_ = 0.0;
@@ -145,6 +147,7 @@ private:
     std::atomic<uint32_t> pubSectionKey_{0};
     std::atomic<int32_t> pubBarInSection_{0};
     std::atomic<double> pubBarPhase_{0.0};
+    std::atomic<uint8_t> pubBeatsInBar_{4};
     std::atomic<double> pubBpm_{120.0};
     std::atomic<int64_t> pubSampleTime_{0};
     std::atomic<uint8_t> pubAction_{BL_ACTION_NONE};

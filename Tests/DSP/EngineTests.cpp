@@ -1471,6 +1471,164 @@ static void testWavWriter() {
     CHECK(bl_wav_open("/nonexistent-dir/x.wav", 48000) == nullptr, "opened a file in a missing folder");
 }
 
+// MARK: - Time signatures
+
+static BLSectionDesc metered(uint32_t key, uint16_t bars, uint8_t meter, const BLPattern &p) {
+    BLSectionDesc d = section(key, bars, p);
+    d.meter = meter;
+    return d;
+}
+
+static std::vector<int64_t> samplesOf(const Render &r, int piece) {
+    std::vector<int64_t> out;
+    for (const auto &h : r.triggers)
+        if (h.piece == piece) out.push_back(h.sample);
+    return out;
+}
+
+// Each meter's bar is its beats long, and its steps divide them evenly.
+static void testMeters() {
+    struct Case {
+        uint8_t meter;
+        uint8_t steps;
+        int64_t bar; // samples at 120 BPM, 48 kHz
+    } cases[] = {{BL_METER_3_4, 12, 72000}, {BL_METER_3_4, 9, 72000}, {BL_METER_6_8, 12, 48000}, {BL_METER_12_8, 12, 96000}};
+    CHECK(bl_meter_beats(BL_METER_4_4) == 4 && bl_meter_beats(BL_METER_3_4) == 3 && bl_meter_beats(BL_METER_6_8) == 2 &&
+              bl_meter_beats(BL_METER_12_8) == 4 && bl_meter_beats(99) == 4,
+          "beats per bar");
+    for (const Case &c : cases) {
+        std::vector<int> all;
+        for (int s = 0; s < c.steps; ++s) all.push_back(s);
+        BLPattern p;
+        bl_pattern_init(&p, c.steps);
+        for (int s : all) bl_pattern_set(&p, BL_PIECE_HI_HAT, static_cast<uint8_t>(s), BL_VEL_NORMAL);
+        const Render r = renderTimeline(timelineOf({metered(1, 3, c.meter, p)}), 120.0, 3.0 * c.bar / 48000.0 + 1.0,
+                                        48000.0, fixed(256));
+        const auto hats = samplesOf(r, BL_PIECE_HI_HAT);
+        CHECK(hats.size() == static_cast<size_t>(3 * c.steps), "meter %d/%d steps: %zu hits", c.meter, c.steps, hats.size());
+        bool exact = true;
+        for (size_t i = 0; i < hats.size(); ++i) {
+            const int64_t ideal = std::llround(static_cast<double>(i) * static_cast<double>(c.bar) / c.steps);
+            exact = exact && std::llabs(hats[i] - ideal) <= 1;
+        }
+        CHECK(exact, "meter %d/%d steps: hits off the grid", c.meter, c.steps);
+    }
+}
+
+// A song that changes meter: bars follow each other with no gap or overlap,
+// the position reports each bar's beats, and the song ends on time.
+static void testMixedMeters() {
+    const BLSectionDesc a = section(1, 1, only(BL_PIECE_KICK, {0, 4, 8, 12}));
+    const BLSectionDesc b = metered(2, 2, BL_METER_3_4, only(BL_PIECE_KICK, {0, 4, 8}, 12));
+    const BLSectionDesc c = metered(3, 1, BL_METER_6_8, only(BL_PIECE_KICK, {0, 6}, 12));
+    std::vector<BLPosition> seen;
+    const Render r = renderTimeline(timelineOf({a, b, c}), 120.0, 8.0, 48000.0, fixed(256), [&](BLEngine *e, int64_t t) {
+        if (t == 96000 + 36096 || t == 240000 + 24192 || t == 47872) seen.push_back(positionOf(e));
+    });
+    const std::vector<int64_t> expect = {0,      24000,  48000,  72000,  96000,  120000, 144000,
+                                         168000, 192000, 216000, 240000, 264000};
+    const auto kicks = samplesOf(r, BL_PIECE_KICK);
+    CHECK(kicks == expect, "kicks: %zu, first mismatch at %zu", kicks.size(),
+          static_cast<size_t>(std::mismatch(kicks.begin(), kicks.end(), expect.begin(), expect.end()).first - kicks.begin()));
+    CHECK(join(barsPlayed(r)) == "0,1,2,3", "bars %s", join(barsPlayed(r)).c_str());
+    CHECK(seen.size() == 3, "positions seen %zu", seen.size());
+    if (seen.size() == 3) {
+        CHECK(seen[0].beatsInBar == 4 && seen[1].beatsInBar == 3 && seen[2].beatsInBar == 2, "beats %d %d %d",
+              seen[0].beatsInBar, seen[1].beatsInBar, seen[2].beatsInBar);
+        CHECK(std::fabs(seen[1].barPhase - 0.5) < 0.01 && std::fabs(seen[2].barPhase - 0.5) < 0.01,
+              "phase %.3f %.3f", seen[1].barPhase, seen[2].barPhase);
+    }
+    // The song stops after the 6/8 bar.
+    BLEngine *e = bl_engine_create(48000.0);
+    bl_engine_set_tempo(e, 120.0);
+    bl_engine_set_timeline(e, timelineOf({a, b, c}));
+    bl_engine_play_from(e, 0, false);
+    std::vector<float> buf(256);
+    bool stoppedEarly = false, stoppedOnTime = false;
+    for (int64_t t = 0; t < 300000; t += 256) {
+        bl_engine_render(e, buf.data(), buf.data(), 256);
+        const BLPosition p = positionOf(e);
+        // The last bar ends at 288000, the first sample of a buffer.
+        if (!p.playing && t < 288000) stoppedEarly = true;
+        if (!p.playing && t == 288000) stoppedOnTime = true;
+    }
+    bl_engine_destroy(e);
+    CHECK(!stoppedEarly && stoppedOnTime, "stop: early %d, on time %d", stoppedEarly, stoppedOnTime);
+}
+
+// The count-in follows the first section's meter: three clicks in 3/4, six
+// eighths in 6/8 with the beats louder.
+static void testCountInMeters() {
+    const Render waltz = renderTimeline(timelineOf({metered(1, 1, BL_METER_3_4, only(BL_PIECE_KICK, {0}, 12))}, 1),
+                                        120.0, 2.0, 48000.0, fixed(256), nullptr, 0, 0, true);
+    std::vector<int64_t> clicks;
+    for (const auto &h : waltz.triggers)
+        if (h.timelineBar == 0) clicks.push_back(h.sample);
+    CHECK((clicks == std::vector<int64_t>{0, 24000, 48000}), "3/4 count-in %zu clicks", clicks.size());
+    CHECK(samplesOf(waltz, BL_PIECE_KICK).front() == 72000, "3/4 song starts at %lld",
+          static_cast<long long>(samplesOf(waltz, BL_PIECE_KICK).front()));
+
+    const Render jig = renderTimeline(timelineOf({metered(1, 1, BL_METER_6_8, only(BL_PIECE_KICK, {0}, 12))}, 1),
+                                      120.0, 2.0, 48000.0, fixed(256), nullptr, 0, 0, true);
+    std::vector<BLTriggerRecord> six;
+    for (const auto &h : jig.triggers)
+        if (h.timelineBar == 0) six.push_back(h);
+    CHECK(six.size() == 6, "6/8 count-in %zu clicks", six.size());
+    if (six.size() == 6) {
+        bool spaced = true;
+        for (size_t i = 0; i < 6; ++i) spaced = spaced && std::llabs(six[i].sample - static_cast<int64_t>(i) * 8000) <= 1;
+        CHECK(spaced, "6/8 count-in isn't on the eighths");
+        CHECK(six[0].amp > six[3].amp && six[3].amp > six[1].amp && six[1].amp == six[2].amp, "6/8 accents");
+    }
+    CHECK(samplesOf(jig, BL_PIECE_KICK).front() == 48000, "6/8 song starts at %lld",
+          static_cast<long long>(samplesOf(jig, BL_PIECE_KICK).front()));
+}
+
+// Fills, half time and tap tempo in other meters.
+static void testMeterFeel() {
+    // A small fill replaces the last beat: steps 8–11 of a 3/4 bar.
+    BLSectionDesc w = metered(1, 2, BL_METER_3_4, only(BL_PIECE_HI_HAT, {0, 2, 4, 6, 8, 10}, 12));
+    w.fill = only(BL_PIECE_HIGH_TOM, {6, 8, 9, 10, 11}, 12);
+    w.fillIntoNext = BL_FILL_SMALL;
+    const BLSectionDesc after = metered(2, 1, BL_METER_3_4, only(BL_PIECE_KICK, {0}, 12));
+    const Render r = renderTimeline(timelineOf({w, after}), 120.0, 4.0, 48000.0, fixed(256));
+    const auto toms = samplesOf(r, BL_PIECE_HIGH_TOM);
+    CHECK((toms == std::vector<int64_t>{72000 + 48000, 72000 + 54000, 72000 + 60000, 72000 + 66000}),
+          "3/4 small fill toms: %zu", toms.size());
+
+    // Half time doesn't apply to a three-beat bar.
+    BLSectionDesc half = metered(1, 2, BL_METER_3_4, only(BL_PIECE_SNARE, {4, 8}, 12));
+    const Render plain = renderTimeline(timelineOf({half}), 120.0, 3.5, 48000.0, fixed(256));
+    half.time = BL_TIME_HALF;
+    const Render halved = renderTimeline(timelineOf({half}), 120.0, 3.5, 48000.0, fixed(256));
+    CHECK(samplesOf(plain, BL_PIECE_SNARE) == samplesOf(halved, BL_PIECE_SNARE), "half time changed a 3/4 bar");
+
+    // 12/8 half time: the pattern stretches over two bars, snare on 3.
+    BLSectionDesc slow = metered(1, 2, BL_METER_12_8, only(BL_PIECE_SNARE, {3, 9}, 12));
+    slow.time = BL_TIME_HALF;
+    const auto snares = samplesOf(renderTimeline(timelineOf({slow}), 120.0, 4.5, 48000.0, fixed(256)), BL_PIECE_SNARE);
+    CHECK((snares == std::vector<int64_t>{48000, 96000 + 48000}), "12/8 half-time snares: %zu", snares.size());
+
+    // Tap tempo lands on the 3/4 bar line.
+    const BLSectionDesc loop = metered(1, 1, BL_METER_3_4, only(BL_PIECE_KICK, {0, 4, 8}, 12));
+    const Render tapped = renderTimeline(timelineOf({loop}), 120.0, 3.0, 48000.0, fixed(256),
+                                         at(30000, [](BLEngine *e) { bl_engine_set_tempo_at_next_bar(e, 60.0); }), 1);
+    const auto kicks = samplesOf(tapped, BL_PIECE_KICK);
+    CHECK(kicks.size() >= 5 && kicks[2] == 48000 && kicks[3] == 72000 && kicks[4] == 72000 + 48000,
+          "tap tempo in 3/4: kicks at %lld, %lld", kicks.size() > 3 ? static_cast<long long>(kicks[3]) : -1LL,
+          kicks.size() > 4 ? static_cast<long long>(kicks[4]) : -1LL);
+}
+
+// Export length follows the meters too.
+static void testExportMeters() {
+    BLSectionDesc a = metered(1, 2, BL_METER_3_4, only(BL_PIECE_KICK, {0}, 12));
+    BLSectionDesc b = metered(2, 2, BL_METER_6_8, only(BL_PIECE_KICK, {0}, 12));
+    b.bigEnding = true;
+    const Offline o = renderOffline({a, b}, 1, true, 120.0);
+    // Count-in (3) + 2×3 + 2×2 + the ending bar (2) = 15 beats.
+    CHECK(o.finished && o.songFrames == 15 * 24000, "song frames %llu", static_cast<unsigned long long>(o.songFrames));
+}
+
 // How much faster than real time the engine renders (headroom for 5 ms buffers).
 static void reportSpeed() {
     const auto start = std::chrono::steady_clock::now();
@@ -1540,6 +1698,11 @@ int main() {
         {"export vamp", testExportVamp},
         {"export without ending", testExportWithoutEnding},
         {"wav writer", testWavWriter},
+        {"meters", testMeters},
+        {"mixed meters", testMixedMeters},
+        {"count-in meters", testCountInMeters},
+        {"feel in other meters", testMeterFeel},
+        {"export meters", testExportMeters},
         {"render speed", reportSpeed},
     };
     for (const auto &t : tests) {
