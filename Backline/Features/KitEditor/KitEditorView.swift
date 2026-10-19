@@ -204,9 +204,14 @@ struct KitEditorView: View {
     private var shapeIt: some View {
         VStack(alignment: .leading, spacing: 12) {
             Eyebrow("Shape it")
-            HStack(spacing: 18) {
+            // Two rows: pitch and how the hit starts and ends, then its
+            // character and where it sits in the mix.
+            LazyVGrid(columns: Array(repeating: GridItem(.fixed(96), spacing: 18), count: 4), alignment: .leading,
+                      spacing: 16) {
                 Knob(title: "Tune", value: binding(\.tune), range: -12...12, defaultValue: 0,
                      format: { $0 == 0 ? "0 st" : String(format: "%+.0f st", $0) }, hint: "Lower ↔ Higher", step: 1)
+                Knob(title: "Attack", value: binding(\.attack), range: 0...1, defaultValue: 0.5,
+                     format: percent, hint: "Softer ↔ Snappier")
                 Knob(title: "Decay", value: binding(\.decay), range: 0...1, defaultValue: 0.5,
                      format: percent, hint: "Shorter ↔ Longer")
                 Knob(title: "Tone", value: binding(\.tone), range: 0...1, defaultValue: 0.5,
@@ -230,7 +235,7 @@ struct KitEditorView: View {
         case .snare: "Snares"
         case .hiHat, .openHat: "Openness"
         case .ride, .crash: "Bell"
-        default: "Attack"
+        default: "Stick" // the toms' stick noise; "Attack" is its own knob
         }
     }
 
@@ -240,7 +245,7 @@ struct KitEditorView: View {
         case .snare: "Loose ↔ Buzzy"
         case .hiHat, .openHat: "Tight ↔ Sloshy"
         case .ride, .crash: "Wash ↔ Ping"
-        default: "Soft ↔ Sharp"
+        default: "Less ↔ More stick"
         }
     }
 

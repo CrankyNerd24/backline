@@ -64,6 +64,7 @@ void Engine::applyKit(const BLKit &kit) {
 
     const float room = std::clamp(kit.room, 0.0f, 1.0f);
     for (int piece = 0; piece < BL_PIECE_COUNT; ++piece) {
+        attack_[piece].configure(v[piece].attack, static_cast<float>(sampleRate_));
         // Equal-power pan, scaled so the centre is unity.
         const float gain = kLevel[piece] * std::pow(10.0f, std::clamp(v[piece].volumeDB, -24.0f, 6.0f) / 20.0f);
         const float angle = (kPan[piece] + 1.0f) * kPi * 0.25f;
@@ -452,6 +453,7 @@ void Engine::scheduleNextEvent() {
 
 void Engine::trigger(int piece, float amp, float bright, uint32_t seed, int64_t at) {
     const Hit hit{amp, bright, seed};
+    if (piece >= 0 && piece < BL_PIECE_COUNT) attack_[piece].start();
     switch (piece) {
     case BL_PIECE_KICK: kick_.trigger(hit); break;
     case BL_PIECE_SNARE: snare_.trigger(hit); break;
@@ -486,6 +488,7 @@ void Engine::renderVoices(float *left, float *right, uint32_t frames) {
 
         float l = 0.0f, r = 0.0f, send = 0.0f;
         for (int piece = 0; piece < BL_PIECE_COUNT; ++piece) {
+            v[piece] *= attack_[piece].next();
             l += v[piece] * gainLeft_[piece];
             r += v[piece] * gainRight_[piece];
             send += v[piece] * send_[piece];

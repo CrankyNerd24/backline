@@ -6,6 +6,8 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 
 ## Status: milestone 10 (polish): all v1 milestones built
 
+**Attack knob** (Kit Editor): every piece has an **Attack** control, from softer to snappier. Turned down, the hit fades in over up to 25 ms, which rounds off the stick. Turned up, the first few milliseconds are pushed up by as much as 9.5 dB. The middle (50%) plays the sound as designed, and kits saved before this change open there. The toms' old "Attack" knob, which sets the stick noise level, is now called **Stick**.
+
 **Time signatures** (after milestone 10; the spec had them for later): each section has its own time signature, set in its groove card. The options are 4/4, 3/4, 6/8 and 12/8.
 - Tempo counts the beat a player taps: a quarter note in 4/4 and 3/4, a dotted quarter in 6/8 and 12/8. A song can change time between sections.
 - 38 new grooves across the styles: 12 in 3/4, 13 in 6/8 and 13 in 12/8. The Groove Picker shows only grooves in the section's time. Changing a section's time picks a groove in the new time, in the same style when there is one.
@@ -130,6 +132,7 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 - Every starting sound of every piece plays, stays in range and ends. Tune moves by octaves; decay, tone, openness and volume do what they say. The room adds a stereo tail only where a piece sends to it. Punch makes the kit louder without clipping. The six built-in kits render deterministically.
 - Re-gridding between 16ths and triplets: offbeats shuffle, colliding notes keep the louder one, and the backbeat survives a round trip.
 - A song with every feel control switched on renders bit-identically twice (the milestone 3 acceptance test).
+- Attack: soft and snappy change only the start of every piece's hit, and 50% (or a bad value) changes nothing.
 - Time signatures: each meter's bars and grid, songs that change meter (no gaps, exact stop), the count-in in 3/4 and 6/8, small fills, half time and tap tempo in other meters, and export length.
 - Export matches playback sample for sample, whatever the buffer size. It covers the count-in and the ending bar, rings out to silence, plays vamps once, and stops after a song with no outro on every kit. The WAV header and 24-bit samples (with clipping) are byte-checked.
 - Every queued action, including cancelling, waiting for room, landing at the end of the loop, surviving a timeline swap and being ignored outside the song. Also vamp looping, tap tempo on the bar line, and the click landing exactly on the beat.

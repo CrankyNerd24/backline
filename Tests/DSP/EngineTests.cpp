@@ -1629,6 +1629,36 @@ static void testExportMeters() {
     CHECK(o.finished && o.songFrames == 15 * 24000, "song frames %llu", static_cast<unsigned long long>(o.songFrames));
 }
 
+// Attack: soft rounds the start of every piece off, snappy pushes it up, and
+// either way the rest of the hit is untouched. At 0.5 nothing changes.
+static void testAttack() {
+    for (uint8_t piece = 0; piece < BL_PIECE_COUNT; ++piece) {
+        BLKit asIs = dryKit(), soft = dryKit(), snappy = dryKit();
+        for (BLKit *k : {&asIs, &soft, &snappy}) k->voices[piece].volumeDB = -12.0f; // keep the limiter linear
+        soft.voices[piece].attack = 0.0f;
+        snappy.voices[piece].attack = 1.0f;
+        const auto a = audition(asIs, piece, BL_VEL_NORMAL, 0.3).left;
+        const auto s = audition(soft, piece, BL_VEL_NORMAL, 0.3).left;
+        const auto n = audition(snappy, piece, BL_VEL_NORMAL, 0.3).left;
+        const float start = peakOf(a, 0, 96), softStart = peakOf(s, 0, 96), snapStart = peakOf(n, 0, 96);
+        CHECK(softStart < 0.35f * start, "piece %d: soft start %.4f vs %.4f", piece, softStart, start);
+        CHECK(snapStart > 1.8f * start, "piece %d: snappy start %.4f vs %.4f", piece, snapStart, start);
+        // After the ramp (25 ms) and the boost (gone within ~45 ms) the hit is as designed.
+        bool softSame = true, snapSame = true;
+        for (size_t i = 1300; i < a.size(); ++i) softSame = softSame && s[i] == a[i];
+        for (size_t i = 2600; i < a.size(); ++i) snapSame = snapSame && std::fabs(n[i] - a[i]) <= 1e-6f;
+        CHECK(softSame && snapSame, "piece %d: the rest of the hit changed (soft %d, snappy %d)", piece, softSame, snapSame);
+    }
+    BLKit neutral = dryKit(), explicitHalf = dryKit();
+    for (auto &v : explicitHalf.voices) v.attack = 0.5f;
+    CHECK(audition(neutral, BL_PIECE_SNARE, BL_VEL_LOUD, 0.2).left == audition(explicitHalf, BL_PIECE_SNARE, BL_VEL_LOUD, 0.2).left,
+          "built-in kits aren't at 0.5");
+    BLKit garbage = dryKit();
+    garbage.voices[BL_PIECE_KICK].attack = NAN;
+    const auto g = audition(garbage, BL_PIECE_KICK, BL_VEL_LOUD, 0.2).left;
+    CHECK(g == audition(neutral, BL_PIECE_KICK, BL_VEL_LOUD, 0.2).left, "NaN attack isn't treated as 0.5");
+}
+
 // How much faster than real time the engine renders (headroom for 5 ms buffers).
 static void reportSpeed() {
     const auto start = std::chrono::steady_clock::now();
@@ -1703,6 +1733,7 @@ int main() {
         {"count-in meters", testCountInMeters},
         {"feel in other meters", testMeterFeel},
         {"export meters", testExportMeters},
+        {"attack", testAttack},
         {"render speed", reportSpeed},
     };
     for (const auto &t : tests) {

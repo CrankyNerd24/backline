@@ -51,7 +51,7 @@ typedef struct {
 // MARK: Kit (spec §4.1, §6.5)
 //
 // Every sound is synthesized. Each piece has a few starting sounds
-// ("models"), shaped by the same six controls, and the whole kit shares a
+// ("models"), shaped by the same seven controls, and the whole kit shares a
 // room reverb and a "punch" compressor. Open hat and hi-hat share the hat
 // models; ride and crash share the cymbal models; the three toms share the
 // tom models.
@@ -64,6 +64,7 @@ typedef struct {
     float character;  // 0…1: kick click, snare wires, hat openness, cymbal bell, tom attack (0.5 = as designed)
     float room;       // 0…1, how much of this piece goes to the room reverb
     float volumeDB;   // -24…+6
+    float attack;     // 0…1, soft ↔ snappy: how the hit starts (0.5 = as designed)
 } BLVoiceSettings;
 
 typedef struct {

@@ -128,6 +128,7 @@ private:
     CymbalVoice ride_, crash_;
     TomVoice toms_[3]; // high, low, floor
     ClickVoice click_;
+    AttackShaper attack_[BL_PIECE_COUNT];
     Reverb reverb_;
     Compressor compressor_;
     bool reverbOn_ = false;
