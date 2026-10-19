@@ -13,9 +13,8 @@ struct SectionSettings: View {
     @State private var editingPattern = false
 
     var body: some View {
-        @Bindable var store = store
         if let index = store.song.index(of: sectionID) {
-            let section = $store.song.sections[index]
+            let section = binding(fallback: store.song.sections[index])
             VStack(spacing: 16) {
                 titleRow(section, index: index)
                 HStack(alignment: .top, spacing: 16) {
@@ -26,7 +25,7 @@ struct SectionSettings: View {
             }
             .confirmationDialog("Delete “\(section.wrappedValue.name)”?", isPresented: $confirmingDelete,
                                 titleVisibility: .visible) {
-                Button("Delete Section", role: .destructive) { delete(at: index) }
+                Button("Delete Section", role: .destructive) { delete() }
             }
             .fullScreenCover(isPresented: $choosingGroove) {
                 GroovePickerView(section: section.wrappedValue)
@@ -89,7 +88,7 @@ struct SectionSettings: View {
 
             Spacer(minLength: 0)
 
-            Button { duplicate(at: index) } label: { Label("Duplicate", systemImage: "plus.square.on.square") }
+            Button { duplicate() } label: { Label("Duplicate", systemImage: "plus.square.on.square") }
                 .buttonStyle(ChipButtonStyle())
             Button(role: .destructive) { confirmingDelete = true } label: { Label("Delete", systemImage: "trash") }
                 .buttonStyle(ChipButtonStyle())
@@ -194,15 +193,32 @@ struct SectionSettings: View {
 
     // MARK: Editing
 
-    private func duplicate(at index: Int) {
+    /// The section, found by id on every read and write. A binding into
+    /// `sections[index]` crashes once the section is deleted: controls still
+    /// on screen (the name field, sliders) read it again before this view
+    /// goes away, and the old index is out of range.
+    private func binding(fallback: Section) -> Binding<Section> {
+        let store = store
+        let id = sectionID
+        return Binding(
+            get: { store.song.sections.first { $0.id == id } ?? fallback },
+            set: { newValue in
+                guard let index = store.song.index(of: id) else { return }
+                store.song.sections[index] = newValue
+            }
+        )
+    }
+
+    private func duplicate() {
+        guard let index = store.song.index(of: sectionID) else { return }
         let section = store.song.sections[index]
         let copy = section.duplicated(named: store.song.nextName(for: section.kind))
         store.song.sections.insert(copy, at: index + 1)
         selectedID = copy.id
     }
 
-    private func delete(at index: Int) {
-        guard store.song.sections.indices.contains(index) else { return }
+    private func delete() {
+        guard let index = store.song.index(of: sectionID) else { return }
         store.song.sections.remove(at: index)
         let sections = store.song.sections
         selectedID = sections.isEmpty ? nil : sections[min(index, sections.count - 1)].id
