@@ -226,6 +226,38 @@ void bl_pattern_set(BLPattern *pattern, uint8_t piece, uint8_t step, uint8_t vel
 // offbeat eighth moves to the third triplet, so straight becomes shuffled.
 void bl_pattern_convert(const BLPattern *in, uint8_t steps, BLPattern *out);
 
+// MARK: Export (spec §8)
+//
+// Renders a whole song offline, faster than real time, on its own engine (so
+// it never disturbs playback). Vamp sections play their set bar count once;
+// randomness is seeded per section, so the export matches what was heard.
+// The render ends when the song has stopped and its last hits have rung out.
+// Not for the render thread; call from one thread at a time.
+
+typedef struct BLOfflineRender BLOfflineRender;
+
+// NULL for a bad sample rate or an empty song. `countIn` plays the song's
+// count-in bars first.
+BLOfflineRender *bl_offline_create(double sampleRate, double bpm, const BLKit *kit, const BLSongDesc *song,
+                                   const BLSectionDesc *sections, uint32_t count, bool countIn);
+void bl_offline_destroy(BLOfflineRender *render);
+// Fills up to `frames` frames and returns how many it wrote: fewer than asked
+// only at the end, then 0.
+uint32_t bl_offline_render(BLOfflineRender *render, float *left, float *right, uint32_t frames);
+// 0…1, for a progress bar. 1 once the render is finished.
+double bl_offline_progress(const BLOfflineRender *render);
+// The expected length in frames, ring-out not included (for display).
+uint64_t bl_offline_song_frames(const BLOfflineRender *render);
+
+// 24-bit stereo PCM WAV, written in pieces. NULL if the file can't be created.
+typedef struct BLWavWriter BLWavWriter;
+BLWavWriter *bl_wav_open(const char *path, uint32_t sampleRate);
+// Samples are clipped to ±1. Returns false on a write error.
+bool bl_wav_write(BLWavWriter *writer, const float *left, const float *right, uint32_t frames);
+// Fills in the header's sizes and closes the file. Returns false if anything
+// failed along the way. Frees the writer either way.
+bool bl_wav_close(BLWavWriter *writer);
+
 // Offline testing only: records every scheduled hit into `buffer`. Not
 // thread-safe; set it before rendering and read it after.
 typedef struct {

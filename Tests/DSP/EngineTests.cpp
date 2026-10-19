@@ -1,4 +1,4 @@
-// Acceptance tests for the DSP core (milestones 1–8). Plain C++ so they run on any
+// Acceptance tests for the DSP core (milestones 1–9). Plain C++ so they run on any
 // machine with a compiler (macOS or Linux): `cmake -B build && cmake --build
 // build && ctest --test-dir build --output-on-failure`.
 
@@ -1292,6 +1292,185 @@ static void testBuiltInKits() {
     }
 }
 
+// MARK: - Export (milestone 9)
+
+struct Offline {
+    std::vector<float> left, right;
+    uint64_t songFrames = 0;
+    bool finished = false;
+};
+
+// Renders a song offline in buffers of `chunk` frames, giving up after
+// `maxSeconds` (so a render that never ends fails instead of hanging).
+static Offline renderOffline(const std::vector<BLSectionDesc> &sections, uint8_t countInBars, bool countIn,
+                             double bpm, const BLKit *kit = nullptr, uint32_t chunk = 1000, double maxSeconds = 120) {
+    const BLSongDesc song{countInBars};
+    BLOfflineRender *r = bl_offline_create(48000.0, bpm, kit, &song, sections.data(),
+                                           static_cast<uint32_t>(sections.size()), countIn);
+    Offline out;
+    if (!r) return out;
+    out.songFrames = bl_offline_song_frames(r);
+    std::vector<float> l(chunk), rt(chunk);
+    while (out.left.size() < maxSeconds * 48000.0) {
+        const uint32_t n = bl_offline_render(r, l.data(), rt.data(), chunk);
+        out.left.insert(out.left.end(), l.begin(), l.begin() + n);
+        out.right.insert(out.right.end(), rt.begin(), rt.begin() + n);
+        if (n < chunk) {
+            out.finished = bl_offline_progress(r) == 1.0 && bl_offline_render(r, l.data(), rt.data(), chunk) == 0;
+            break;
+        }
+    }
+    bl_offline_destroy(r);
+    return out;
+}
+
+static std::vector<BLSectionDesc> exportSong() {
+    BLSectionDesc a = rockSection(11, 2);
+    a.human = 0.6f;
+    a.swing = 0.4f;
+    a.fillIntoNext = BL_FILL_SMALL;
+    BLSectionDesc b = rockSection(22, 2);
+    b.cymbals = BL_CYMBALS_RIDE;
+    b.busy = 0.8f;
+    b.fillIntoNext = BL_FILL_BIG;
+    BLSectionDesc c = rockSection(33, 1);
+    c.time = BL_TIME_HALF;
+    c.bigEnding = true;
+    return {a, b, c};
+}
+
+// The export is exactly what playback sounds like, sample for sample.
+static void testExportMatchesPlayback() {
+    BLKit kit;
+    bl_kit_builtin(1, &kit); // Studio Rock: room and punch on
+    const auto sections = exportSong();
+    const Offline x = renderOffline(sections, 1, true, 123.0, &kit);
+    CHECK(x.finished, "render didn't finish");
+
+    BLEngine *e = bl_engine_create(48000.0);
+    bl_engine_set_kit(e, &kit);
+    bl_engine_set_tempo(e, 123.0);
+    const BLSongDesc song{1};
+    bl_engine_set_timeline(e, bl_timeline_create(&song, sections.data(), static_cast<uint32_t>(sections.size())));
+    bl_engine_play_from(e, 0, true);
+    std::vector<float> l(x.left.size()), r(x.left.size());
+    for (size_t done = 0; done < l.size();) {
+        const auto n = static_cast<uint32_t>(std::min<size_t>(300, l.size() - done));
+        bl_engine_render(e, l.data() + done, r.data() + done, n);
+        bl_engine_collect_garbage(e);
+        done += n;
+    }
+    bl_engine_destroy(e);
+    CHECK(l == x.left && r == x.right, "export differs from playback");
+
+    for (uint32_t chunk : {77u, 4096u}) {
+        const Offline y = renderOffline(sections, 1, true, 123.0, &kit, chunk);
+        CHECK(y.left == x.left && y.right == x.right, "export in buffers of %u differs (%zu vs %zu frames)", chunk,
+              y.left.size(), x.left.size());
+    }
+}
+
+// The song plays to its end (count-in, every bar, the ending bar), rings out,
+// and stops on silence rather than cutting a tail off.
+static void testExportLength() {
+    const auto sections = exportSong();
+    const double bar = 240.0 / 120.0 * 48000.0;
+    const Offline with = renderOffline(sections, 2, true, 120.0);
+    const Offline without = renderOffline(sections, 2, false, 120.0);
+    CHECK(with.finished && without.finished, "renders didn't finish");
+    CHECK(with.songFrames == static_cast<uint64_t>(8 * bar), "song frames %llu",
+          static_cast<unsigned long long>(with.songFrames));
+    CHECK(without.songFrames == static_cast<uint64_t>(6 * bar), "song frames without count-in %llu",
+          static_cast<unsigned long long>(without.songFrames));
+    for (const Offline *o : {&with, &without}) {
+        const size_t n = o->left.size();
+        CHECK(n > o->songFrames && n < o->songFrames + 10 * 48000, "length %zu for %llu song frames", n,
+              static_cast<unsigned long long>(o->songFrames));
+        float tail = 0;
+        for (size_t i = n - 12000; i < n; ++i) tail = std::max({tail, std::fabs(o->left[i]), std::fabs(o->right[i])});
+        CHECK(tail < 1e-4f, "last quarter second peaks at %g", tail);
+        // The big ending's crash is still ringing a bar after it lands.
+        CHECK(peakOf(std::vector<float>(o->left.begin() + static_cast<long>(o->songFrames),
+                                        o->left.begin() + static_cast<long>(o->songFrames) + 4800)) > 1e-3f,
+              "the ending doesn't ring out");
+    }
+    // Without the count-in, the song starts on the first sample.
+    CHECK(peakOf(without.left, 0, 48) > 0.01f, "silence at the top");
+    CHECK(peakOf(std::vector<float>(with.left.begin(), with.left.begin() + 2000)) > 0, "count-in click missing");
+    CHECK(peakOf(std::vector<float>(with.left.begin() + static_cast<long>(2 * bar),
+                                    with.left.end())) > 0.1f, "song missing after the count-in");
+    // Shifted by the count-in, the song itself is the same.
+    const auto shift = static_cast<long>(2 * bar);
+    CHECK(std::equal(without.left.begin(), without.left.begin() + static_cast<long>(4 * bar), with.left.begin() + shift),
+          "count-in changes the song");
+}
+
+// A vamp section plays its set bars once, then the song carries on.
+static void testExportVamp() {
+    auto sections = exportSong();
+    const Offline plain = renderOffline(sections, 0, false, 140.0);
+    sections[1].repeatUntilStep = true;
+    const Offline vamp = renderOffline(sections, 0, false, 140.0);
+    CHECK(vamp.finished, "a vamp never ends");
+    CHECK(vamp.left == plain.left, "the vamp section didn't play its bars once");
+}
+
+// No outro: the song still stops after its last bar and lets the hits decay.
+static void testExportWithoutEnding() {
+    auto sections = exportSong();
+    sections[2].bigEnding = false;
+    for (uint8_t k = 0; k < bl_kit_builtin_count(); ++k) {
+        BLKit kit;
+        bl_kit_builtin(k, &kit);
+        const Offline o = renderOffline(sections, 0, false, 100.0, &kit);
+        bool finite = true;
+        for (float v : o.left) finite = finite && std::isfinite(v);
+        CHECK(o.finished && finite && o.songFrames == static_cast<uint64_t>(5 * 240.0 / 100.0 * 48000.0),
+              "%s: finished %d, song frames %llu", bl_kit_builtin_name(k), o.finished,
+              static_cast<unsigned long long>(o.songFrames));
+        CHECK(o.left.size() < o.songFrames + 8 * 48000, "%s rings %.1f s", bl_kit_builtin_name(k),
+              (static_cast<double>(o.left.size()) - static_cast<double>(o.songFrames)) / 48000.0);
+    }
+    const BLSongDesc song{0};
+    CHECK(bl_offline_create(0.0, 120.0, nullptr, &song, sections.data(), 3, false) == nullptr, "bad rate accepted");
+    CHECK(bl_offline_create(48000.0, 120.0, nullptr, &song, sections.data(), 0, false) == nullptr, "empty song accepted");
+}
+
+static void testWavWriter() {
+    const std::string path = "backline_wav_test.wav";
+    BLWavWriter *w = bl_wav_open(path.c_str(), 48000);
+    CHECK(w != nullptr, "couldn't open %s", path.c_str());
+    if (!w) return;
+    const float l[] = {0.0f, 0.5f, 2.0f, -1.0f};
+    const float r[] = {-0.5f, 1.0f, -3.0f, NAN};
+    CHECK(bl_wav_write(w, l, r, 2) && bl_wav_write(w, l + 2, r + 2, 2), "write failed");
+    CHECK(bl_wav_close(w), "close failed");
+
+    std::FILE *f = std::fopen(path.c_str(), "rb");
+    std::vector<uint8_t> b(100);
+    b.resize(std::fread(b.data(), 1, b.size(), f));
+    std::fclose(f);
+    std::remove(path.c_str());
+    auto u32 = [&](size_t at) { return uint32_t(b[at]) | uint32_t(b[at + 1]) << 8 | uint32_t(b[at + 2]) << 16 | uint32_t(b[at + 3]) << 24; };
+    auto u16 = [&](size_t at) { return uint32_t(b[at]) | uint32_t(b[at + 1]) << 8; };
+    auto s24 = [&](size_t at) {
+        const int32_t v = int32_t(b[at]) | int32_t(b[at + 1]) << 8 | int32_t(b[at + 2]) << 16;
+        return v & 0x800000 ? v - 0x1000000 : v;
+    };
+    CHECK(b.size() == 44 + 4 * 6, "file is %zu bytes", b.size());
+    if (b.size() != 44 + 4 * 6) return;
+    CHECK(std::memcmp(b.data(), "RIFF", 4) == 0 && std::memcmp(b.data() + 8, "WAVEfmt ", 8) == 0 &&
+              std::memcmp(b.data() + 36, "data", 4) == 0, "bad chunk ids");
+    CHECK(u32(4) == 36 + 24 && u32(40) == 24, "sizes %u %u", u32(4), u32(40));
+    CHECK(u16(20) == 1 && u16(22) == 2 && u32(24) == 48000 && u32(28) == 288000 && u16(32) == 6 && u16(34) == 24,
+          "bad format chunk");
+    const int32_t expect[] = {0, -4194304, 4194304, 8388607, 8388607, -8388607, -8388607, 0};
+    for (int i = 0; i < 8; ++i)
+        CHECK(s24(44 + 3 * static_cast<size_t>(i)) == expect[i], "sample %d is %d, want %d", i,
+              s24(44 + 3 * static_cast<size_t>(i)), expect[i]);
+    CHECK(bl_wav_open("/nonexistent-dir/x.wav", 48000) == nullptr, "opened a file in a missing folder");
+}
+
 // How much faster than real time the engine renders (headroom for 5 ms buffers).
 static void reportSpeed() {
     const auto start = std::chrono::steady_clock::now();
@@ -1356,6 +1535,11 @@ int main() {
         {"room", testRoom},
         {"punch", testPunch},
         {"built-in kits", testBuiltInKits},
+        {"export matches playback", testExportMatchesPlayback},
+        {"export length", testExportLength},
+        {"export vamp", testExportVamp},
+        {"export without ending", testExportWithoutEnding},
+        {"wav writer", testWavWriter},
         {"render speed", reportSpeed},
     };
     for (const auto &t : tests) {

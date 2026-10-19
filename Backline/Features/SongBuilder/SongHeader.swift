@@ -8,8 +8,10 @@ struct SongHeader: View {
     @Environment(EngineController.self) private var engine
     @Environment(PedalController.self) private var pedals
     @Environment(KitLibrary.self) private var kits
+    @Environment(GrooveLibrary.self) private var library
     @State private var settingUpPedals = false
     @State private var editingKit = false
+    @State private var exporting = false
     @State private var renaming = false
     @State private var newName = ""
     @State private var confirmingDelete = false
@@ -49,10 +51,14 @@ struct SongHeader: View {
             }
             .buttonStyle(ChipButtonStyle())
             .accessibilityHint("Opens the Kit Editor")
-            // Export arrives in milestone 9.
-            Button {} label: { Label("Export", systemImage: "square.and.arrow.up") }
-                .buttonStyle(ChipButtonStyle())
-                .disabled(true)
+            Button {
+                exporting = true
+            } label: {
+                Label("Export", systemImage: "square.and.arrow.up")
+            }
+            .buttonStyle(ChipButtonStyle())
+            .disabled(store.song.sections.isEmpty)
+            .accessibilityHint("Saves the song as a WAV file to share")
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 12)
@@ -71,6 +77,12 @@ struct SongHeader: View {
                 .environment(store)
                 .environment(kits)
                 .environment(engine)
+        }
+        .sheet(isPresented: $exporting) {
+            ExportView()
+                .environment(store)
+                .environment(engine)
+                .environment(library)
         }
         .fullScreenCover(isPresented: $settingUpPedals) {
             PedalSetupView()

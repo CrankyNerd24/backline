@@ -6,7 +6,13 @@ import Foundation
 enum TimelineBuilder {
     /// The engine takes ownership of the result via bl_engine_set_timeline.
     static func build(_ song: Song, library: GrooveLibrary) -> OpaquePointer? {
-        var songDesc = BLSongDesc(countInBars: UInt8(clamping: min(max(song.countInBars, 0), 2)))
+        var (songDesc, descs) = descriptors(for: song, library: library)
+        return descs.withUnsafeBufferPointer { bl_timeline_create(&songDesc, $0.baseAddress, UInt32($0.count)) }
+    }
+
+    /// The song as the engine's C descriptions, for a timeline or an export.
+    static func descriptors(for song: Song, library: GrooveLibrary) -> (BLSongDesc, [BLSectionDesc]) {
+        let songDesc = BLSongDesc(countInBars: UInt8(clamping: min(max(song.countInBars, 0), 2)))
         let lastIndex = song.sections.count - 1
         let descs: [BLSectionDesc] = song.sections.enumerated().map { index, section in
             let groove = library.groove(section.grooveID)
@@ -35,7 +41,7 @@ enum TimelineBuilder {
             desc.bigEnding = section.kind == .outro && index == lastIndex
             return desc
         }
-        return descs.withUnsafeBufferPointer { bl_timeline_create(&songDesc, $0.baseAddress, UInt32($0.count)) }
+        return (songDesc, descs)
     }
 }
 
