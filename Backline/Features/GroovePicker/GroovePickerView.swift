@@ -1,8 +1,10 @@
 import SwiftUI
 
-/// Choose a groove for a section (spec §6.2): search, a style list, a grid
-/// of cards that preview at the song tempo, and a detail panel with quick
-/// variations.
+/// Choose a groove for a section (spec §6.2): search and style tabs, one
+/// easy-to-scan list of grooves that preview at the song tempo, and a detail
+/// panel with the choice and (tucked away) quick variations. The spec's
+/// three-pane layout with a card grid proved too busy, so styles moved to
+/// tabs and the cards became rows.
 struct GroovePickerView: View {
     @Environment(SongStore.self) private var store
     @Environment(GrooveLibrary.self) private var library
@@ -14,11 +16,14 @@ struct GroovePickerView: View {
     @State private var style: String?
     @State private var selectedID: String
     @State private var variations: GrooveVariations
+    @State private var showingVariations: Bool
 
     init(section: Section) {
         sectionID = section.id
         _selectedID = State(initialValue: section.grooveID)
-        _variations = State(initialValue: GrooveVariations(from: section))
+        let variations = GrooveVariations(from: section)
+        _variations = State(initialValue: variations)
+        _showingVariations = State(initialValue: variations.onRide || variations.halfTime)
     }
 
     private var section: Section? {
@@ -30,14 +35,12 @@ struct GroovePickerView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
+            styleTabs
             HStack(spacing: 0) {
-                styleList
-                    .frame(width: 220)
-                Theme.line.frame(width: 1)
-                grid
+                list
                 Theme.line.frame(width: 1)
                 detail
-                    .frame(width: 340)
+                    .frame(width: 360)
             }
         }
         .background(Theme.bg)
@@ -90,48 +93,43 @@ struct GroovePickerView: View {
 
     // MARK: Styles
 
-    private var styleList: some View {
+    private var styleTabs: some View {
         let counts = library.counts(matching: query)
         let total = counts.values.reduce(0, +)
-        return ScrollView {
-            VStack(alignment: .leading, spacing: 2) {
-                styleRow("All grooves", count: total, value: nil)
+        return ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                styleTab("All", count: total, value: nil)
                 ForEach(library.allStyles, id: \.self) { name in
-                    styleRow(name, count: counts[name] ?? 0, value: name)
+                    styleTab(name, count: counts[name] ?? 0, value: name)
                 }
             }
-            .padding(12)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 10)
         }
+        .overlay(alignment: .bottom) { Theme.line.frame(height: 1) }
     }
 
-    private func styleRow(_ title: String, count: Int, value: String?) -> some View {
+    private func styleTab(_ title: String, count: Int, value: String?) -> some View {
         let isSelected = style == value
         return Button {
             style = value
         } label: {
-            HStack {
+            HStack(spacing: 6) {
                 Text(title)
-                    .font(Theme.body(16, weight: isSelected ? .semibold : .regular))
-                Spacer()
                 Text("\(count)")
-                    .font(Theme.condensed(16, weight: .semibold))
                     .monospacedDigit()
                     .foregroundStyle(isSelected ? Theme.onAccent.opacity(0.7) : Theme.textMuted)
             }
-            .padding(.horizontal, 12)
-            .frame(minHeight: 44)
-            .foregroundStyle(isSelected ? Theme.onAccent : count == 0 ? Theme.textMuted : Theme.text)
-            .background(isSelected ? Theme.accent : .clear, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ChipButtonStyle(prominent: isSelected))
+        .disabled(count == 0 && !isSelected)
         .accessibilityLabel("\(title), \(count) grooves")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
-    // MARK: Grid
+    // MARK: List
 
-    private var grid: some View {
+    private var list: some View {
         let results = library.search(query, style: style)
         return ScrollView {
             if results.isEmpty {
@@ -145,11 +143,13 @@ struct GroovePickerView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 80)
             } else {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
+                LazyVStack(spacing: 8) {
                     ForEach(results) { groove in
-                        GrooveCard(
+                        GrooveRow(
                             groove: groove,
+                            showsStyle: style == nil,
                             isSelected: groove.id == selectedID,
+                            isCurrent: groove.id == section?.grooveID,
                             isPlaying: engine.previewingGrooveID == groove.id,
                             onSelect: { select(groove, preview: true) },
                             onPlayPause: {
@@ -175,12 +175,9 @@ struct GroovePickerView: View {
         return ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(groove.style)
-                        .font(Theme.body(14, weight: .medium))
-                        .foregroundStyle(Theme.textMuted)
                     Text(groove.name)
                         .font(Theme.condensed(34, weight: .bold))
-                    Text("Written for \(groove.tempoRange.lowerBound)–\(groove.tempoRange.upperBound) BPM")
+                    Text("\(groove.style) · \(groove.tempoRange.lowerBound)–\(groove.tempoRange.upperBound) BPM")
                         .font(Theme.body(14, weight: .medium))
                         .foregroundStyle(Theme.textMuted)
                     if !groove.tempoRange.contains(bpm) {
@@ -194,19 +191,6 @@ struct GroovePickerView: View {
                     .font(Theme.body(15))
                     .fixedSize(horizontal: false, vertical: true)
                 MiniPattern(pattern: groove.patterns.main, cell: 11)
-
-                Button {
-                    if engine.previewingGrooveID == groove.id { engine.stopPreview() } else { startPreview() }
-                } label: {
-                    Label(engine.previewingGrooveID == groove.id ? "Stop preview" : "Preview",
-                          systemImage: engine.previewingGrooveID == groove.id ? "stop.fill" : "play.fill")
-                }
-                .buttonStyle(ChipButtonStyle())
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Eyebrow("Quick variations")
-                    VariationChips(variations: $variations)
-                }
 
                 if let section {
                     VStack(spacing: 8) {
@@ -227,8 +211,17 @@ struct GroovePickerView: View {
                             .buttonStyle(ChipButtonStyle())
                         }
                     }
-                    .padding(.top, 4)
                 }
+
+                DisclosureGroup(isExpanded: $showingVariations) {
+                    VariationChips(variations: $variations)
+                        .padding(.top, 8)
+                } label: {
+                    Text("More options")
+                        .font(Theme.body(15, weight: .semibold))
+                        .frame(minHeight: 44)
+                }
+                .tint(Theme.textMuted)
             }
             .padding(20)
         }
@@ -317,58 +310,70 @@ private struct VariationChips: View {
     }
 }
 
-private struct GrooveCard: View {
+/// One groove in the list: play button, name, and what it feels like.
+private struct GrooveRow: View {
     let groove: Groove
+    let showsStyle: Bool
     let isSelected: Bool
+    let isCurrent: Bool
     let isPlaying: Bool
     let onSelect: () -> Void
     let onPlayPause: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(groove.name)
-                        .font(Theme.condensed(20, weight: .bold))
-                        .lineLimit(1)
-                    Text(subtitle)
-                        .font(Theme.body(12, weight: .medium))
-                        .foregroundStyle(Theme.textMuted)
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 4)
-                Button(action: onPlayPause) {
-                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(isPlaying ? Theme.onAccent : Theme.text)
-                        .frame(width: 44, height: 44)
-                        .background(isPlaying ? Theme.accent : Theme.surfaceHi, in: Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(isPlaying ? "Stop preview of \(groove.name)" : "Preview \(groove.name)")
+        HStack(spacing: 14) {
+            Button(action: onPlayPause) {
+                Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(isPlaying ? Theme.onAccent : Theme.text)
+                    .frame(width: 48, height: 48)
+                    .background(isPlaying ? Theme.accent : Theme.surfaceHi, in: Circle())
             }
-            MiniPattern(pattern: groove.patterns.main, cell: 6, showsLabels: false)
+            .buttonStyle(.plain)
+            .accessibilityLabel(isPlaying ? "Stop preview of \(groove.name)" : "Preview \(groove.name)")
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 8) {
+                    Text(groove.name)
+                        .font(Theme.condensed(22, weight: .bold))
+                        .lineLimit(1)
+                    if isCurrent {
+                        Text("IN USE")
+                            .font(Theme.condensed(11, weight: .bold))
+                            .tracking(1.5)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Theme.surfaceHi, in: Capsule())
+                    }
+                }
+                Text(subtitle)
+                    .font(Theme.body(14, weight: .medium))
+                    .foregroundStyle(Theme.textMuted)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 0)
         }
-        .padding(14)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.panel, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+        .background(isSelected ? Theme.surface : Theme.panel, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
         .overlay(
             RoundedRectangle(cornerRadius: Theme.Radius.card)
-                .stroke(isSelected ? Theme.accent : Theme.line, lineWidth: isSelected ? 2 : 1)
+                .stroke(isSelected ? Theme.accent : .clear, lineWidth: 2)
         )
         .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.card))
         .onTapGesture(perform: onSelect)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("\(groove.name), \(subtitle)")
+        .accessibilityLabel("\(groove.name), \(subtitle)\(isCurrent ? ", in use" : "")")
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction(named: "Select", onSelect)
     }
 
-    /// "Shuffle · 90–160 BPM"
+    /// "Rock · Shuffle · 90–160 BPM" (the style only when showing every style)
     private var subtitle: String {
         let feel = groove.tags?.first.map { $0.prefix(1).uppercased() + $0.dropFirst() }
         let tempo = "\(groove.tempoRange.lowerBound)–\(groove.tempoRange.upperBound) BPM"
-        return [feel, tempo].compactMap { $0 }.joined(separator: " · ")
+        return [showsStyle ? groove.style : nil, feel, tempo].compactMap { $0 }.joined(separator: " · ")
     }
 }
 
