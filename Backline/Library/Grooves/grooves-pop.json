@@ -154,5 +154,104 @@
         }
       }
     }
+  },
+  {
+    "id": "pop.waltz",
+    "style": "Pop",
+    "name": "Pop Waltz",
+    "summary": "A bright waltz with the kick pushing the end of the bar.",
+    "tags": [
+      "waltz",
+      "3/4",
+      "bright"
+    ],
+    "tempoRange": [100, 160],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0]
+        },
+        "meter": "threeFour"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      }
+    }
+  },
+  {
+    "id": "pop.sixEight",
+    "style": "Pop",
+    "name": "6/8 Pop",
+    "summary": "Accented eighths on the hat, snare on the second beat and a kick pickup.",
+    "tags": [
+      "6/8",
+      "eighths"
+    ],
+    "tempoRange": [55, 90],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 2, 0, 3, 0, 2, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "meter": "sixEight"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 2, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "sixEight"
+      }
+    }
+  },
+  {
+    "id": "pop.twelveEight",
+    "style": "Pop",
+    "name": "12/8 Pop",
+    "summary": "A rolling 12/8 with the hat opening at the end of the bar to lift into the next.",
+    "tags": [
+      "12/8",
+      "open hat",
+      "triplets"
+    ],
+    "tempoRange": [50, 85],
+    "patterns": {
+      "main": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [3, 2, 2, 3, 2, 2, 3, 2, 2, 3, 0, 2],
+          "openHat": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0],
+          "snare": [0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      },
+      "fill": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [3, 2, 2, 3, 2, 2, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 3, 0, 0, 2, 1, 2, 2, 2, 3],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      }
+    }
   }
 ]

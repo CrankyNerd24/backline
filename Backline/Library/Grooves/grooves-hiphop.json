@@ -150,5 +150,71 @@
         }
       }
     }
+  },
+  {
+    "id": "hiphop.sixEight",
+    "style": "Hip-hop",
+    "name": "6/8 Swing Beat",
+    "summary": "A head-nod beat in six: lazy hats, a fat snare and a kick that skips.",
+    "tags": [
+      "6/8",
+      "swing"
+    ],
+    "tempoRange": [50, 80],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 2, 0, 1, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0]
+        },
+        "meter": "sixEight"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "sixEight"
+      }
+    }
+  },
+  {
+    "id": "hiphop.twelveEight",
+    "style": "Hip-hop",
+    "name": "12/8 Lazy Swing",
+    "summary": "A laid-back 12/8 with a ghost before beat 1 and a kick that bounces.",
+    "tags": [
+      "12/8",
+      "swing",
+      "ghost notes"
+    ],
+    "tempoRange": [50, 80],
+    "patterns": {
+      "main": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1],
+          "snare": [0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 1],
+          "kick": [3, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      },
+      "fill": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 2, 0, 1, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 3, 0, 0, 2, 1, 2, 2, 2, 3],
+          "kick": [3, 0, 0, 0, 0, 1, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      }
+    }
   }
 ]

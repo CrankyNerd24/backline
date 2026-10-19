@@ -61,6 +61,7 @@ final class EngineController {
         var barInSection: Int // the count-in bar while counting in
         var songBar: Int      // -1 during the count-in
         var barPhase: Double  // 0…1 through the current bar
+        var beatsInBar: Int   // from the bar's time signature
     }
 
     private(set) var isPlaying = false
@@ -458,10 +459,10 @@ final class EngineController {
         var newPosition: Position?
         if raw.playing, raw.countingIn {
             newPosition = Position(sectionID: nil, isCountIn: true, barInSection: Int(raw.barInSection), songBar: -1,
-                                   barPhase: raw.barPhase)
+                                   barPhase: raw.barPhase, beatsInBar: Int(raw.beatsInBar))
         } else if raw.playing, raw.songBar >= 0, let id = sectionsByKey[raw.sectionKey] {
             newPosition = Position(sectionID: id, isCountIn: false, barInSection: Int(raw.barInSection),
-                                   songBar: Int(raw.songBar), barPhase: raw.barPhase)
+                                   songBar: Int(raw.songBar), barPhase: raw.barPhase, beatsInBar: Int(raw.beatsInBar))
         }
         // Only assign on change so SwiftUI isn't re-rendered for nothing.
         if position != newPosition { position = newPosition }
@@ -493,9 +494,10 @@ extension Pattern {
     /// The fixed-size C struct the DSP core consumes.
     var engineValue: BLPattern {
         var raw = BLPattern()
-        bl_pattern_init(&raw, UInt8(resolution.steps))
+        let steps = min(self.steps, Int(BL_MAX_STEPS))
+        bl_pattern_init(&raw, UInt8(steps))
         for (piece, lane) in lanes {
-            for (step, velocity) in lane.prefix(resolution.steps).enumerated() where velocity != .off {
+            for (step, velocity) in lane.prefix(steps).enumerated() where velocity != .off {
                 bl_pattern_set(&raw, piece.engineIndex, UInt8(step), velocity.rawValue)
             }
         }

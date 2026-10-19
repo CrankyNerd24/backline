@@ -37,7 +37,7 @@ struct PlayAlongView: View {
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 20) {
                     nowPlaying
-                    BeatLights(beat: currentBeat, reduceMotion: reduceMotion)
+                    BeatLights(beat: currentBeat, count: beatsInBar, reduceMotion: reduceMotion)
                     if let banner = bannerContent {
                         QueuedBanner(content: banner)
                     } else {
@@ -148,9 +148,14 @@ struct PlayAlongView: View {
         return "Bar \(bar) / \(section.bars)" + (looping ? " · Looping" : "")
     }
 
+    /// One light per beat: 4 in 4/4 and 12/8, 3 in 3/4, 2 in 6/8.
+    private var beatsInBar: Int {
+        engine.position?.beatsInBar ?? currentSection?.timeSignature.beats ?? 4
+    }
+
     private var currentBeat: Int? {
         guard let position = engine.position else { return nil }
-        return min(3, Int(position.barPhase * 4))
+        return min(beatsInBar - 1, Int(position.barPhase * Double(beatsInBar)))
     }
 
     // MARK: Banner
@@ -368,11 +373,12 @@ struct PlayAlongView: View {
 /// beats outlined.
 private struct BeatLights: View {
     let beat: Int?
+    let count: Int
     let reduceMotion: Bool
 
     var body: some View {
         HStack(spacing: 28) {
-            ForEach(0..<4, id: \.self) { index in
+            ForEach(0..<max(1, count), id: \.self) { index in
                 let state = beat.map { index < $0 ? 0 : index == $0 ? 1 : 2 } ?? 2
                 Circle()
                     .fill(state == 1 ? Theme.accent : state == 0 ? Theme.surfaceHiAlt : .clear)

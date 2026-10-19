@@ -6,6 +6,13 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 
 ## Status: milestone 10 (polish): all v1 milestones built
 
+**Time signatures** (after milestone 10; the spec had them for later): each section has its own time signature, set in its groove card. The options are 4/4, 3/4, 6/8 and 12/8.
+- Tempo counts the beat a player taps: a quarter note in 4/4 and 3/4, a dotted quarter in 6/8 and 12/8. A song can change time between sections.
+- 38 new grooves across the styles: 12 in 3/4, 13 in 6/8 and 13 in 12/8. The Groove Picker shows only grooves in the section's time. Changing a section's time picks a groove in the new time, in the same style when there is one.
+- The Pattern Editor, mini patterns, beat lights, count-in and export all follow the time signature. In 6/8 and 12/8 the count-in clicks every eighth.
+- Half and double time apply to 4/4 and 12/8 only. Swing applies to 4/4 and 3/4, since 6/8 and 12/8 already swing.
+- Three older 4/4 triplet grooves that were named after 12/8 or 6/8 are now called "Slow Triplet Blues", "Triplet Ballad" and "Triplet Bell Feel".
+
 **Milestone 10**: polish.
 - **Onboarding:** on first launch, a short welcome explains the starter song (Intro, Verse, Chorus, Verse, Chorus, Outro in Rock), the Groove Picker, and Play-along with pedals. **How Backline Works** in the song menu shows it again.
 - **Empty states:** a song with no sections offers the starter layout or a single verse in one tap. Pedal Setup says when no pedal is connected. The Groove Picker has a message for an empty list.
@@ -123,6 +130,7 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 - Every starting sound of every piece plays, stays in range and ends. Tune moves by octaves; decay, tone, openness and volume do what they say. The room adds a stereo tail only where a piece sends to it. Punch makes the kit louder without clipping. The six built-in kits render deterministically.
 - Re-gridding between 16ths and triplets: offbeats shuffle, colliding notes keep the louder one, and the backbeat survives a round trip.
 - A song with every feel control switched on renders bit-identically twice (the milestone 3 acceptance test).
+- Time signatures: each meter's bars and grid, songs that change meter (no gaps, exact stop), the count-in in 3/4 and 6/8, small fills, half time and tap tempo in other meters, and export length.
 - Export matches playback sample for sample, whatever the buffer size. It covers the count-in and the ending bar, rings out to silence, plays vamps once, and stops after a song with no outro on every kit. The WAV header and 24-bit samples (with clipping) are byte-checked.
 - Every queued action, including cancelling, waiting for room, landing at the end of the loop, surviving a timeline swap and being ignored outside the song. Also vamp looping, tap tempo on the bar line, and the click landing exactly on the beat.
 - Separate checks for human, swing, busy, intensity, half and double time, cymbal routing, fills and the crash after them, count-in, the big ending, and sections sounding the same wherever they sit.

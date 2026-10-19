@@ -126,6 +126,14 @@ struct SectionSettings: View {
                     .fixedSize(horizontal: false, vertical: true)
                 MiniPattern(pattern: section.wrappedValue.mainPattern(library: library))
                     .padding(.vertical, 4)
+                VStack(alignment: .leading, spacing: 8) {
+                    Eyebrow("Time signature")
+                    SegmentedPicker(options: TimeSig.allCases,
+                                    selection: Binding(get: { section.wrappedValue.timeSignature },
+                                                       set: { setTimeSignature($0, of: section) })) { $0.label }
+                        .frame(maxWidth: 320)
+                        .accessibilityLabel("Time signature")
+                }
                 HStack(spacing: 8) {
                     Button {
                         choosingGroove = true
@@ -153,6 +161,8 @@ struct SectionSettings: View {
                 FeelSlider(low: "Simpler", high: "Busier", value: section.feel.busy)
                 FeelSlider(low: "Softer", high: "Harder", value: section.feel.intensity)
                 FeelSlider(low: "Straight", high: "Swung", value: section.feel.swing)
+                    .disabled(!section.wrappedValue.timeSignature.allowsSwing)
+                    .opacity(section.wrappedValue.timeSignature.allowsSwing ? 1 : 0.4)
                 FeelSlider(low: "Locked in", high: "Human", value: section.feel.human)
             }
         }
@@ -170,6 +180,8 @@ struct SectionSettings: View {
             HStack(alignment: .top, spacing: 24) {
                 option("Time") {
                     SegmentedPicker(options: TimeFeel.allCases, selection: section.time) { $0.label }
+                        .disabled(!section.wrappedValue.timeSignature.allowsTimeFeel)
+                        .opacity(section.wrappedValue.timeSignature.allowsTimeFeel ? 1 : 0.4)
                 }
                 option("Cymbals") {
                     SegmentedPicker(options: CymbalChoice.allCases, selection: section.cymbals) { $0.label }
@@ -207,6 +219,23 @@ struct SectionSettings: View {
                 store.song.sections[index] = newValue
             }
         )
+    }
+
+    /// Grooves are written in one time, so a new time signature brings a
+    /// groove in that time (the same style when there is one), and settings
+    /// that time can't use go back to normal.
+    private func setTimeSignature(_ meter: TimeSig, of section: Binding<Section>) {
+        var next = section.wrappedValue
+        guard meter != next.timeSignature else { return }
+        let style = library.groove(next.grooveID).style
+        let groove = library.groove(library.defaultGrooveID(for: meter, style: style))
+        next.timeSignature = meter
+        next.grooveID = groove.id
+        next.patternOverride = nil
+        next.cymbals = groove.naturalCymbals
+        if !meter.allowsTimeFeel { next.time = .normal }
+        if !meter.allowsSwing { next.feel.swing = 0 }
+        section.wrappedValue = next
     }
 
     private func duplicate() {

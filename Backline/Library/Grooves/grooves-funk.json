@@ -151,5 +151,69 @@
         }
       }
     }
+  },
+  {
+    "id": "funk.sixEight",
+    "style": "Funk",
+    "name": "6/8 Funk",
+    "summary": "Sixteenths on the hat in six, ghost notes on the snare and a syncopated kick.",
+    "tags": [
+      "6/8",
+      "sixteenths",
+      "ghost notes"
+    ],
+    "tempoRange": [50, 80],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 1, 2, 1, 2, 1, 3, 1, 2, 1, 2, 1],
+          "snare": [0, 0, 0, 0, 1, 0, 3, 0, 0, 0, 1, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0]
+        },
+        "meter": "sixEight"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 1, 2, 1, 2, 1, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 1, 0, 1, 1, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "sixEight"
+      }
+    }
+  },
+  {
+    "id": "funk.twelveEight",
+    "style": "Funk",
+    "name": "12/8 Groove",
+    "summary": "A bouncing 12/8 with accented hats, ghosts on the snare and a busy kick.",
+    "tags": [
+      "12/8",
+      "ghost notes",
+      "triplets"
+    ],
+    "tempoRange": [60, 90],
+    "patterns": {
+      "main": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 3, 0, 1, 3, 0, 2, 3, 0, 1],
+          "snare": [0, 0, 0, 3, 0, 0, 1, 0, 0, 3, 0, 1],
+          "kick": [3, 0, 1, 0, 0, 0, 2, 0, 2, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      },
+      "fill": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 3, 0, 1, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 3, 0, 0, 2, 1, 2, 2, 2, 3],
+          "kick": [3, 0, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      }
+    }
   }
 ]

@@ -32,7 +32,7 @@
   {
     "id": "blues.slow128",
     "style": "Blues & Shuffle",
-    "name": "Slow 12/8",
+    "name": "Slow Triplet Blues",
     "summary": "Every triplet on the hi-hat for slow blues and soul ballads, with a lazy kick pickup into beat 3.",
     "tags": [
       "slow blues",
@@ -152,6 +152,139 @@
           "snare": [0, 0, 0, 3, 0, 0, 2, 1, 2, 2, 2, 3],
           "kick": [3, 0, 0, 2, 0, 0, 3, 0, 0, 0, 0, 0]
         }
+      }
+    }
+  },
+  {
+    "id": "blues.waltz",
+    "style": "Blues & Shuffle",
+    "name": "Blues Waltz",
+    "summary": "A shuffled waltz: swung eighths on the hat, snare on 2 and 3.",
+    "tags": [
+      "waltz",
+      "3/4",
+      "shuffle",
+      "triplets"
+    ],
+    "tempoRange": [80, 140],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [3, 0, 2, 2, 0, 2, 2, 0, 2],
+          "snare": [0, 0, 0, 3, 0, 0, 3, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 1, 0]
+        },
+        "meter": "threeFour"
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 2, 1, 2, 2, 2, 3],
+          "kick": [3, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      }
+    }
+  },
+  {
+    "id": "blues.sixEight",
+    "style": "Blues & Shuffle",
+    "name": "6/8 Slow Soul",
+    "summary": "A deep, slow six with a ghosted pickup into the backbeat. For soul ballads.",
+    "tags": [
+      "6/8",
+      "slow",
+      "soul",
+      "ghost notes"
+    ],
+    "tempoRange": [40, 65],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1],
+          "kick": [3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0]
+        },
+        "meter": "sixEight"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 0, 1, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "sixEight"
+      }
+    }
+  },
+  {
+    "id": "blues.twelveEight",
+    "style": "Blues & Shuffle",
+    "name": "12/8 Slow Blues",
+    "summary": "All twelve eighths on the hat, a lazy kick and a fat 2 and 4. The slow-blues standard.",
+    "tags": [
+      "12/8",
+      "slow blues",
+      "triplets"
+    ],
+    "tempoRange": [45, 75],
+    "patterns": {
+      "main": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [3, 2, 2, 3, 2, 2, 3, 2, 2, 3, 2, 2],
+          "snare": [0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0],
+          "kick": [3, 0, 1, 0, 0, 0, 3, 0, 1, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      },
+      "fill": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [3, 2, 2, 3, 2, 2, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 3, 0, 0, 3, 2, 2, 0, 0, 0],
+          "kick": [3, 0, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "twelveEight"
+      }
+    }
+  },
+  {
+    "id": "blues.twelveEightShuffle",
+    "style": "Blues & Shuffle",
+    "name": "12/8 Shuffle",
+    "summary": "The shuffle written in 12/8: long-short on the hat with a kick that walks into beat 3.",
+    "tags": [
+      "12/8",
+      "shuffle",
+      "triplets"
+    ],
+    "tempoRange": [60, 100],
+    "patterns": {
+      "main": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 3, 0, 2, 3, 0, 2, 3, 0, 2],
+          "snare": [0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 2, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      },
+      "fill": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 3, 0, 2, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 3, 0, 0, 2, 1, 2, 2, 2, 3],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "twelveEight"
       }
     }
   }

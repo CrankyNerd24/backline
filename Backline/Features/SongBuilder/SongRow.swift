@@ -111,7 +111,8 @@ struct SongRow: View {
     private func add(_ kind: SectionKind) {
         let song = store.song
         let groove = selection.flatMap { id in song.sections.first { $0.id == id }?.grooveID } ?? GrooveLibrary.fallbackID
-        var section = Section(kind: kind, name: song.nextName(for: kind), grooveID: groove)
+        var section = Section(kind: kind, name: song.nextName(for: kind), grooveID: groove,
+                              timeSignature: library.groove(groove).timeSignature)
         section.cymbals = library.groove(groove).naturalCymbals
         if kind == .outro { section.fillIntoNext = .none }
         let insertAt = selection.flatMap { song.index(of: $0) }.map { $0 + 1 } ?? song.sections.count

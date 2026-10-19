@@ -33,10 +33,11 @@ struct SongHeader: View {
             songMenu
             Spacer(minLength: 12)
             tempo
-            Text("4/4")
+            Text(store.song.timeSignatureLabel)
                 .font(Theme.condensed(20, weight: .bold))
                 .foregroundStyle(Theme.textMuted)
-                .accessibilityLabel("Four four time")
+                .accessibilityLabel(store.song.timeSignatureLabel == "Mixed" ? "Mixed time signatures"
+                                    : "\(store.song.timeSignatureLabel) time")
             Button {
                 settingUpPedals = true
             } label: {

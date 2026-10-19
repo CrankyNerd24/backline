@@ -161,5 +161,141 @@
         }
       }
     }
+  },
+  {
+    "id": "jazz.waltz",
+    "style": "Jazz & Swing",
+    "name": "Jazz Waltz",
+    "summary": "Ride in the jazz-waltz lilt, hat foot on 2, light comping on the snare.",
+    "tags": [
+      "waltz",
+      "3/4",
+      "ride",
+      "swing",
+      "triplets"
+    ],
+    "tempoRange": [120, 220],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [3, 0, 0, 2, 0, 1, 2, 0, 1],
+          "hiHat": [0, 0, 0, 2, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 1, 0, 0, 1],
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "ride": [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 2, 1, 2, 2, 2, 3],
+          "kick": [1, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      }
+    }
+  },
+  {
+    "id": "jazz.brushWaltz",
+    "style": "Jazz & Swing",
+    "name": "Brush Waltz",
+    "summary": "Brushes sweeping in three with the hat foot on 2 and 3.",
+    "tags": [
+      "waltz",
+      "3/4",
+      "brushes",
+      "soft",
+      "triplets"
+    ],
+    "tempoRange": [90, 160],
+    "patterns": {
+      "main": {
+        "resolution": "triplets",
+        "lanes": {
+          "snare": [2, 0, 1, 2, 0, 1, 2, 0, 1],
+          "hiHat": [0, 0, 0, 2, 0, 0, 2, 0, 0],
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      },
+      "fill": {
+        "resolution": "triplets",
+        "lanes": {
+          "snare": [2, 0, 1, 2, 1, 2, 2, 2, 3],
+          "kick": [1, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      }
+    }
+  },
+  {
+    "id": "jazz.sixEight",
+    "style": "Jazz & Swing",
+    "name": "Jazz 6/8",
+    "summary": "A ride pattern in six with the hat foot on the second beat and a little comping.",
+    "tags": [
+      "6/8",
+      "ride",
+      "swing"
+    ],
+    "tempoRange": [60, 110],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [3, 0, 1, 0, 2, 0, 3, 0, 1, 0, 2, 0],
+          "hiHat": [0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "meter": "sixEight"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [3, 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 1, 0, 1, 1, 2, 2, 3, 3],
+          "kick": [1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "sixEight"
+      }
+    }
+  },
+  {
+    "id": "jazz.twelveEight",
+    "style": "Jazz & Swing",
+    "name": "12/8 Jazz Ballad",
+    "summary": "A slow, swung 12/8 on the ride with the hat foot on 2 and 4.",
+    "tags": [
+      "12/8",
+      "ride",
+      "slow",
+      "ballad"
+    ],
+    "tempoRange": [40, 70],
+    "patterns": {
+      "main": {
+        "resolution": "eighths",
+        "lanes": {
+          "ride": [2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1],
+          "hiHat": [0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      },
+      "fill": {
+        "resolution": "eighths",
+        "lanes": {
+          "ride": [2, 0, 1, 2, 0, 1, 0, 0, 0, 0, 0, 0],
+          "hiHat": [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 1, 2, 1, 2, 2, 2, 3],
+          "kick": [1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      }
+    }
   }
 ]

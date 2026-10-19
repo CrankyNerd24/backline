@@ -6,7 +6,7 @@ struct Song: Codable, Identifiable, Equatable {
     var id: UUID
     var name: String
     var bpm: Double                // 40…260
-    var timeSignature: TimeSig     // v1: .fourFour only
+    var timeSignature: TimeSig     // unused since sections carry their own (Section.timeSignature)
     var kitID: UUID
     var countInBars: Int           // 0, 1, 2
     var sections: [Section]
@@ -15,8 +15,57 @@ struct Song: Codable, Identifiable, Equatable {
     var kitOverride: Kit? = nil
 }
 
-enum TimeSig: String, Codable {
-    case fourFour
+/// Time signatures (set per section). Tempo counts the beat a player taps:
+/// a quarter note in 4/4 and 3/4, a dotted quarter in 6/8 and 12/8.
+enum TimeSig: String, Codable, CaseIterable, Identifiable {
+    case fourFour, threeFour, sixEight, twelveEight
+
+    var id: Self { self }
+
+    var label: String {
+        switch self {
+        case .fourFour: "4/4"
+        case .threeFour: "3/4"
+        case .sixEight: "6/8"
+        case .twelveEight: "12/8"
+        }
+    }
+
+    var spokenLabel: String {
+        switch self {
+        case .fourFour: "four four"
+        case .threeFour: "three four"
+        case .sixEight: "six eight"
+        case .twelveEight: "twelve eight"
+        }
+    }
+
+    /// Beats per bar, as the tempo counts them.
+    var beats: Int {
+        switch self {
+        case .fourFour, .twelveEight: 4
+        case .threeFour: 3
+        case .sixEight: 2
+        }
+    }
+
+    /// Beats split in three eighths.
+    var isCompound: Bool { self == .sixEight || self == .twelveEight }
+
+    /// Grids a bar in this time can be written on (at most 16 steps).
+    var resolutions: [Resolution] {
+        switch self {
+        case .fourFour, .threeFour: [.sixteenths, .triplets]
+        case .sixEight: [.sixteenths]
+        case .twelveEight: [.eighths]
+        }
+    }
+
+    /// Half and double time stretch or squeeze four-beat bars only.
+    var allowsTimeFeel: Bool { beats == 4 }
+
+    /// Compound time already swings, so the Swing slider only works in 4/4 and 3/4.
+    var allowsSwing: Bool { !isCompound }
 }
 
 enum SectionKind: String, Codable, CaseIterable, Identifiable {
@@ -59,11 +108,13 @@ struct Section: Codable, Identifiable, Equatable {
     var fillIntoNext: FillSize
     var repeatUntilStep: Bool      // "vamp": loops until a pedal or button says go
     var patternOverride: GroovePatterns?
+    var timeSignature: TimeSig     // set with the groove; sections of one song may differ
 
     static let barRange = 1...64
 
-    init(kind: SectionKind, name: String, bars: Int? = nil, grooveID: String) {
+    init(kind: SectionKind, name: String, bars: Int? = nil, grooveID: String, timeSignature: TimeSig = .fourFour) {
         id = UUID()
+        self.timeSignature = timeSignature
         self.kind = kind
         self.name = name
         self.bars = bars ?? kind.defaultBars
@@ -74,6 +125,28 @@ struct Section: Codable, Identifiable, Equatable {
         fillIntoNext = .small
         repeatUntilStep = false
         patternOverride = nil
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, kind, name, bars, grooveID, feel, time, cymbals, fillIntoNext, repeatUntilStep, patternOverride
+        case timeSignature
+    }
+
+    // Sections saved before time signatures existed are 4/4.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        kind = try c.decode(SectionKind.self, forKey: .kind)
+        name = try c.decode(String.self, forKey: .name)
+        bars = try c.decode(Int.self, forKey: .bars)
+        grooveID = try c.decode(String.self, forKey: .grooveID)
+        feel = try c.decode(Feel.self, forKey: .feel)
+        time = try c.decode(TimeFeel.self, forKey: .time)
+        cymbals = try c.decode(CymbalChoice.self, forKey: .cymbals)
+        fillIntoNext = try c.decode(FillSize.self, forKey: .fillIntoNext)
+        repeatUntilStep = try c.decode(Bool.self, forKey: .repeatUntilStep)
+        patternOverride = try c.decodeIfPresent(GroovePatterns.self, forKey: .patternOverride)
+        timeSignature = try c.decodeIfPresent(TimeSig.self, forKey: .timeSignature) ?? .fourFour
     }
 
     /// A copy with a fresh identity, for Duplicate.
@@ -138,7 +211,28 @@ extension Song {
     var totalBars: Int { sections.reduce(0) { $0 + $1.bars } }
 
     /// Length in seconds at the song tempo (vamp sections counted once).
-    var duration: TimeInterval { Double(totalBars) * 240 / bpm }
+    var duration: TimeInterval { seconds(toBar: totalBars) }
+
+    /// Seconds from the top of the song to the start of a song bar (count-in
+    /// not included), following each section's time signature.
+    func seconds(toBar bar: Int, bpm: Double? = nil) -> TimeInterval {
+        var beats = 0
+        var remaining = bar
+        for section in sections where remaining > 0 {
+            let n = min(remaining, section.bars)
+            beats += n * section.timeSignature.beats
+            remaining -= n
+        }
+        if remaining > 0 { beats += remaining * (sections.last?.timeSignature.beats ?? 4) }
+        return Double(beats) * 60 / (bpm ?? self.bpm)
+    }
+
+    /// "4/4", or "Mixed" when sections differ.
+    var timeSignatureLabel: String {
+        let meters = Set(sections.map(\.timeSignature))
+        if meters.count > 1 { return "Mixed" }
+        return (meters.first ?? .fourFour).label
+    }
 
     func index(of sectionID: UUID) -> Int? {
         sections.firstIndex { $0.id == sectionID }

@@ -65,7 +65,7 @@
   {
     "id": "ballad.slow128",
     "style": "Ballad",
-    "name": "Ballad 12/8",
+    "name": "Triplet Ballad",
     "summary": "Soft triplets on the hat for slow, swaying ballads.",
     "tags": [
       "12/8",
@@ -157,6 +157,211 @@
           "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
           "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
         }
+      }
+    }
+  },
+  {
+    "id": "ballad.waltz",
+    "style": "Ballad",
+    "name": "Ballad Waltz",
+    "summary": "A gentle waltz: soft eighths, a light kick and the snare on 3.",
+    "tags": [
+      "waltz",
+      "3/4",
+      "soft",
+      "slow"
+    ],
+    "tempoRange": [60, 100],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 3],
+          "kick": [2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      }
+    }
+  },
+  {
+    "id": "ballad.rolling34",
+    "style": "Ballad",
+    "name": "Rolling Three",
+    "summary": "Eighths on the ride with a soft snare on 2 and a firmer one on 3.",
+    "tags": [
+      "3/4",
+      "ride",
+      "soft"
+    ],
+    "tempoRange": [70, 110],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      }
+    }
+  },
+  {
+    "id": "ballad.sixEight",
+    "style": "Ballad",
+    "name": "6/8 Ballad",
+    "summary": "Soft eighths on the hat with the snare on the second big beat. Slow-dance six.",
+    "tags": [
+      "6/8",
+      "slow",
+      "soft"
+    ],
+    "tempoRange": [40, 70],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+        },
+        "meter": "sixEight"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 3],
+          "kick": [2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "sixEight"
+      }
+    }
+  },
+  {
+    "id": "ballad.sixEightRide",
+    "style": "Ballad",
+    "name": "6/8 Ride Ballad",
+    "summary": "The same slow six on the ride, warmer and washier.",
+    "tags": [
+      "6/8",
+      "slow",
+      "ride"
+    ],
+    "tempoRange": [45, 75],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [2, 0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
+          "kick": [2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "meter": "sixEight"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [2, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [2, 0, 0, 0, 1, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3]
+        },
+        "meter": "sixEight"
+      }
+    }
+  },
+  {
+    "id": "ballad.powerBallad",
+    "style": "Ballad",
+    "name": "12/8 Power Ballad",
+    "summary": "A crash on 1 and a big backbeat in a slow 12/8. For the last chorus.",
+    "tags": [
+      "12/8",
+      "big",
+      "slow",
+      "chorus"
+    ],
+    "tempoRange": [50, 80],
+    "patterns": {
+      "main": {
+        "resolution": "eighths",
+        "lanes": {
+          "crash": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "hiHat": [0, 2, 2, 3, 2, 2, 3, 2, 2, 3, 2, 2],
+          "snare": [0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 1, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      },
+      "fill": {
+        "resolution": "eighths",
+        "lanes": {
+          "crash": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "hiHat": [0, 2, 2, 3, 2, 2, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 3, 0, 0, 3, 2, 2, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "twelveEight"
+      }
+    }
+  },
+  {
+    "id": "ballad.gentle128",
+    "style": "Ballad",
+    "name": "12/8 Gentle",
+    "summary": "Soft eighths on the hat with only a rim click on 4. Leaves room for the singer.",
+    "tags": [
+      "12/8",
+      "soft",
+      "sparse"
+    ],
+    "tempoRange": [45, 70],
+    "patterns": {
+      "main": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      },
+      "fill": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [2, 1, 1, 2, 1, 1, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 2, 2, 0, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "twelveEight"
       }
     }
   }

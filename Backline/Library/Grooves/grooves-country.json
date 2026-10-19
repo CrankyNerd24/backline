@@ -148,5 +148,143 @@
         }
       }
     }
+  },
+  {
+    "id": "country.waltz",
+    "style": "Country",
+    "name": "Country Waltz",
+    "summary": "Boom-chick-chick: kick on 1, snare on 2 and 3, hat on every beat. Dance-hall three.",
+    "tags": [
+      "waltz",
+      "3/4",
+      "boom chick"
+    ],
+    "tempoRange": [90, 180],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 3],
+          "kick": [3, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      }
+    }
+  },
+  {
+    "id": "country.walkingWaltz",
+    "style": "Country",
+    "name": "Walking Waltz",
+    "summary": "A busier waltz with eighths on the hat and a pickup on the snare.",
+    "tags": [
+      "waltz",
+      "3/4",
+      "eighths"
+    ],
+    "tempoRange": [100, 160],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 1],
+          "kick": [3, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "threeFour"
+      }
+    }
+  },
+  {
+    "id": "country.sixEight",
+    "style": "Country",
+    "name": "6/8 Country",
+    "summary": "Even eighths on the hat with a soft rim click leading into the backbeat.",
+    "tags": [
+      "6/8",
+      "eighths"
+    ],
+    "tempoRange": [50, 90],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0],
+          "snare": [0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+        },
+        "meter": "sixEight"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 1, 0, 0, 0, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "sixEight"
+      }
+    }
+  },
+  {
+    "id": "country.twelveEight",
+    "style": "Country",
+    "name": "12/8 Country Ballad",
+    "summary": "A slow, swaying 12/8 for country ballads, with the kick on 1 and 3.",
+    "tags": [
+      "12/8",
+      "slow",
+      "ballad",
+      "triplets"
+    ],
+    "tempoRange": [50, 80],
+    "patterns": {
+      "main": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1],
+          "snare": [0, 0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      },
+      "fill": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 2, 0, 1, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 2, 0, 0, 3, 2, 2, 0, 0, 0],
+          "kick": [2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "twelveEight"
+      }
+    }
   }
 ]

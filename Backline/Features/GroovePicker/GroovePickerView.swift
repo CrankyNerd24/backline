@@ -32,6 +32,9 @@ struct GroovePickerView: View {
 
     private var selected: Groove { library.groove(selectedID) }
 
+    /// Only grooves in the section's time signature are offered.
+    private var meter: TimeSig { section?.timeSignature ?? .fourFour }
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -63,6 +66,10 @@ struct GroovePickerView: View {
             .buttonStyle(ChipButtonStyle())
             Text("Choose a groove")
                 .font(Theme.condensed(28, weight: .bold))
+            Text(meter.label)
+                .font(Theme.condensed(20, weight: .bold))
+                .foregroundStyle(Theme.textMuted)
+                .accessibilityLabel("In \(meter.spokenLabel) time")
             Spacer()
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
@@ -94,7 +101,7 @@ struct GroovePickerView: View {
     // MARK: Styles
 
     private var styleTabs: some View {
-        let counts = library.counts(matching: query)
+        let counts = library.counts(matching: query, meter: meter)
         let total = counts.values.reduce(0, +)
         return ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
@@ -130,7 +137,7 @@ struct GroovePickerView: View {
     // MARK: List
 
     private var list: some View {
-        let results = library.search(query, style: style)
+        let results = library.search(query, style: style, meter: meter)
         return ScrollView {
             if results.isEmpty {
                 VStack(spacing: 8) {
@@ -214,7 +221,7 @@ struct GroovePickerView: View {
                 }
 
                 DisclosureGroup(isExpanded: $showingVariations) {
-                    VariationChips(variations: $variations)
+                    VariationChips(variations: $variations, allowsHalfTime: meter.allowsTimeFeel)
                         .padding(.top, 8)
                 } label: {
                     Text("More options")
@@ -268,6 +275,7 @@ struct GrooveVariations: Equatable {
     func applied(to section: Section, groove: Groove) -> Section {
         var result = section
         result.grooveID = groove.id
+        result.timeSignature = groove.timeSignature
         result.patternOverride = nil // edits belonged to the old groove
         switch density {
         case .asWritten: break
@@ -275,7 +283,7 @@ struct GrooveVariations: Equatable {
         case .busier: result.feel.busy = 0.8
         }
         result.cymbals = onRide ? .ride : groove.naturalCymbals
-        if halfTime {
+        if halfTime && groove.timeSignature.allowsTimeFeel {
             result.time = .half
         } else if result.time == .half {
             result.time = .normal
@@ -286,6 +294,7 @@ struct GrooveVariations: Equatable {
 
 private struct VariationChips: View {
     @Binding var variations: GrooveVariations
+    let allowsHalfTime: Bool
 
     var body: some View {
         let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
@@ -297,7 +306,9 @@ private struct VariationChips: View {
                 variations.density = variations.density == .busier ? .asWritten : .busier
             }
             chip("On the ride", isOn: variations.onRide) { variations.onRide.toggle() }
-            chip("Half-time", isOn: variations.halfTime) { variations.halfTime.toggle() }
+            if allowsHalfTime {
+                chip("Half-time", isOn: variations.halfTime) { variations.halfTime.toggle() }
+            }
         }
     }
 

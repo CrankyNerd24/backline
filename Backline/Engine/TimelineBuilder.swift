@@ -27,7 +27,8 @@ enum TimelineBuilder {
                 desc.smallFill = small.engineValue
             }
             if let busy = patterns.main.busyLayer {
-                desc.busyLayer = Pattern(resolution: patterns.main.resolution, lanes: busy).engineValue
+                desc.busyLayer = Pattern(resolution: patterns.main.resolution, meter: patterns.main.meter,
+                                         lanes: busy).engineValue
             }
             desc.busy = Float(section.feel.busy)
             desc.intensity = Float(section.feel.intensity)
@@ -37,6 +38,7 @@ enum TimelineBuilder {
             desc.cymbals = section.cymbals.engineValue
             desc.fillIntoNext = section.fillIntoNext.engineValue
             desc.repeatUntilStep = section.repeatUntilStep
+            desc.meter = section.timeSignature.engineValue
             // The outro ends with a big ending (spec §4.4).
             desc.bigEnding = section.kind == .outro && index == lastIndex
             return desc
@@ -62,9 +64,12 @@ extension Section {
 }
 
 extension Pattern {
-    /// Reads a bar back from the engine's C struct.
-    init(engineValue raw: BLPattern) {
-        let steps = Int(raw.steps) == 12 ? 12 : 16
+    /// Reads a bar in `meter` back from the engine's C struct.
+    init(engineValue raw: BLPattern, meter: TimeSig) {
+        // The meter's own grids first: in 12/8, eighths and triplets are both 12 steps.
+        let resolution = (meter.resolutions + Resolution.allCases).first { $0.steps(in: meter) == Int(raw.steps) }
+            ?? meter.resolutions[0]
+        let steps = min(resolution.steps(in: meter), Int(BL_MAX_STEPS))
         var lanes: [Piece: [Velocity]] = [:]
         withUnsafeBytes(of: raw.velocity) { bytes in
             for (index, piece) in Piece.allCases.enumerated() {
@@ -72,7 +77,7 @@ extension Pattern {
                 if lane.contains(where: { $0 != .off }) { lanes[piece] = lane }
             }
         }
-        self.init(resolution: steps == 12 ? .triplets : .sixteenths, lanes: lanes)
+        self.init(resolution: resolution, meter: meter, lanes: lanes)
     }
 
     /// The bar re-gridded to 16ths or triplets: every hit moves to the
@@ -82,8 +87,19 @@ extension Pattern {
         guard resolution != self.resolution else { return self }
         var raw = engineValue
         var out = BLPattern()
-        bl_pattern_convert(&raw, UInt8(resolution.steps), &out)
-        return Pattern(engineValue: out)
+        bl_pattern_convert(&raw, UInt8(resolution.steps(in: meter)), &out)
+        return Pattern(engineValue: out, meter: meter)
+    }
+}
+
+extension TimeSig {
+    var engineValue: UInt8 {
+        switch self {
+        case .fourFour: UInt8(BL_METER_4_4)
+        case .threeFour: UInt8(BL_METER_3_4)
+        case .sixEight: UInt8(BL_METER_6_8)
+        case .twelveEight: UInt8(BL_METER_12_8)
+        }
     }
 }
 
