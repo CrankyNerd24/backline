@@ -45,7 +45,7 @@ nonisolated enum PhraseInterpreter {
     // MARK: One clause
 
     static func steps(for c: String, sectionNames: [String], kitNames: [String]) -> [AssistantStep] {
-        let target = target(in: c, sectionNames: sectionNames)
+        let target = Self.target(in: c, sectionNames: sectionNames)
         let size = magnitude(c)
         let less = has(c, ["less", "fewer", "reduce", "lower", "down", "remove", "no", "without", "not so", "too",
                            "turn off", "take out", "tone down", "dial back", "back off", "get rid of", "cut", "dont"])
