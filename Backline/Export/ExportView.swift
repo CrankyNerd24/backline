@@ -132,13 +132,18 @@ struct ExportView: View {
     }
 
     /// Bars in the file: the count-in, the song, and the ending bar.
-    private var bars: Int {
-        let countIn = includeCountIn ? song.countInBars : 0
-        let ending = song.sections.last?.kind == .outro ? 1 : 0
-        return countIn + song.totalBars + ending
-    }
+    private var bars: Int { countInBars + song.totalBars + endingBars }
 
-    private var duration: TimeInterval { Double(bars) * 240 / song.bpm }
+    private var countInBars: Int { includeCountIn ? song.countInBars : 0 }
+    private var endingBars: Int { song.sections.last?.kind == .outro ? 1 : 0 }
+
+    /// Count-in bars are in the first section's time, the ending bar in the last's.
+    private var duration: TimeInterval {
+        let beat = 60 / song.bpm
+        let countIn = Double(countInBars * (song.sections.first?.timeSignature.beats ?? 4)) * beat
+        let ending = Double(endingBars * (song.sections.last?.timeSignature.beats ?? 4)) * beat
+        return countIn + song.duration + ending
+    }
 
     private func startExport() {
         let job = ExportJob(song: song, kit: engine.currentKit, library: library, countIn: includeCountIn)

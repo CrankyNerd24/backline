@@ -161,5 +161,114 @@
         }
       }
     }
+  },
+  {
+    "id": "metal.doomWaltz",
+    "style": "Metal",
+    "name": "Doom Waltz",
+    "summary": "A crash on 1, a double kick and the snare on 3. Heavy and slow in three.",
+    "tags": [
+      "3/4",
+      "doom",
+      "heavy",
+      "slow"
+    ],
+    "tempoRange": [50, 100],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "crash": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "ride": [0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "crash": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 3, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "threeFour"
+      }
+    }
+  },
+  {
+    "id": "metal.gallop68",
+    "style": "Metal",
+    "name": "6/8 Gallop",
+    "summary": "The kick gallops through every eighth under a snare on the second beat.",
+    "tags": [
+      "6/8",
+      "gallop",
+      "double kick"
+    ],
+    "tempoRange": [60, 100],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 2, 0, 2, 0, 3, 0, 2, 0, 2, 0]
+        },
+        "meter": "sixEight"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 2, 0, 2, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3]
+        },
+        "meter": "sixEight"
+      }
+    }
+  },
+  {
+    "id": "metal.twelveEight",
+    "style": "Metal",
+    "name": "12/8 Doom",
+    "summary": "Crash on 1, ride on the beats and a kick that doubles up. Slow and crushing.",
+    "tags": [
+      "12/8",
+      "doom",
+      "heavy",
+      "slow"
+    ],
+    "tempoRange": [40, 70],
+    "patterns": {
+      "main": {
+        "resolution": "eighths",
+        "lanes": {
+          "crash": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "ride": [0, 0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 2, 0, 0, 0, 3, 0, 2, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      },
+      "fill": {
+        "resolution": "eighths",
+        "lanes": {
+          "crash": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "ride": [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 2, 2, 0, 0, 0],
+          "kick": [3, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "twelveEight"
+      }
+    }
   }
 ]

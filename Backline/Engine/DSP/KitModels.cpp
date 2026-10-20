@@ -118,7 +118,7 @@ constexpr BuiltIn kBuiltIns[] = {
     {"Lo-fi", {2, 0, 2, 2, 1, 0, 1, 2, 1}, 0.0f, 0.45f, 0.4f, -2.0f, 0.4f, 0.2f, 0.4f, 0.25f, 0.15f, 0.60f},
 };
 
-BLVoiceSettings neutral(uint8_t model) { return {model, 0.0f, 0.5f, 0.5f, 0.5f, 0.3f, 0.0f}; }
+BLVoiceSettings neutral(uint8_t model) { return {model, 0.0f, 0.5f, 0.5f, 0.5f, 0.3f, 0.0f, 0.5f}; }
 
 void fill(const BuiltIn &b, BLKit &kit) {
     for (int piece = 0; piece < BL_PIECE_COUNT; ++piece) kit.voices[piece] = neutral(b.models[piece]);

@@ -7,9 +7,12 @@ Edit the grooves here, then regenerate the JSON the app ships:
     python3 tools/check_grooves.py -v
 
 Lanes use one character per step: '.' off, 1 soft, 2 normal, 3 loud.
-16-step lanes are sixteenths ("1e&a2e&a3e&a4e&a"); 12-step lanes are
-triplets ("1pl2pl3pl4pl"). Fills reuse beats 1-2 of the main bar and swap
-beats 3-4 for one of the runs below.
+In 4/4, 16-step lanes are sixteenths ("1e&a2e&a3e&a4e&a") and 12-step lanes
+are triplets ("1pl2pl3pl4pl"). In 3/4, 12 steps are sixteenths
+("1e&a2e&a3e&a") and 9 are triplets. 6/8 is 12 sixteenths ("1&2&3&4&5&6&",
+two beats of three eighths); 12/8 is 12 eighths (four beats of three).
+Fills keep the start of the main bar and swap the end for one of the runs
+below (the second half in 4/4 and 12/8, beats 2-3 in 3/4, beat 2 in 6/8).
 
 Every groove is written from scratch for Backline. Don't name grooves after
 songs or famous drummers (spec §10).
@@ -24,16 +27,27 @@ RUNS16 = {  # steps 8-15
     "tomsDown": {"highTom": "32......", "lowTom": "..32....", "floorTom": "....3232", "kick": "3...3..."},
     "sparse": {"snare": "....2.23", "floorTom": "2.1.....", "kick": "2......."},
 }
-RUNS12 = {  # steps 6-11
+RUNS12 = {  # steps 6-11 (4/4 triplets, 12/8); steps 3-8 in 3/4 triplets
     "tripletSnare": {"snare": "212223", "kick": "3....."},
     "tripletToms": {"snare": "322...", "highTom": "...3..", "lowTom": "....3.", "floorTom": ".....3", "kick": "3....."},
+}
+
+RUNS34 = {  # 3/4 sixteenths, steps 4-11 (beats 2-3)
+    "snareToms34": {"snare": "2222....", "highTom": "....32..", "lowTom": "......3.", "floorTom": ".......3", "kick": "3......."},
+    "snareRoll34": {"snare": "11222233", "kick": "3......."},
+    "sparse34": {"snare": "....2.23", "floorTom": "2.1.....", "kick": "2......."},
+}
+RUNS68 = {  # 6/8 sixteenths, steps 6-11 (beat 2)
+    "snareToms68": {"snare": "22....", "highTom": "..3...", "lowTom": "....3.", "floorTom": ".....3", "kick": "3....."},
+    "snareRoll68": {"snare": "112233", "kick": "3....."},
+    "toms68": {"highTom": "32....", "lowTom": "..32..", "floorTom": "....33", "kick": "3....."},
 }
 
 def lane(s):
     return [0 if c == "." else int(c) for c in s]
 
-def g(id, name, tempo, summary, tags, fill, **lanes):
-    return dict(id=id, name=name, tempo=tempo, summary=summary, tags=tags, fill=fill, lanes=lanes)
+def g(id, name, tempo, summary, tags, fill, meter="fourFour", **lanes):
+    return dict(id=id, name=name, tempo=tempo, summary=summary, tags=tags, fill=fill, meter=meter, lanes=lanes)
 
 STYLES = [
  ("rock", "Rock", [
@@ -63,7 +77,7 @@ STYLES = [
     "Long-short triplet swing on the hi-hat with a solid 2 and 4. The classic blues bounce.",
     ["shuffle", "swing", "triplets"], "tripletSnare",
     hiHat="3.12.13.12.1", snare="...3.....3..", kick="3.....3....1"),
-  g("blues.slow128", "Slow 12/8", (50, 80),
+  g("blues.slow128", "Slow Triplet Blues", (50, 80),
     "Every triplet on the hi-hat for slow blues and soul ballads, with a lazy kick pickup into beat 3.",
     ["slow blues", "12/8", "triplets", "slow"], "tripletToms",
     hiHat="311211311211", snare="...3.....3..", kick="3....13....."),
@@ -263,7 +277,7 @@ EXTRA = {
     hiHat="3.23.23.23.2", snare="...3.....3..", kick="3....23....."),
  ],
  "ballad": [
-  g("ballad.slow128", "Ballad 12/8", (50, 75),
+  g("ballad.slow128", "Triplet Ballad", (50, 75),
     "Soft triplets on the hat for slow, swaying ballads.",
     ["12/8", "slow", "triplets", "soft"], "tripletToms",
     hiHat="211211211211", snare="...2.....2..", kick="2.....2.1..."),
@@ -327,7 +341,7 @@ EXTRA = {
     "Steady eighths with the snare answering 'cha-cha-cha' at the end of every bar.",
     ["cha-cha", "eighths"], "snareToms",
     hiHat="2.2.2.2.2.2.2.2.", snare="........3...3.3.", kick="3.......3......."),
-  g("latin.bell68", "6/8 Bell Feel", (90, 130),
+  g("latin.bell68", "Triplet Bell Feel", (90, 130),
     "A rolling bell pattern on the ride in triplets, with the kick on the big beats.",
     ["6/8", "bell", "ride", "triplets"], "tripletToms",
     ride="3.2.22.2.2.2", snare="...1.....1..", kick="3.....3....."),
@@ -336,16 +350,219 @@ EXTRA = {
 for slug, more in EXTRA.items():
     next(x for x in STYLES if x[0] == slug)[2].extend(more)
 
-def pattern(lanes, steps):
-    return {"resolution": "sixteenths" if steps == 16 else "triplets",
-            "lanes": {k: lane(v) for k, v in lanes.items()}}
+# MARK: Other time signatures. Tempo ranges count the beat: quarter notes in
+# 3/4, dotted quarters in 6/8 and 12/8.
 
-def fill(lanes, steps, run):
-    half = steps // 2
-    runs = RUNS16 if steps == 16 else RUNS12
-    out = {k: v[:half] + "." * half for k, v in lanes.items()}
+def w(*a, **k):
+    return g(*a, meter="threeFour", **k)
+
+def s68(*a, **k):
+    return g(*a, meter="sixEight", **k)
+
+def t128(*a, **k):
+    return g(*a, meter="twelveEight", **k)
+
+METERS = {
+ "rock": [
+  w("rock.waltz", "Rock Waltz", (100, 170),
+    "Kick on 1, snare on 2 and 3, eighths on the hat. A straight-ahead rock beat in three.",
+    ["waltz", "3/4", "eighths"], "snareToms34",
+    hiHat="3.2.3.2.3.2.", snare="....3...3...", kick="3.........2."),
+  w("rock.big34", "Big Three", (60, 100),
+    "A crash on 1, the ride on the other beats and a heavy snare on 3. Slow and wide.",
+    ["3/4", "slow", "big", "ride"], "snareRoll34",
+    crash="3...........", ride="....2...2...", snare="........3...", kick="3...2......."),
+  s68("rock.sixEight", "6/8 Rock", (50, 80),
+    "Six eighths on the hat, snare on the second big beat. The classic slow rock ballad in six.",
+    ["6/8", "eighths", "ballad"], "snareToms68",
+    hiHat="3.2.2.3.2.2.", snare="......3.....", kick="3.......1..."),
+  t128("rock.twelveEight", "12/8 Rock", (60, 100),
+    "Every eighth on the hat with a backbeat on 2 and 4 and a rolling kick. Bluesy rock in four big beats.",
+    ["12/8", "triplets", "backbeat"], "tripletToms",
+    hiHat="322322322322", snare="...3.....3..", kick="3....13.1..."),
+ ],
+ "blues": [
+  w("blues.waltz", "Blues Waltz", (80, 140),
+    "A shuffled waltz: swung eighths on the hat, snare on 2 and 3.",
+    ["waltz", "3/4", "shuffle", "triplets"], "tripletSnare",
+    hiHat="3.22.22.2", snare="...3..3..", kick="3......1."),
+  s68("blues.sixEight", "6/8 Slow Soul", (40, 65),
+    "A deep, slow six with a ghosted pickup into the backbeat. For soul ballads.",
+    ["6/8", "slow", "soul", "ghost notes"], "snareRoll68",
+    hiHat="3.1.1.2.1.1.", snare="......3....1", kick="3...1.....1."),
+  t128("blues.twelveEight", "12/8 Slow Blues", (45, 75),
+    "All twelve eighths on the hat, a lazy kick and a fat 2 and 4. The slow-blues standard.",
+    ["12/8", "slow blues", "triplets"], "tripletToms",
+    hiHat="322322322322", snare="...3.....3..", kick="3.1...3.1..."),
+  t128("blues.twelveEightShuffle", "12/8 Shuffle", (60, 100),
+    "The shuffle written in 12/8: long-short on the hat with a kick that walks into beat 3.",
+    ["12/8", "shuffle", "triplets"], "tripletSnare",
+    hiHat="3.23.23.23.2", snare="...3.....3..", kick="3.....3.2..."),
+ ],
+ "funk": [
+  s68("funk.sixEight", "6/8 Funk", (50, 80),
+    "Sixteenths on the hat in six, ghost notes on the snare and a syncopated kick.",
+    ["6/8", "sixteenths", "ghost notes"], "snareRoll68",
+    hiHat="312121312121", snare="....1.3...1.", kick="3.....1..2.."),
+  t128("funk.twelveEight", "12/8 Groove", (60, 90),
+    "A bouncing 12/8 with accented hats, ghosts on the snare and a busy kick.",
+    ["12/8", "ghost notes", "triplets"], "tripletSnare",
+    hiHat="3.23.13.23.1", snare="...3..1..3.1", kick="3.1...2.2..."),
+ ],
+ "country": [
+  w("country.waltz", "Country Waltz", (90, 180),
+    "Boom-chick-chick: kick on 1, snare on 2 and 3, hat on every beat. Dance-hall three.",
+    ["waltz", "3/4", "boom chick"], "sparse34",
+    hiHat="2...2...2...", snare="....2...2...", kick="3..........."),
+  w("country.walkingWaltz", "Walking Waltz", (100, 160),
+    "A busier waltz with eighths on the hat and a pickup on the snare.",
+    ["waltz", "3/4", "eighths"], "snareToms34",
+    hiHat="3.2.3.2.3.2.", snare="....2...2..1", kick="3.....1....."),
+  s68("country.sixEight", "6/8 Country", (50, 90),
+    "Even eighths on the hat with a soft rim click leading into the backbeat.",
+    ["6/8", "eighths"], "snareToms68",
+    hiHat="2.2.2.2.2.2.", snare="..1...3...1.", kick="3.....1....."),
+  t128("country.twelveEight", "12/8 Country Ballad", (50, 80),
+    "A slow, swaying 12/8 for country ballads, with the kick on 1 and 3.",
+    ["12/8", "slow", "ballad", "triplets"], "tripletToms",
+    hiHat="2.12.12.12.1", snare="...2.....2..", kick="2.....2....."),
+ ],
+ "metal": [
+  w("metal.doomWaltz", "Doom Waltz", (50, 100),
+    "A crash on 1, a double kick and the snare on 3. Heavy and slow in three.",
+    ["3/4", "doom", "heavy", "slow"], "snareToms34",
+    crash="3...........", ride="....2...2...", snare="........3...", kick="3.3.....3..."),
+  s68("metal.gallop68", "6/8 Gallop", (60, 100),
+    "The kick gallops through every eighth under a snare on the second beat.",
+    ["6/8", "gallop", "double kick"], "toms68",
+    hiHat="2.....2.....", snare="......3.....", kick="3.2.2.3.2.2."),
+  t128("metal.twelveEight", "12/8 Doom", (40, 70),
+    "Crash on 1, ride on the beats and a kick that doubles up. Slow and crushing.",
+    ["12/8", "doom", "heavy", "slow"], "tripletToms",
+    crash="3...........", ride="...2..2..2..", snare="......3.....", kick="3.2...3.2..."),
+ ],
+ "punk": [
+  s68("punk.stomp", "6/8 Stomp", (70, 110),
+    "A pounding six: kick on 1 and 3 of each half, snare on the second big beat.",
+    ["6/8", "stomp", "driving"], "snareRoll68",
+    hiHat="3.2.2.3.2.2.", snare="......3.....", kick="3.2...3.2..."),
+ ],
+ "pop": [
+  w("pop.waltz", "Pop Waltz", (100, 160),
+    "A bright waltz with the kick pushing the end of the bar.",
+    ["waltz", "3/4", "bright"], "snareRoll34",
+    hiHat="3.2.3.2.3.2.", snare="....3.......", kick="3.....2...2."),
+  s68("pop.sixEight", "6/8 Pop", (55, 90),
+    "Accented eighths on the hat, snare on the second beat and a kick pickup.",
+    ["6/8", "eighths"], "snareToms68",
+    hiHat="3.2.2.3.2.2.", snare="......3.....", kick="3...2......."),
+  t128("pop.twelveEight", "12/8 Pop", (50, 85),
+    "A rolling 12/8 with the hat opening at the end of the bar to lift into the next.",
+    ["12/8", "open hat", "triplets"], "tripletSnare",
+    hiHat="3223223223.2", openHat="..........2.", snare="...3.....3..", kick="3.....3....."),
+ ],
+ "ballad": [
+  w("ballad.waltz", "Ballad Waltz", (60, 100),
+    "A gentle waltz: soft eighths, a light kick and the snare on 3.",
+    ["waltz", "3/4", "soft", "slow"], "sparse34",
+    hiHat="2.1.2.1.2.1.", snare="........2...", kick="2.....1....."),
+  w("ballad.rolling34", "Rolling Three", (70, 110),
+    "Eighths on the ride with a soft snare on 2 and a firmer one on 3.",
+    ["3/4", "ride", "soft"], "snareRoll34",
+    ride="2.1.2.1.2.1.", snare="....1...2...", kick="2.......1..."),
+  s68("ballad.sixEight", "6/8 Ballad", (40, 70),
+    "Soft eighths on the hat with the snare on the second big beat. Slow-dance six.",
+    ["6/8", "slow", "soft"], "snareRoll68",
+    hiHat="2.1.1.2.1.1.", snare="......2.....", kick="2.........1."),
+  s68("ballad.sixEightRide", "6/8 Ride Ballad", (45, 75),
+    "The same slow six on the ride, warmer and washier.",
+    ["6/8", "slow", "ride"], "toms68",
+    ride="2.1.1.2.1.1.", snare="......2.....", kick="2...1......."),
+  t128("ballad.powerBallad", "12/8 Power Ballad", (50, 80),
+    "A crash on 1 and a big backbeat in a slow 12/8. For the last chorus.",
+    ["12/8", "big", "slow", "chorus"], "tripletToms",
+    crash="3...........", hiHat=".22322322322", snare="...3.....3..", kick="3.....3.1..."),
+  t128("ballad.gentle128", "12/8 Gentle", (45, 70),
+    "Soft eighths on the hat with only a rim click on 4. Leaves room for the singer.",
+    ["12/8", "soft", "sparse"], "tripletToms",
+    hiHat="211211211211", snare=".........2..", kick="2.....1....."),
+ ],
+ "reggae": [
+  s68("reggae.sixEight", "6/8 One Drop", (50, 80),
+    "Kick and snare land together on the second big beat, nothing on 1. A one-drop in six.",
+    ["6/8", "one drop"], "snareToms68",
+    hiHat="2.1.1.2.1.1.", snare="......3.....", kick="......3....."),
+  t128("reggae.rockers128", "12/8 Rockers", (55, 85),
+    "Kick on every beat under a swung hat and a snare on 3.",
+    ["12/8", "rockers", "four on the floor"], "tripletSnare",
+    hiHat="2.12.12.12.1", snare="......3.....", kick="3..3..3..3.."),
+ ],
+ "jazz": [
+  w("jazz.waltz", "Jazz Waltz", (120, 220),
+    "Ride in the jazz-waltz lilt, hat foot on 2, light comping on the snare.",
+    ["waltz", "3/4", "ride", "swing", "triplets"], "tripletSnare",
+    ride="3..2.12.1", hiHat="...2.....", snare=".....1..1", kick="1........"),
+  w("jazz.brushWaltz", "Brush Waltz", (90, 160),
+    "Brushes sweeping in three with the hat foot on 2 and 3.",
+    ["waltz", "3/4", "brushes", "soft", "triplets"], "tripletSnare",
+    snare="2.12.12.1", hiHat="...2..2..", kick="1........"),
+  s68("jazz.sixEight", "Jazz 6/8", (60, 110),
+    "A ride pattern in six with the hat foot on the second beat and a little comping.",
+    ["6/8", "ride", "swing"], "snareRoll68",
+    ride="3.1.2.3.1.2.", hiHat="......2.....", snare="....1.....1.", kick="1..........."),
+  t128("jazz.twelveEight", "12/8 Jazz Ballad", (40, 70),
+    "A slow, swung 12/8 on the ride with the hat foot on 2 and 4.",
+    ["12/8", "ride", "slow", "ballad"], "tripletSnare",
+    ride="2.12.12.12.1", hiHat="...2.....2..", snare=".....1......", kick="1..........."),
+ ],
+ "hiphop": [
+  s68("hiphop.sixEight", "6/8 Swing Beat", (50, 80),
+    "A head-nod beat in six: lazy hats, a fat snare and a kick that skips.",
+    ["6/8", "swing"], "snareToms68",
+    hiHat="2.1.2.2.1.2.", snare="......3.....", kick="3.......2.1."),
+  t128("hiphop.twelveEight", "12/8 Lazy Swing", (50, 80),
+    "A laid-back 12/8 with a ghost before beat 1 and a kick that bounces.",
+    ["12/8", "swing", "ghost notes"], "tripletSnare",
+    hiHat="2.12.12.12.1", snare="...3.....3.1", kick="3....12....."),
+ ],
+ "latin": [
+  w("latin.vals", "Vals Feel", (140, 200),
+    "A quick waltz with the bass on 1 and 3 and a light snare between.",
+    ["waltz", "3/4", "fast"], "sparse34",
+    hiHat="2.1.2.1.2.1.", snare="....2.1.2...", kick="3.......2..."),
+  s68("latin.sixEightRoll", "6/8 Roll", (80, 120),
+    "Steady eighths on the ride with the kick on both big beats and soft snare answers.",
+    ["6/8", "ride", "eighths"], "toms68",
+    ride="2.2.2.2.2.2.", snare="....1.....1.", kick="3.....3....."),
+  t128("latin.afro128", "Afro 12/8", (90, 130),
+    "The twelve-eight bell pattern on the ride, kick on the beats and their pickups.",
+    ["12/8", "bell", "ride", "afro"], "tripletToms",
+    ride="3.2.22.2.2.2", snare=".....1....1.", kick="3..1..3..1.."),
+ ],
+}
+for slug, more in METERS.items():
+    next(x for x in STYLES if x[0] == slug)[2].extend(more)
+
+# (meter, steps) -> (resolution, fill runs)
+GRIDS = {
+    ("fourFour", 16): ("sixteenths", RUNS16), ("fourFour", 12): ("triplets", RUNS12),
+    ("threeFour", 12): ("sixteenths", RUNS34), ("threeFour", 9): ("triplets", RUNS12),
+    ("sixEight", 12): ("sixteenths", RUNS68), ("twelveEight", 12): ("eighths", RUNS12),
+}
+
+def pattern(lanes, steps, meter):
+    p = {"resolution": GRIDS[(meter, steps)][0], "lanes": {k: lane(v) for k, v in lanes.items()}}
+    if meter != "fourFour":
+        p["meter"] = meter
+    return p
+
+def fill(lanes, steps, run, meter):
+    runs = GRIDS[(meter, steps)][1]
+    length = len(next(iter(runs[run].values())))
+    keep = steps - length
+    out = {k: v[:keep] + "." * length for k, v in lanes.items()}
     for k, v in runs[run].items():
-        out[k] = out.get(k, "." * steps)[:half] + v
+        out[k] = out.get(k, "." * steps)[:keep] + v
     return {k: v for k, v in out.items() if any(c != "." for c in v)}
 
 os.makedirs(OUT, exist_ok=True)
@@ -353,11 +570,14 @@ for slug, style, grooves in STYLES:
     docs = []
     for gr in grooves:
         steps = len(next(iter(gr["lanes"].values())))
+        meter = gr["meter"]
         assert all(len(v) == steps for v in gr["lanes"].values()), gr["id"]
+        assert (meter, steps) in GRIDS, gr["id"]
         docs.append({
             "id": gr["id"], "style": style, "name": gr["name"], "summary": gr["summary"], "tags": gr["tags"],
             "tempoRange": list(gr["tempo"]),
-            "patterns": {"main": pattern(gr["lanes"], steps), "fill": pattern(fill(gr["lanes"], steps, gr["fill"]), steps)},
+            "patterns": {"main": pattern(gr["lanes"], steps, meter),
+                         "fill": pattern(fill(gr["lanes"], steps, gr["fill"], meter), steps, meter)},
         })
     text = json.dumps(docs, indent=2)
     # Keep each lane on one line so patterns read as rows.

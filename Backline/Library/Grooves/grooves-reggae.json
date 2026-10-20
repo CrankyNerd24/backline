@@ -155,5 +155,71 @@
         }
       }
     }
+  },
+  {
+    "id": "reggae.sixEight",
+    "style": "Reggae",
+    "name": "6/8 One Drop",
+    "summary": "Kick and snare land together on the second big beat, nothing on 1. A one-drop in six.",
+    "tags": [
+      "6/8",
+      "one drop"
+    ],
+    "tempoRange": [50, 80],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "kick": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "sixEight"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0],
+          "kick": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "sixEight"
+      }
+    }
+  },
+  {
+    "id": "reggae.rockers128",
+    "style": "Reggae",
+    "name": "12/8 Rockers",
+    "summary": "Kick on every beat under a swung hat and a snare on 3.",
+    "tags": [
+      "12/8",
+      "rockers",
+      "four on the floor"
+    ],
+    "tempoRange": [55, 85],
+    "patterns": {
+      "main": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 0, 0]
+        },
+        "meter": "twelveEight"
+      },
+      "fill": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 2, 0, 1, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 2, 1, 2, 2, 2, 3],
+          "kick": [3, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      }
+    }
   }
 ]

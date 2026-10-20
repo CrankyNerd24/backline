@@ -37,7 +37,7 @@ struct PlayAlongView: View {
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 20) {
                     nowPlaying
-                    BeatLights(beat: currentBeat, reduceMotion: reduceMotion)
+                    BeatLights(beat: currentBeat, count: beatsInBar, reduceMotion: reduceMotion)
                     if let banner = bannerContent {
                         QueuedBanner(content: banner)
                     } else {
@@ -60,6 +60,10 @@ struct PlayAlongView: View {
         }
         .background(Theme.bgDeep)
         .foregroundStyle(Theme.text)
+        // VoiceOver's two-finger double tap plays and stops, like any player.
+        .accessibilityAction(.magicTap) {
+            engine.isPlaying ? engine.stop() : engine.play(from: currentSection?.id)
+        }
         .onChange(of: engine.isPlaying, initial: true) { _, playing in
             UIApplication.shared.isIdleTimerDisabled = playing
         }
@@ -120,7 +124,16 @@ struct PlayAlongView: View {
                 .monospacedDigit()
                 .foregroundStyle(Theme.textMuted)
         }
-        .accessibilityElement(children: .combine)
+        // "Chorus 1, bar 3 of 8": VoiceOver reads it whenever it's focused (spec §11).
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spokenPosition)
+        .accessibilityAddTraits(.updatesFrequently)
+    }
+
+    private var spokenPosition: String {
+        let name = engine.position?.isCountIn == true ? "Count-in" : currentSection?.name ?? "No sections"
+        let bar = barText.replacingOccurrences(of: " / ", with: " of ").replacingOccurrences(of: " · ", with: ", ")
+        return bar.isEmpty ? name : "\(name), \(bar)"
     }
 
     private var barText: String {
@@ -135,9 +148,14 @@ struct PlayAlongView: View {
         return "Bar \(bar) / \(section.bars)" + (looping ? " · Looping" : "")
     }
 
+    /// One light per beat: 4 in 4/4 and 12/8, 3 in 3/4, 2 in 6/8.
+    private var beatsInBar: Int {
+        engine.position?.beatsInBar ?? currentSection?.timeSignature.beats ?? 4
+    }
+
     private var currentBeat: Int? {
         guard let position = engine.position else { return nil }
-        return min(3, Int(position.barPhase * 4))
+        return min(beatsInBar - 1, Int(position.barPhase * Double(beatsInBar)))
     }
 
     // MARK: Banner
@@ -355,11 +373,12 @@ struct PlayAlongView: View {
 /// beats outlined.
 private struct BeatLights: View {
     let beat: Int?
+    let count: Int
     let reduceMotion: Bool
 
     var body: some View {
         HStack(spacing: 28) {
-            ForEach(0..<4, id: \.self) { index in
+            ForEach(0..<max(1, count), id: \.self) { index in
                 let state = beat.map { index < $0 ? 0 : index == $0 ? 1 : 2 } ?? 2
                 Circle()
                     .fill(state == 1 ? Theme.accent : state == 0 ? Theme.surfaceHiAlt : .clear)
@@ -447,6 +466,17 @@ private struct SongMap: View {
         }
         .accessibilityElement()
         .accessibilityLabel("Song map")
+        .accessibilityValue(spokenMap)
+    }
+
+    /// "Section 3 of 6, Chorus 1. Next: Verse 2."
+    private var spokenMap: String {
+        guard let index = currentSectionID.flatMap({ song.index(of: $0) }) else {
+            return song.sections.map(\.name).joined(separator: ", ")
+        }
+        var text = "Section \(index + 1) of \(song.sections.count), \(song.sections[index].name)."
+        if index + 1 < song.sections.count { text += " Next: \(song.sections[index + 1].name)." }
+        return text
     }
 
     private func block(_ section: Section, index: Int, currentIndex: Int) -> some View {
@@ -462,8 +492,8 @@ private struct SongMap: View {
                 GeometryReader { geo in
                     let x = geo.size.width * progress
                     ZStack(alignment: .leading) {
-                        Rectangle().fill(.black.opacity(0.3)).frame(width: x)
-                        Rectangle().fill(Theme.text).frame(width: 3).offset(x: max(0, x - 1.5))
+                        Rectangle().fill(.white.opacity(0.3)).frame(width: x)
+                        Rectangle().fill(Theme.SectionColor.onColor).frame(width: 3).offset(x: max(0, x - 1.5))
                     }
                 }
                 .clipShape(shape)

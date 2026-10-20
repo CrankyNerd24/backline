@@ -23,6 +23,9 @@ extension Groove {
     /// The cymbal the groove was written to keep time on. A section switched
     /// to this groove starts with it.
     var naturalCymbals: CymbalChoice { patterns.main.naturalCymbals }
+
+    /// The time the groove is written in, from its main bar.
+    var timeSignature: TimeSig { patterns.main.meter }
 }
 
 extension Pattern {

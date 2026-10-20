@@ -122,6 +122,45 @@ private:
     SVF stickFilter_;
 };
 
+// The Attack control: a gain curve over the start of each hit, applied to the
+// whole voice. Below 0.5 the hit fades in (up to 25 ms, from nearly silent),
+// rounding the transient off; above 0.5 the first few milliseconds are pushed
+// up (up to +9.5 dB, falling away over ~4 ms) for a snappier hit. At 0.5 it
+// does nothing.
+class AttackShaper {
+public:
+    void configure(float attack, float sampleRate) {
+        const float a = std::isfinite(attack) ? std::clamp(attack, 0.0f, 1.0f) : 0.5f;
+        const float soft = a < 0.5f ? (0.5f - a) / 0.5f : 0.0f;
+        const float snap = a > 0.5f ? (a - 0.5f) / 0.5f : 0.0f;
+        rampSamples_ = soft * 0.025f * sampleRate;
+        floor_ = 1.0f - 0.95f * soft;
+        boost_ = 2.0f * snap;
+        boostCoeff_ = std::exp(-1.0f / (0.004f * sampleRate));
+    }
+    void start() {
+        t_ = 0.0f;
+        boostEnv_ = boost_;
+    }
+    float next() {
+        float g = 1.0f;
+        if (t_ < rampSamples_) {
+            const float x = t_ / rampSamples_;
+            g = floor_ + (1.0f - floor_) * x * x * (3.0f - 2.0f * x);
+            t_ += 1.0f;
+        }
+        if (boostEnv_ > 1e-4f) {
+            g *= 1.0f + boostEnv_;
+            boostEnv_ *= boostCoeff_;
+        }
+        return g;
+    }
+
+private:
+    float rampSamples_ = 0.0f, floor_ = 1.0f, boost_ = 0.0f, boostCoeff_ = 0.0f;
+    float t_ = 0.0f, boostEnv_ = 0.0f;
+};
+
 // Metronome click and pedal cue: a short, bright sine blip.
 class ClickVoice {
 public:

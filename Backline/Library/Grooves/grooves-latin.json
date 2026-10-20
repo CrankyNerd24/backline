@@ -131,7 +131,7 @@
   {
     "id": "latin.bell68",
     "style": "Latin",
-    "name": "6/8 Bell Feel",
+    "name": "Triplet Bell Feel",
     "summary": "A rolling bell pattern on the ride in triplets, with the kick on the big beats.",
     "tags": [
       "6/8",
@@ -159,6 +159,110 @@
           "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
           "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
         }
+      }
+    }
+  },
+  {
+    "id": "latin.vals",
+    "style": "Latin",
+    "name": "Vals Feel",
+    "summary": "A quick waltz with the bass on 1 and 3 and a light snare between.",
+    "tags": [
+      "waltz",
+      "3/4",
+      "fast"
+    ],
+    "tempoRange": [140, 200],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0],
+          "snare": [0, 0, 0, 0, 2, 0, 1, 0, 2, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 3],
+          "kick": [3, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "floorTom": [0, 0, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      }
+    }
+  },
+  {
+    "id": "latin.sixEightRoll",
+    "style": "Latin",
+    "name": "6/8 Roll",
+    "summary": "Steady eighths on the ride with the kick on both big beats and soft snare answers.",
+    "tags": [
+      "6/8",
+      "ride",
+      "eighths"
+    ],
+    "tempoRange": [80, 120],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "sixEight"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "ride": [2, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3]
+        },
+        "meter": "sixEight"
+      }
+    }
+  },
+  {
+    "id": "latin.afro128",
+    "style": "Latin",
+    "name": "Afro 12/8",
+    "summary": "The twelve-eight bell pattern on the ride, kick on the beats and their pickups.",
+    "tags": [
+      "12/8",
+      "bell",
+      "ride",
+      "afro"
+    ],
+    "tempoRange": [90, 130],
+    "patterns": {
+      "main": {
+        "resolution": "eighths",
+        "lanes": {
+          "ride": [3, 0, 2, 0, 2, 2, 0, 2, 0, 2, 0, 2],
+          "snare": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0],
+          "kick": [3, 0, 0, 1, 0, 0, 3, 0, 0, 1, 0, 0]
+        },
+        "meter": "twelveEight"
+      },
+      "fill": {
+        "resolution": "eighths",
+        "lanes": {
+          "ride": [3, 0, 2, 0, 2, 2, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 1, 3, 2, 2, 0, 0, 0],
+          "kick": [3, 0, 0, 1, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "twelveEight"
       }
     }
   }

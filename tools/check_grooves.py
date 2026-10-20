@@ -12,18 +12,26 @@ import os
 import sys
 
 PIECES = ["crash", "ride", "openHat", "hiHat", "snare", "highTom", "lowTom", "floorTom", "kick"]
-STEPS = {"sixteenths": 16, "triplets": 12}
+# (meter, resolution) -> steps
+STEPS = {("fourFour", "sixteenths"): 16, ("fourFour", "triplets"): 12,
+         ("threeFour", "sixteenths"): 12, ("threeFour", "triplets"): 9,
+         ("sixEight", "sixteenths"): 12, ("twelveEight", "eighths"): 12}
+RULERS = {("fourFour", "sixteenths"): "1e&a2e&a3e&a4e&a", ("fourFour", "triplets"): "1pl2pl3pl4pl",
+          ("threeFour", "sixteenths"): "1e&a2e&a3e&a", ("threeFour", "triplets"): "1pl2pl3pl",
+          ("sixEight", "sixteenths"): "1&2&3&4&5&6&", ("twelveEight", "eighths"): "123456789abc"}
 STYLES = ["Rock", "Blues & Shuffle", "Funk", "Country", "Metal", "Punk", "Pop", "Ballad", "Reggae",
           "Jazz & Swing", "Hip-hop", "Latin"]
 ROOT = os.path.join(os.path.dirname(__file__), "..", "Backline", "Library", "Grooves")
 
 
-def check_pattern(where, p, errors):
+def check_pattern(where, p, errors, meter):
     res = p.get("resolution")
-    if res not in STEPS:
-        errors.append(f"{where}: resolution {res!r}")
+    if p.get("meter", "fourFour") != meter:
+        errors.append(f"{where}: meter {p.get('meter', 'fourFour')!r}, but the main bar is {meter!r}")
+    if (meter, res) not in STEPS:
+        errors.append(f"{where}: resolution {res!r} in {meter}")
         return
-    steps = STEPS[res]
+    steps = STEPS[(meter, res)]
     lanes = p.get("lanes", {})
     if not lanes:
         errors.append(f"{where}: no lanes")
@@ -42,7 +50,7 @@ def check_pattern(where, p, errors):
 
 
 def grid(p):
-    ruler = "1e&a2e&a3e&a4e&a" if p["resolution"] == "sixteenths" else "1pl2pl3pl4pl"
+    ruler = RULERS[(p.get("meter", "fourFour"), p["resolution"])]
     rows = [f"    {'':9} {ruler}"]
     for piece in PIECES:
         if piece in p["lanes"]:
@@ -52,7 +60,7 @@ def grid(p):
 
 def main():
     verbose = "-v" in sys.argv
-    errors, ids, counts = [], set(), {}
+    errors, ids, counts, meters = [], set(), {}, {}
     files = sorted(glob.glob(os.path.join(ROOT, "grooves-*.json")))
     if not files:
         errors.append(f"no groove files in {ROOT}")
@@ -78,9 +86,11 @@ def main():
             lo, hi = g.get("tempoRange", [0, 0])
             if not (40 <= lo < hi <= 260):
                 errors.append(f"{where}: tempoRange {lo}-{hi}")
+            meter = g.get("patterns", {}).get("main", {}).get("meter", "fourFour")
+            meters[meter] = meters.get(meter, 0) + 1
             for part in ("main", "fill"):
                 if part in g.get("patterns", {}):
-                    check_pattern(f"{where}.{part}", g["patterns"][part], errors)
+                    check_pattern(f"{where}.{part}", g["patterns"][part], errors, meter)
                 else:
                     errors.append(f"{where}: missing patterns.{part}")
             if verbose and "patterns" in g:
@@ -92,6 +102,7 @@ def main():
     for e in errors:
         print("error:", e)
     print(f"{len(ids)} grooves in {len(files)} files: " + ", ".join(f"{s} {counts.get(s, 0)}" for s in STYLES))
+    print("by time signature: " + ", ".join(f"{m} {n}" for m, n in sorted(meters.items())))
     sys.exit(1 if errors else 0)
 
 

@@ -191,5 +191,144 @@
         }
       }
     }
+  },
+  {
+    "id": "rock.waltz",
+    "style": "Rock",
+    "name": "Rock Waltz",
+    "summary": "Kick on 1, snare on 2 and 3, eighths on the hat. A straight-ahead rock beat in three.",
+    "tags": [
+      "waltz",
+      "3/4",
+      "eighths"
+    ],
+    "tempoRange": [100, 170],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0]
+        },
+        "meter": "threeFour"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "threeFour"
+      }
+    }
+  },
+  {
+    "id": "rock.big34",
+    "style": "Rock",
+    "name": "Big Three",
+    "summary": "A crash on 1, the ride on the other beats and a heavy snare on 3. Slow and wide.",
+    "tags": [
+      "3/4",
+      "slow",
+      "big",
+      "ride"
+    ],
+    "tempoRange": [60, 100],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "crash": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "ride": [0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "crash": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 3],
+          "kick": [3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0]
+        },
+        "meter": "threeFour"
+      }
+    }
+  },
+  {
+    "id": "rock.sixEight",
+    "style": "Rock",
+    "name": "6/8 Rock",
+    "summary": "Six eighths on the hat, snare on the second big beat. The classic slow rock ballad in six.",
+    "tags": [
+      "6/8",
+      "eighths",
+      "ballad"
+    ],
+    "tempoRange": [50, 80],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 2, 0, 3, 0, 2, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+        },
+        "meter": "sixEight"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "sixEight"
+      }
+    }
+  },
+  {
+    "id": "rock.twelveEight",
+    "style": "Rock",
+    "name": "12/8 Rock",
+    "summary": "Every eighth on the hat with a backbeat on 2 and 4 and a rolling kick. Bluesy rock in four big beats.",
+    "tags": [
+      "12/8",
+      "triplets",
+      "backbeat"
+    ],
+    "tempoRange": [60, 100],
+    "patterns": {
+      "main": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [3, 2, 2, 3, 2, 2, 3, 2, 2, 3, 2, 2],
+          "snare": [0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 1, 3, 0, 1, 0, 0, 0]
+        },
+        "meter": "twelveEight"
+      },
+      "fill": {
+        "resolution": "eighths",
+        "lanes": {
+          "hiHat": [3, 2, 2, 3, 2, 2, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 3, 0, 0, 3, 2, 2, 0, 0, 0],
+          "kick": [3, 0, 0, 0, 0, 1, 3, 0, 0, 0, 0, 0],
+          "highTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0],
+          "lowTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+          "floorTom": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
+        },
+        "meter": "twelveEight"
+      }
+    }
   }
 ]

@@ -93,20 +93,32 @@ final class GrooveLibrary {
     // MARK: Search
 
     /// Grooves matching every word of `query` (in the name, style or tags),
-    /// optionally limited to one style. An empty query matches everything.
-    func search(_ query: String, style: String? = nil) -> [Groove] {
+    /// optionally limited to one style and one time signature. An empty
+    /// query matches everything.
+    func search(_ query: String, style: String? = nil, meter: TimeSig? = nil) -> [Groove] {
         let words = Self.words(in: query)
         return grooves.filter { groove in
-            (style == nil || groove.style == style) && Self.matches(groove, words: words)
+            (style == nil || groove.style == style) && (meter == nil || groove.timeSignature == meter)
+                && Self.matches(groove, words: words)
         }
     }
 
-    /// How many grooves in each style match `query`.
-    func counts(matching query: String) -> [String: Int] {
+    /// How many grooves in each style match `query` (and `meter`, if given).
+    func counts(matching query: String, meter: TimeSig? = nil) -> [String: Int] {
         let words = Self.words(in: query)
         var counts: [String: Int] = [:]
-        for groove in grooves where Self.matches(groove, words: words) { counts[groove.style, default: 0] += 1 }
+        for groove in grooves where (meter == nil || groove.timeSignature == meter) && Self.matches(groove, words: words) {
+            counts[groove.style, default: 0] += 1
+        }
         return counts
+    }
+
+    /// A groove to switch a section to when its time signature changes: one
+    /// in the same style if there is one, else the first in that time.
+    func defaultGrooveID(for meter: TimeSig, style: String? = nil) -> String {
+        if meter == .fourFour, style == nil { return Self.fallbackID }
+        let inMeter = grooves.filter { $0.timeSignature == meter }
+        return (inMeter.first { $0.style == style } ?? inMeter.first)?.id ?? Self.fallbackID
     }
 
     /// Lowercased and stripped of punctuation, so "half time", "half-time"

@@ -150,5 +150,37 @@
         }
       }
     }
+  },
+  {
+    "id": "punk.stomp",
+    "style": "Punk",
+    "name": "6/8 Stomp",
+    "summary": "A pounding six: kick on 1 and 3 of each half, snare on the second big beat.",
+    "tags": [
+      "6/8",
+      "stomp",
+      "driving"
+    ],
+    "tempoRange": [70, 110],
+    "patterns": {
+      "main": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 2, 0, 3, 0, 2, 0, 2, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0],
+          "kick": [3, 0, 2, 0, 0, 0, 3, 0, 2, 0, 0, 0]
+        },
+        "meter": "sixEight"
+      },
+      "fill": {
+        "resolution": "sixteenths",
+        "lanes": {
+          "hiHat": [3, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0],
+          "snare": [0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 3],
+          "kick": [3, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0]
+        },
+        "meter": "sixEight"
+      }
+    }
   }
 ]

@@ -16,6 +16,7 @@ struct SongHeader: View {
     @State private var newName = ""
     @State private var confirmingDelete = false
     @State private var tapTempo = TapTempo()
+    @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
 
     var body: some View {
         HStack(spacing: 16) {
@@ -32,10 +33,11 @@ struct SongHeader: View {
             songMenu
             Spacer(minLength: 12)
             tempo
-            Text("4/4")
+            Text(store.song.timeSignatureLabel)
                 .font(Theme.condensed(20, weight: .bold))
                 .foregroundStyle(Theme.textMuted)
-                .accessibilityLabel("Four four time")
+                .accessibilityLabel(store.song.timeSignatureLabel == "Mixed" ? "Mixed time signatures"
+                                    : "\(store.song.timeSignatureLabel) time")
             Button {
                 settingUpPedals = true
             } label: {
@@ -110,13 +112,22 @@ struct SongHeader: View {
                 }
             }
             Divider()
-            Button("New Song", systemImage: "plus") { store.newSong() }
+            Menu("New Song", systemImage: "plus") {
+                Button("Empty Song", systemImage: "doc") { store.newSong(from: nil, library: library) }
+                SwiftUI.Section("From a template") { // `Section` alone is the song's section type
+                    ForEach(SongTemplate.all) { template in
+                        Button(template.name) { store.newSong(from: template, library: library) }
+                    }
+                }
+            }
             Button("Rename…", systemImage: "pencil") {
                 newName = store.song.name
                 renaming = true
             }
             Button("Duplicate", systemImage: "plus.square.on.square") { store.duplicateSong() }
             Button("Delete…", systemImage: "trash", role: .destructive) { confirmingDelete = true }
+            Divider()
+            Button("How Backline Works", systemImage: "questionmark.circle") { hasSeenWelcome = false }
         } label: {
             HStack(spacing: 6) {
                 Text(store.song.name)

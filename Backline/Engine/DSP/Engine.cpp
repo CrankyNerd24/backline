@@ -16,7 +16,6 @@ constexpr float kLevel[BL_PIECE_COUNT] = {0.35f, 0.35f, 0.4f, 0.4f, 0.7f, 0.6f, 
 constexpr float kPan[BL_PIECE_COUNT] = {-0.35f, 0.35f, -0.3f, -0.3f, 0.0f, -0.2f, 0.1f, 0.35f, 0.0f};
 constexpr float kClickLevel = 0.35f;
 constexpr float kMasterDrive = 0.9f;
-constexpr double kBeatsPerBar = 4.0; // 4/4 only in v1
 
 double clampTempo(double bpm) {
     if (!(bpm >= BL_MIN_BPM)) return BL_MIN_BPM; // also catches NaN
@@ -65,6 +64,7 @@ void Engine::applyKit(const BLKit &kit) {
 
     const float room = std::clamp(kit.room, 0.0f, 1.0f);
     for (int piece = 0; piece < BL_PIECE_COUNT; ++piece) {
+        attack_[piece].configure(v[piece].attack, static_cast<float>(sampleRate_));
         // Equal-power pan, scaled so the centre is unity.
         const float gain = kLevel[piece] * std::pow(10.0f, std::clamp(v[piece].volumeDB, -24.0f, 6.0f) / 20.0f);
         const float angle = (kPan[piece] + 1.0f) * kPi * 0.25f;
@@ -108,7 +108,7 @@ void Engine::applyCommands() {
             if (playing_) {
                 pendingTempo_ = clampTempo(c.value);
                 // Tap tempo waits for the bar line; everything else for the next beat.
-                pendingTempoBeat_ = c.flag ? barBeat() + kBeatsPerBar : std::floor(beatAt(now_)) + 1.0;
+                pendingTempoBeat_ = c.flag ? barBeat() + barBeats() : std::floor(beatAt(now_)) + 1.0;
                 hasPendingTempo_ = true;
             } else {
                 bpm_ = clampTempo(c.value);
@@ -178,6 +178,7 @@ void Engine::start(uint32_t songBar, bool countIn) {
     playBar_ = &timeline_->bar(songBar_);
     clearActions();
     barCount_ = 0;
+    barStartBeat_ = 0.0;
     hitIndex_ = 0;
     anchorTime_ = static_cast<double>(now_);
     anchorBeat_ = 0.0;
@@ -258,7 +259,7 @@ void Engine::queueAction(uint8_t action, uint8_t timing) {
     // the rest of this bar becomes the fill; otherwise the change waits a bar
     // so the fill has room.
     nextAtSectionEnd_ = timing == BL_NEXT_AT_SECTION_END;
-    const bool roomForFill = kBeatsPerBar - (beatAt(now_) - barBeat()) >= 1.0;
+    const bool roomForFill = barBeats() - (beatAt(now_) - barBeat()) >= 1.0;
     const bool lastBarOfPass = timeline_->sectionEnd(songBar_) == songBar_;
     if (nextAtSectionEnd_ && !lastBarOfPass) {
         navigationBar_ = -1; // decided when the section's last bar starts
@@ -310,7 +311,10 @@ void Engine::processEvents(int64_t sample) {
         }
 
         if (clickOn_ && sampleAt(nextClickBeat_) <= sample) {
-            click_.trigger(std::fmod(nextClickBeat_, kBeatsPerBar) == 0.0);
+            // Accented on a bar line: this bar's start, or its end when the
+            // click lands just before the bar advances.
+            const double intoBar = nextClickBeat_ - barBeat();
+            click_.trigger(intoBar == 0.0 || intoBar >= barBeats());
             nextClickBeat_ += 1.0;
             continue;
         }
@@ -327,7 +331,7 @@ void Engine::processEvents(int64_t sample) {
             break; // the bar ends only once all of its hits have played
         }
 
-        if (sampleAt(barBeat() + kBeatsPerBar) <= sample) {
+        if (sampleAt(barBeat() + barBeats()) <= sample) {
             advanceBar();
             continue;
         }
@@ -342,6 +346,7 @@ void Engine::advanceBar() {
         return;
     }
     const int64_t finished = barCount_;
+    const double finishedBeats = barBeats(); // read before playBar_ moves on
     int64_t current = songBar_;
 
     if (pendingTimeline_) {
@@ -378,6 +383,7 @@ void Engine::advanceBar() {
         if (navigation_ != BL_ACTION_NONE && navigationBar_ == finished) {
             if (navigation_ == BL_ACTION_BIG_ENDING) {
                 ++barCount_;
+                barStartBeat_ += finishedBeats;
                 hitIndex_ = 0;
                 playBar_ = &timeline_->spares(bar.sectionIndex).ending;
                 navigation_ = BL_ACTION_NONE;
@@ -403,6 +409,7 @@ void Engine::advanceBar() {
 
     songBar_ = static_cast<uint32_t>(next);
     ++barCount_;
+    barStartBeat_ += finishedBeats;
     hitIndex_ = 0;
     splicedForNext_ = false;
     const TimelineBar &bar = timeline_->bar(songBar_);
@@ -435,7 +442,7 @@ void Engine::scheduleNextEvent() {
         const TimelineHit &h = timeline_->hit(bar.firstHit + hitIndex_);
         next = sampleAt(barBeat() + h.beat, h.offsetSeconds);
     } else {
-        next = sampleAt(barBeat() + kBeatsPerBar);
+        next = sampleAt(barBeat() + barBeats());
     }
     if (hasPendingTempo_) next = std::min(next, sampleAt(pendingTempoBeat_));
     if (clickOn_) next = std::min(next, sampleAt(nextClickBeat_));
@@ -446,6 +453,7 @@ void Engine::scheduleNextEvent() {
 
 void Engine::trigger(int piece, float amp, float bright, uint32_t seed, int64_t at) {
     const Hit hit{amp, bright, seed};
+    if (piece >= 0 && piece < BL_PIECE_COUNT) attack_[piece].start();
     switch (piece) {
     case BL_PIECE_KICK: kick_.trigger(hit); break;
     case BL_PIECE_SNARE: snare_.trigger(hit); break;
@@ -480,6 +488,7 @@ void Engine::renderVoices(float *left, float *right, uint32_t frames) {
 
         float l = 0.0f, r = 0.0f, send = 0.0f;
         for (int piece = 0; piece < BL_PIECE_COUNT; ++piece) {
+            v[piece] *= attack_[piece].next();
             l += v[piece] * gainLeft_[piece];
             r += v[piece] * gainRight_[piece];
             send += v[piece] * send_[piece];
@@ -527,7 +536,7 @@ void Engine::publishPosition() {
     uint32_t target = 0;
     if (playing_) {
         const TimelineBar &bar = timeline_->bar(songBar_);
-        const double phase = (beatAt(now_) - barBeat()) / kBeatsPerBar;
+        const double phase = (beatAt(now_) - barBeat()) / barBeats();
         const bool countingIn = bar.kind == BarKind::CountIn;
         pubCountingIn_.store(countingIn, std::memory_order_relaxed);
         pubSongBar_.store(countingIn ? -1 : static_cast<int32_t>(songBar_ - timeline_->countInBars()),
@@ -535,6 +544,7 @@ void Engine::publishPosition() {
         pubSectionKey_.store(bar.sectionKey, std::memory_order_relaxed);
         pubBarInSection_.store(bar.barInSection, std::memory_order_relaxed);
         pubBarPhase_.store(std::clamp(phase, 0.0, 1.0), std::memory_order_relaxed);
+        pubBeatsInBar_.store(static_cast<uint8_t>(barBeats()), std::memory_order_relaxed);
 
         if (navigation_ != BL_ACTION_NONE) {
             action = navigation_;
@@ -551,6 +561,7 @@ void Engine::publishPosition() {
         pubSectionKey_.store(0, std::memory_order_relaxed);
         pubBarInSection_.store(0, std::memory_order_relaxed);
         pubBarPhase_.store(0.0, std::memory_order_relaxed);
+        pubBeatsInBar_.store(4, std::memory_order_relaxed);
     }
     pubAction_.store(action, std::memory_order_relaxed);
     pubWhen_.store(when, std::memory_order_relaxed);
@@ -569,6 +580,7 @@ void Engine::readPosition(BLPosition &out) const {
     out.sectionKey = pubSectionKey_.load(std::memory_order_relaxed);
     out.barInSection = pubBarInSection_.load(std::memory_order_relaxed);
     out.barPhase = pubBarPhase_.load(std::memory_order_relaxed);
+    out.beatsInBar = pubBeatsInBar_.load(std::memory_order_relaxed);
     out.bpm = pubBpm_.load(std::memory_order_relaxed);
     out.pendingAction = pubAction_.load(std::memory_order_relaxed);
     out.pendingWhen = pubWhen_.load(std::memory_order_relaxed);

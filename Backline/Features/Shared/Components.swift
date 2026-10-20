@@ -111,7 +111,8 @@ struct MiniPattern: View {
     }
 
     var body: some View {
-        let steps = pattern.resolution.steps
+        let steps = pattern.steps
+        let perBeat = max(1, steps / pattern.meter.beats)
         VStack(alignment: .leading, spacing: 3) {
             ForEach(rows, id: \.self) { piece in
                 HStack(spacing: 3) {
@@ -126,7 +127,7 @@ struct MiniPattern: View {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(v == .off ? Theme.surfaceHi : Theme.accent.opacity(v == .soft ? 0.45 : v == .normal ? 0.75 : 1))
                             .frame(width: cell, height: cell)
-                            .padding(.leading, step > 0 && step % (steps / 4) == 0 ? max(2, cell / 4) : 0)
+                            .padding(.leading, step > 0 && step % perBeat == 0 ? max(2, cell / 4) : 0)
                     }
                 }
             }

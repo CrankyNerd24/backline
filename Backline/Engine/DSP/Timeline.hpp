@@ -9,7 +9,7 @@
 namespace backline {
 
 struct TimelineHit {
-    double beat;         // 0 ≤ beat < 4, grid position within the bar (swing included)
+    double beat;         // 0 ≤ beat < the bar's beats, grid position within the bar (swing included)
     float offsetSeconds; // humanized timing, added after the beat is placed in time
     float amp;           // 0…1
     float bright;        // 0…1
@@ -27,7 +27,8 @@ struct TimelineBar {
     uint32_t firstHit;
     uint32_t hitCount;
     BarKind kind;
-    bool vamp; // the section repeats until asked to move on
+    bool vamp;     // the section repeats until asked to move on
+    uint8_t beats; // beats in the bar (its meter)
 };
 
 // Bars built for each section but not in the play order.
@@ -66,11 +67,11 @@ public:
     static std::atomic<int32_t> live;
 
 private:
-    void addCountIn(uint8_t bars);
+    void addCountIn(uint8_t bars, uint8_t meter);
     void addSection(const BLSectionDesc &section, uint16_t index, bool crashOnOne);
     void addEnding(const BLSectionDesc &section, uint16_t index);
     TimelineBar storeHits(uint32_t key, uint16_t sectionIndex, uint16_t barInSection, BarKind kind, bool vamp,
-                          std::vector<TimelineHit> &hits);
+                          uint8_t beats, std::vector<TimelineHit> &hits);
 
     std::vector<TimelineBar> bars_;
     std::vector<TimelineHit> hits_;

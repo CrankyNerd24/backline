@@ -4,7 +4,33 @@ An easy drum-track creator for iPad, for guitarists and other non-drummers. Buil
 
 The full product spec is in [`docs/spec.md`](docs/spec.md).
 
-## Status: milestone 9 (WAV export)
+## Status: milestone 10 (polish): all v1 milestones built
+
+**Song templates:** 14 ready-made layouts (`Model/SongTemplate.swift`), each with its own sections, grooves and tempo:
+- Verse–Chorus Rock and Classic Rock (with a solo and a bridge)
+- 12-Bar Blues Shuffle and Slow Blues in 12/8
+- Country Two-step and Country Waltz (3/4)
+- Ballad and 6/8 Ballad
+- Funk Jam, Punk, Reggae One Drop and Hip-hop
+- Jazz Standard (AABA), with solos that repeat until you step
+- Practice Loop: one groove that repeats until you step
+
+Start one from **New Song ▸ From a template** in the song menu, or from the cards on an empty song.
+
+**Attack knob** (Kit Editor): every piece has an **Attack** control, from softer to snappier. Turned down, the hit fades in over up to 25 ms, which rounds off the stick. Turned up, the first few milliseconds are pushed up by as much as 9.5 dB. The middle (50%) plays the sound as designed, and kits saved before this change open there. The toms' old "Attack" knob, which sets the stick noise level, is now called **Stick**.
+
+**Time signatures** (after milestone 10; the spec had them for later): each section has its own time signature, set in its groove card. The options are 4/4, 3/4, 6/8 and 12/8.
+- Tempo counts the beat a player taps: a quarter note in 4/4 and 3/4, a dotted quarter in 6/8 and 12/8. A song can change time between sections.
+- 38 new grooves across the styles: 12 in 3/4, 13 in 6/8 and 13 in 12/8. The Groove Picker shows only grooves in the section's time. Changing a section's time picks a groove in the new time, in the same style when there is one.
+- The Pattern Editor, mini patterns, beat lights, count-in and export all follow the time signature. In 6/8 and 12/8 the count-in clicks every eighth.
+- Half and double time apply to 4/4 and 12/8 only. Swing applies to 4/4 and 3/4, since 6/8 and 12/8 already swing.
+- Three older 4/4 triplet grooves that were named after 12/8 or 6/8 are now called "Slow Triplet Blues", "Triplet Ballad" and "Triplet Bell Feel".
+
+**Milestone 10**: polish.
+- **Onboarding:** on first launch, a short welcome explains the starter song (Intro, Verse, Chorus, Verse, Chorus, Outro in Rock), the Groove Picker, and Play-along with pedals. **How Backline Works** in the song menu shows it again.
+- **Empty states:** a song with no sections offers the starter layout or a single verse in one tap. Pedal Setup says when no pedal is connected. The Groove Picker has a message for an empty list.
+- **Errors are shown:** save and audio problems, which were recorded but never displayed, now show as a dismissible banner.
+- **Accessibility (spec §11):** every text and background token pair meets 4.5:1. The played part of a section block is now lightened rather than darkened, which had dropped labels to about 3.6:1. In Play-along, VoiceOver reads "Chorus 1, bar 3 of 8" whenever it's focused, and the song map says which section this is and what's next. Two-finger double tap (Magic Tap) plays and stops.
 
 **Milestone 9**: **Export** in the header saves the song as a WAV (spec §8).
 - 48 kHz, 24-bit stereo, rendered offline (much faster than real time) on a private copy of the C++ engine, so playback isn't interrupted. The export plays the song from the top and is bit-identical to what you hear when you press Play.
@@ -117,6 +143,8 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 - Every starting sound of every piece plays, stays in range and ends. Tune moves by octaves; decay, tone, openness and volume do what they say. The room adds a stereo tail only where a piece sends to it. Punch makes the kit louder without clipping. The six built-in kits render deterministically.
 - Re-gridding between 16ths and triplets: offbeats shuffle, colliding notes keep the louder one, and the backbeat survives a round trip.
 - A song with every feel control switched on renders bit-identically twice (the milestone 3 acceptance test).
+- Attack: soft and snappy change only the start of every piece's hit, and 50% (or a bad value) changes nothing.
+- Time signatures: each meter's bars and grid, songs that change meter (no gaps, exact stop), the count-in in 3/4 and 6/8, small fills, half time and tap tempo in other meters, and export length.
 - Export matches playback sample for sample, whatever the buffer size. It covers the count-in and the ending bar, rings out to silence, plays vamps once, and stops after a song with no outro on every kit. The WAV header and 24-bit samples (with clipping) are byte-checked.
 - Every queued action, including cancelling, waiting for room, landing at the end of the loop, surviving a timeline swap and being ignored outside the song. Also vamp looping, tap tempo on the bar line, and the click landing exactly on the beat.
 - Separate checks for human, swing, busy, intensity, half and double time, cymbal routing, fills and the crash after them, count-in, the big ending, and sections sounding the same wherever they sit.

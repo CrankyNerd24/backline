@@ -61,9 +61,13 @@ final class SongStore {
         defaults.set(id.uuidString, forKey: Self.lastSongKey)
     }
 
-    func newSong() {
+    /// A new song from a template, or with no sections when it's nil.
+    func newSong(from template: SongTemplate?, library: GrooveLibrary) {
         saveNow()
-        song = .blank(named: uniqueName("New Song"))
+        var next = Song.blank(named: uniqueName(template?.name ?? "New Song"))
+        next.sections = []
+        template?.apply(to: &next, library: library)
+        song = next
         saveNow()
         defaults.set(song.id.uuidString, forKey: Self.lastSongKey)
     }

@@ -73,11 +73,17 @@ struct PatternEditorView: View {
             SegmentedPicker(options: [false, true], selection: $editingFill) { $0 ? "Bar \(bars) · fill" : grooveLabel }
                 .frame(width: 300)
                 .onChange(of: editingFill) { if isLooping { startLoop() } }
-            SegmentedPicker(options: [Resolution.sixteenths, .triplets],
-                            selection: Binding(get: { bar.resolution }, set: { setResolution($0) })) {
-                $0 == .sixteenths ? "16ths" : "Triplets"
+            Text(bar.meter.label)
+                .font(Theme.condensed(20, weight: .bold))
+                .foregroundStyle(Theme.textMuted)
+                .accessibilityLabel("\(bar.meter.spokenLabel) time")
+            if bar.meter.resolutions.count > 1 {
+                SegmentedPicker(options: bar.meter.resolutions,
+                                selection: Binding(get: { bar.resolution }, set: { setResolution($0) })) {
+                    $0.label
+                }
+                .frame(width: 200)
             }
-            .frame(width: 200)
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 12)
@@ -109,14 +115,15 @@ struct PatternEditorView: View {
     }
 
     private var grid: some View {
-        let steps = bar.resolution.steps
+        let steps = bar.steps
+        let perBeat = max(1, steps / bar.meter.beats)
         return VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 4) {
                 Color.clear.frame(width: 150, height: 1)
                 ForEach(0..<steps, id: \.self) { step in
                     Text(rulerLabel(step, steps: steps))
                         .font(Theme.condensed(15, weight: .bold))
-                        .foregroundStyle(step % (steps / 4) == 0 ? Theme.text : Theme.textMuted)
+                        .foregroundStyle(step % perBeat == 0 ? Theme.text : Theme.textMuted)
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -149,7 +156,7 @@ struct PatternEditorView: View {
                 Button {
                     cycle(piece, step: step)
                 } label: {
-                    StepFill(velocity: velocity, altGroup: (step / (steps / 4)) % 2 == 1)
+                    StepFill(velocity: velocity, altGroup: (step / max(1, steps / bar.meter.beats)) % 2 == 1)
                         .frame(height: 46)
                 }
                 .buttonStyle(.plain)
@@ -158,9 +165,23 @@ struct PatternEditorView: View {
         }
     }
 
+    /// How a player counts the step: "1 e & a" in sixteenths, "1 · ·" in
+    /// triplets, and eighths numbered through the bar in 6/8 and 12/8
+    /// ("1 & 2 & 3 &…" when 6/8 is split into sixteenths).
     private func rulerLabel(_ step: Int, steps: Int) -> String {
-        if steps == 16 { return ["1", "e", "&", "a", "2", "e", "&", "a", "3", "e", "&", "a", "4", "e", "&", "a"][step] }
-        return step % 3 == 0 ? "\(step / 3 + 1)" : "·"
+        let meter = bar.meter
+        let perBeat = max(1, steps / meter.beats)
+        if meter.isCompound {
+            let perEighth = max(1, perBeat / 3)
+            return step % perEighth == 0 ? "\(step / perEighth + 1)" : "&"
+        }
+        let within = step % perBeat
+        if within == 0 { return "\(step / perBeat + 1)" }
+        switch perBeat {
+        case 4: return ["e", "&", "a"][within - 1]
+        case 2: return "&"
+        default: return "·"
+        }
     }
 
     // MARK: Footer
@@ -229,7 +250,7 @@ struct PatternEditorView: View {
     }
 
     private func clearBar() {
-        edit { bar in bar = Pattern(resolution: bar.resolution) }
+        edit { bar in bar = Pattern(resolution: bar.resolution, meter: bar.meter) }
     }
 
     private func resetToGroove() {

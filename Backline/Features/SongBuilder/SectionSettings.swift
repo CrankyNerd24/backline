@@ -9,13 +9,13 @@ struct SectionSettings: View {
     let sectionID: UUID
     @Binding var selectedID: UUID?
     @State private var confirmingDelete = false
+    @State private var confirmingDeleteAll = false
     @State private var choosingGroove = false
     @State private var editingPattern = false
 
     var body: some View {
-        @Bindable var store = store
         if let index = store.song.index(of: sectionID) {
-            let section = $store.song.sections[index]
+            let section = binding(fallback: store.song.sections[index])
             VStack(spacing: 16) {
                 titleRow(section, index: index)
                 HStack(alignment: .top, spacing: 16) {
@@ -26,7 +26,13 @@ struct SectionSettings: View {
             }
             .confirmationDialog("Delete “\(section.wrappedValue.name)”?", isPresented: $confirmingDelete,
                                 titleVisibility: .visible) {
-                Button("Delete Section", role: .destructive) { delete(at: index) }
+                Button("Delete Section", role: .destructive) { delete() }
+            }
+            .confirmationDialog("Delete all \(store.song.sections.count) sections?", isPresented: $confirmingDeleteAll,
+                                titleVisibility: .visible) {
+                Button("Delete All Sections", role: .destructive) { deleteAll() }
+            } message: {
+                Text("Every section of “\(store.song.name)” goes, leaving an empty song to start again.")
             }
             .fullScreenCover(isPresented: $choosingGroove) {
                 GroovePickerView(section: section.wrappedValue)
@@ -89,10 +95,15 @@ struct SectionSettings: View {
 
             Spacer(minLength: 0)
 
-            Button { duplicate(at: index) } label: { Label("Duplicate", systemImage: "plus.square.on.square") }
+            Button { duplicate() } label: { Label("Duplicate", systemImage: "plus.square.on.square") }
                 .buttonStyle(ChipButtonStyle())
             Button(role: .destructive) { confirmingDelete = true } label: { Label("Delete", systemImage: "trash") }
                 .buttonStyle(ChipButtonStyle())
+            Button(role: .destructive) { confirmingDeleteAll = true } label: {
+                Label("Delete All", systemImage: "trash.slash")
+            }
+            .buttonStyle(ChipButtonStyle())
+            .accessibilityLabel("Delete all sections")
         }
     }
 
@@ -127,6 +138,14 @@ struct SectionSettings: View {
                     .fixedSize(horizontal: false, vertical: true)
                 MiniPattern(pattern: section.wrappedValue.mainPattern(library: library))
                     .padding(.vertical, 4)
+                VStack(alignment: .leading, spacing: 8) {
+                    Eyebrow("Time signature")
+                    SegmentedPicker(options: TimeSig.allCases,
+                                    selection: Binding(get: { section.wrappedValue.timeSignature },
+                                                       set: { setTimeSignature($0, of: section) })) { $0.label }
+                        .frame(maxWidth: 320)
+                        .accessibilityLabel("Time signature")
+                }
                 HStack(spacing: 8) {
                     Button {
                         choosingGroove = true
@@ -154,6 +173,8 @@ struct SectionSettings: View {
                 FeelSlider(low: "Simpler", high: "Busier", value: section.feel.busy)
                 FeelSlider(low: "Softer", high: "Harder", value: section.feel.intensity)
                 FeelSlider(low: "Straight", high: "Swung", value: section.feel.swing)
+                    .disabled(!section.wrappedValue.timeSignature.allowsSwing)
+                    .opacity(section.wrappedValue.timeSignature.allowsSwing ? 1 : 0.4)
                 FeelSlider(low: "Locked in", high: "Human", value: section.feel.human)
             }
         }
@@ -171,6 +192,8 @@ struct SectionSettings: View {
             HStack(alignment: .top, spacing: 24) {
                 option("Time") {
                     SegmentedPicker(options: TimeFeel.allCases, selection: section.time) { $0.label }
+                        .disabled(!section.wrappedValue.timeSignature.allowsTimeFeel)
+                        .opacity(section.wrappedValue.timeSignature.allowsTimeFeel ? 1 : 0.4)
                 }
                 option("Cymbals") {
                     SegmentedPicker(options: CymbalChoice.allCases, selection: section.cymbals) { $0.label }
@@ -194,15 +217,55 @@ struct SectionSettings: View {
 
     // MARK: Editing
 
-    private func duplicate(at index: Int) {
+    /// The section, found by id on every read and write. A binding into
+    /// `sections[index]` crashes once the section is deleted: controls still
+    /// on screen (the name field, sliders) read it again before this view
+    /// goes away, and the old index is out of range.
+    private func binding(fallback: Section) -> Binding<Section> {
+        let store = store
+        let id = sectionID
+        return Binding(
+            get: { store.song.sections.first { $0.id == id } ?? fallback },
+            set: { newValue in
+                guard let index = store.song.index(of: id) else { return }
+                store.song.sections[index] = newValue
+            }
+        )
+    }
+
+    /// Grooves are written in one time, so a new time signature brings a
+    /// groove in that time (the same style when there is one), and settings
+    /// that time can't use go back to normal.
+    private func setTimeSignature(_ meter: TimeSig, of section: Binding<Section>) {
+        var next = section.wrappedValue
+        guard meter != next.timeSignature else { return }
+        let style = library.groove(next.grooveID).style
+        let groove = library.groove(library.defaultGrooveID(for: meter, style: style))
+        next.timeSignature = meter
+        next.grooveID = groove.id
+        next.patternOverride = nil
+        next.cymbals = groove.naturalCymbals
+        if !meter.allowsTimeFeel { next.time = .normal }
+        if !meter.allowsSwing { next.feel.swing = 0 }
+        section.wrappedValue = next
+    }
+
+    private func duplicate() {
+        guard let index = store.song.index(of: sectionID) else { return }
         let section = store.song.sections[index]
         let copy = section.duplicated(named: store.song.nextName(for: section.kind))
         store.song.sections.insert(copy, at: index + 1)
         selectedID = copy.id
     }
 
-    private func delete(at index: Int) {
-        guard store.song.sections.indices.contains(index) else { return }
+    private func deleteAll() {
+        engine.stop()
+        store.song.sections.removeAll()
+        selectedID = nil
+    }
+
+    private func delete() {
+        guard let index = store.song.index(of: sectionID) else { return }
         store.song.sections.remove(at: index)
         let sections = store.song.sections
         selectedID = sections.isEmpty ? nil : sections[min(index, sections.count - 1)].id

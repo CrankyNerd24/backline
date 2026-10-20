@@ -1,7 +1,7 @@
 import Foundation
 
 // Kit types from spec §3. The sounds themselves live in the C++ core; a kit
-// is the choice of starting sound per piece plus the six shaping controls.
+// is the choice of starting sound per piece plus the seven shaping controls.
 
 struct Kit: Codable, Identifiable, Equatable {
     var id: UUID
@@ -25,6 +25,34 @@ struct VoiceSettings: Codable, Equatable {
     var character: Double = 0.5    // snare: wire buzz; hat: open-ness; kick: click
     var room: Double = 0.3         // per-voice send
     var volumeDB: Double = 0       // −24…+6
+    var attack: Double = 0.5       // 0…1, soft ↔ snappy
+
+    init(model: String, tune: Double = 0, decay: Double = 0.5, tone: Double = 0.5, character: Double = 0.5,
+         room: Double = 0.3, volumeDB: Double = 0, attack: Double = 0.5) {
+        self.model = model
+        self.tune = tune
+        self.decay = decay
+        self.tone = tone
+        self.character = character
+        self.room = room
+        self.volumeDB = volumeDB
+        self.attack = attack
+    }
+
+    private enum CodingKeys: String, CodingKey { case model, tune, decay, tone, character, room, volumeDB, attack }
+
+    // Kits saved before the Attack control existed play as designed (0.5).
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        model = try c.decode(String.self, forKey: .model)
+        tune = try c.decode(Double.self, forKey: .tune)
+        decay = try c.decode(Double.self, forKey: .decay)
+        tone = try c.decode(Double.self, forKey: .tone)
+        character = try c.decode(Double.self, forKey: .character)
+        room = try c.decode(Double.self, forKey: .room)
+        volumeDB = try c.decode(Double.self, forKey: .volumeDB)
+        attack = try c.decodeIfPresent(Double.self, forKey: .attack) ?? 0.5
+    }
 }
 
 extension Kit {
@@ -38,7 +66,8 @@ extension Kit {
                 let model = bl_kit_model_index(piece.engineIndex, v.model)
                 slots[Int(piece.engineIndex)] = BLVoiceSettings(
                     model: UInt8(max(0, model)), tune: Float(v.tune), decay: Float(v.decay), tone: Float(v.tone),
-                    character: Float(v.character), room: Float(v.room), volumeDB: Float(v.volumeDB))
+                    character: Float(v.character), room: Float(v.room), volumeDB: Float(v.volumeDB),
+                    attack: Float(v.attack))
             }
         }
         raw.room = Float(room)
@@ -56,7 +85,8 @@ extension Kit {
                 let model = bl_kit_model_id(piece.engineIndex, v.model).map { String(cString: $0) } ?? ""
                 voices[piece] = VoiceSettings(model: model, tune: Double(v.tune), decay: Double(v.decay),
                                               tone: Double(v.tone), character: Double(v.character),
-                                              room: Double(v.room), volumeDB: Double(v.volumeDB))
+                                              room: Double(v.room), volumeDB: Double(v.volumeDB),
+                                              attack: Double(v.attack))
             }
         }
         self.init(id: id, name: name, voices: voices, room: Double(raw.room), punch: Double(raw.punch))

@@ -117,7 +117,8 @@ struct TransportBar: View {
     private var positionText: String {
         guard let position = engine.position else { return "Stopped" }
         if position.isCountIn { return "Count-in \(position.barInSection + 1)" }
-        let seconds = (Double(position.songBar) + position.barPhase) * 240 / engine.playbackBPM
+        let barSeconds = Double(position.beatsInBar) * 60 / engine.playbackBPM
+        let seconds = store.song.seconds(toBar: position.songBar, bpm: engine.playbackBPM) + position.barPhase * barSeconds
         return "Bar \(position.songBar + 1) · \(seconds.minutesSeconds)"
     }
 }
