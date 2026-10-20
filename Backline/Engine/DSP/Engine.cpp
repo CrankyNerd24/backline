@@ -44,6 +44,7 @@ Engine::Engine(double sampleRate) : sampleRate_(sampleRate) {
     crash_.prepare(sr);
     for (TomVoice &tom : toms_) tom.prepare(sr);
     click_.prepare(sr);
+    for (SampleVoice &s : sampled_) s.prepare(sr);
     reverb_.prepare(sr); // the only allocation, here on the control thread
     compressor_.prepare(sr);
     applyKit(defaultKit());
@@ -53,14 +54,19 @@ Engine::Engine(double sampleRate) : sampleRate_(sampleRate) {
 // Configures every voice and the mix from a kit. Render thread; no allocation.
 void Engine::applyKit(const BLKit &kit) {
     const BLVoiceSettings *v = kit.voices;
-    kick_.configure(kickModel(v[BL_PIECE_KICK].model), v[BL_PIECE_KICK]);
-    snare_.configure(snareModel(v[BL_PIECE_SNARE].model), v[BL_PIECE_SNARE]);
-    closedHat_.configure(hatModel(v[BL_PIECE_HI_HAT].model), v[BL_PIECE_HI_HAT]);
-    openHat_.configure(hatModel(v[BL_PIECE_OPEN_HAT].model), v[BL_PIECE_OPEN_HAT]);
-    ride_.configure(cymbalModel(v[BL_PIECE_RIDE].model), v[BL_PIECE_RIDE]);
-    crash_.configure(cymbalModel(v[BL_PIECE_CRASH].model), v[BL_PIECE_CRASH]);
+    // A recorded model also configures its synthesized stand-in, which plays
+    // until the sample bank is installed.
+    auto synth = [&](int piece) { return synthModel(piece, v[piece].model); };
+    kick_.configure(kickModel(synth(BL_PIECE_KICK)), v[BL_PIECE_KICK]);
+    snare_.configure(snareModel(synth(BL_PIECE_SNARE)), v[BL_PIECE_SNARE]);
+    closedHat_.configure(hatModel(synth(BL_PIECE_HI_HAT)), v[BL_PIECE_HI_HAT]);
+    openHat_.configure(hatModel(synth(BL_PIECE_OPEN_HAT)), v[BL_PIECE_OPEN_HAT]);
+    ride_.configure(cymbalModel(synth(BL_PIECE_RIDE)), v[BL_PIECE_RIDE]);
+    crash_.configure(cymbalModel(synth(BL_PIECE_CRASH)), v[BL_PIECE_CRASH]);
     const int toms[3] = {BL_PIECE_HIGH_TOM, BL_PIECE_LOW_TOM, BL_PIECE_FLOOR_TOM};
-    for (int i = 0; i < 3; ++i) toms_[i].configure(tomModel(v[toms[i]].model), v[toms[i]]);
+    for (int i = 0; i < 3; ++i) toms_[i].configure(tomModel(synth(toms[i])), v[toms[i]]);
+    for (int piece = 0; piece < BL_PIECE_COUNT; ++piece)
+        sampled_[piece].configure(recordedModel(piece, v[piece].model), v[piece], piece == BL_PIECE_OPEN_HAT);
 
     const float room = std::clamp(kit.room, 0.0f, 1.0f);
     for (int piece = 0; piece < BL_PIECE_COUNT; ++piece) {
@@ -453,14 +459,21 @@ void Engine::scheduleNextEvent() {
 
 void Engine::trigger(int piece, float amp, float bright, uint32_t seed, int64_t at) {
     const Hit hit{amp, bright, seed};
-    if (piece >= 0 && piece < BL_PIECE_COUNT) attack_[piece].start();
+    if (piece < 0 || piece >= BL_PIECE_COUNT) return;
+    attack_[piece].start();
+    if (piece == BL_PIECE_HI_HAT) {
+        openHat_.choke();
+        sampled_[BL_PIECE_OPEN_HAT].choke();
+    }
+    if (sampled_[piece].trigger(hit)) {
+        if (log_ && logCount_ < logCapacity_ && playing_)
+            log_[logCount_++] = {at, static_cast<uint8_t>(piece), amp, static_cast<int32_t>(songBar_)};
+        return;
+    }
     switch (piece) {
     case BL_PIECE_KICK: kick_.trigger(hit); break;
     case BL_PIECE_SNARE: snare_.trigger(hit); break;
-    case BL_PIECE_HI_HAT:
-        openHat_.choke();
-        closedHat_.trigger(hit, false);
-        break;
+    case BL_PIECE_HI_HAT: closedHat_.trigger(hit, false); break;
     case BL_PIECE_OPEN_HAT: openHat_.trigger(hit, true); break;
     case BL_PIECE_RIDE: ride_.trigger(hit); break;
     case BL_PIECE_CRASH: crash_.trigger(hit); break;
@@ -488,10 +501,14 @@ void Engine::renderVoices(float *left, float *right, uint32_t frames) {
 
         float l = 0.0f, r = 0.0f, send = 0.0f;
         for (int piece = 0; piece < BL_PIECE_COUNT; ++piece) {
-            v[piece] *= attack_[piece].next();
-            l += v[piece] * gainLeft_[piece];
-            r += v[piece] * gainRight_[piece];
-            send += v[piece] * send_[piece];
+            // Recorded sounds are stereo (the overheads' picture of the kit):
+            // their side signal widens the piece and cancels in mono.
+            const float attack = attack_[piece].next();
+            const float mid = (v[piece] + sampled_[piece].process()) * attack;
+            const float side = sampled_[piece].side() * attack;
+            l += (mid + side) * gainLeft_[piece];
+            r += (mid - side) * gainRight_[piece];
+            send += mid * send_[piece];
         }
         compressor_.process(l, r); // the drum bus; bypassed at punch 0
         if (reverbOn_) {

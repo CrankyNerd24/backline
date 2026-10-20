@@ -6,6 +6,13 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 
 ## Status: milestone 10 (polish): all v1 milestones built
 
+**Recorded kit:** every built-in kit now plays real recordings by default. They come from [Virtuosity Drums](https://github.com/sfzinstruments/virtuosity_drums), a club jazz kit by Versilian Studios released under CC0, so exports remain the player's own with no credit needed.
+- 98 takes across 13 articulations: kick, snare, rimshot, cross-stick, closed and open hats, ride, ride bell, flat ride, crash, sizzle crash, and high and low tom. Each has three to eight hit strengths and up to three alternate takes. Kick and snare are mixed from the close mics and overheads, hats from the overheads, and toms and cymbals from the overheads plus the mid and room mics. They're stored as 48 kHz 16-bit stereo, about 57 MB, in `Backline/Library/Samples/`.
+- `python3 tools/fetch_samples.py` rebuilds them from the library: it downloads, picks layers, mixes, trims and writes the manifest.
+- The engine plays each hit from the layer nearest its strength, picks a take from the hit's seed (so playback and export match), and allows up to four overlapping hits per piece. A closed hat chokes an open one.
+- Kit Editor controls on recordings: Tune changes pitch, Decay below 50% shortens the ring, Tone tilts the top, and Character adds or removes low body. On the ride, Character past 75% switches to bell hits. Room, Punch, Volume and Attack work as before.
+- The recordings appear in the Kit Editor as "(recorded)" models after each piece's synthesized ones. Until the bank finishes loading at launch, or if a sound is missing, a recorded model plays a synthesized stand-in. A new **Electronic** kit uses only synthesized sounds.
+
 **Song templates:** 14 ready-made layouts (`Model/SongTemplate.swift`), each with its own sections, grooves and tempo:
 - Verse–Chorus Rock and Classic Rock (with a solo and a bridge)
 - 12-Bar Blues Shuffle and Slow Blues in 12/8
@@ -143,6 +150,7 @@ Start one from **New Song ▸ From a template** in the song menu, or from the ca
 - Every starting sound of every piece plays, stays in range and ends. Tune moves by octaves; decay, tone, openness and volume do what they say. The room adds a stereo tail only where a piece sends to it. Punch makes the kit louder without clipping. The six built-in kits render deterministically.
 - Re-gridding between 16ths and triplets: offbeats shuffle, colliding notes keep the louder one, and the backbeat survives a round trip.
 - A song with every feel control switched on renders bit-identically twice (the milestone 3 acceptance test).
+- Recorded sounds: stand-ins without the bank, layer choice by hit strength, round robins from the seed, Tune as playback rate, Decay, Tone, the hat choke, no allocations, and reading the bundled WAVs.
 - Attack: soft and snappy change only the start of every piece's hit, and 50% (or a bad value) changes nothing.
 - Time signatures: each meter's bars and grid, songs that change meter (no gaps, exact stop), the count-in in 3/4 and 6/8, small fills, half time and tap tempo in other meters, and export length.
 - Export matches playback sample for sample, whatever the buffer size. It covers the count-in and the ending bar, rings out to silence, plays vamps once, and stops after a song with no outro on every kit. The WAV header and 24-bit samples (with clipping) are byte-checked.

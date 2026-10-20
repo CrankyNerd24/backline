@@ -4,3 +4,4 @@ DerivedData/
 build/
 build-*/
 *.wav
+!Backline/Library/Samples/**/*.wav

@@ -10,6 +10,7 @@ struct BacklineApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        SampleLoader.loadBundledKit()
         let library = GrooveLibrary()
         let kits = KitLibrary()
         let store = SongStore()

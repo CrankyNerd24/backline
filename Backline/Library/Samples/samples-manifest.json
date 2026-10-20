@@ -1,0 +1,814 @@
+{
+ "source": "Virtuosity Drums by Versilian Studios (CC0 1.0)",
+ "rate": 48000,
+ "articulations": {
+  "kick": {
+   "mapping": "kick_snon",
+   "mics": {
+    "kickmic": 1.0,
+    "oh": 0.55
+   },
+   "samples": [
+    {
+     "file": "kick/kick_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.0278,
+     "seconds": 1.6
+    },
+    {
+     "file": "kick/kick_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "peak": 0.0335,
+     "seconds": 1.6
+    },
+    {
+     "file": "kick/kick_v01_r3.wav",
+     "layer": 1,
+     "roundRobin": 3,
+     "peak": 0.029,
+     "seconds": 1.6
+    },
+    {
+     "file": "kick/kick_v02_r1.wav",
+     "layer": 2,
+     "roundRobin": 1,
+     "peak": 0.101,
+     "seconds": 1.6
+    },
+    {
+     "file": "kick/kick_v02_r2.wav",
+     "layer": 2,
+     "roundRobin": 2,
+     "peak": 0.097,
+     "seconds": 1.6
+    },
+    {
+     "file": "kick/kick_v02_r3.wav",
+     "layer": 2,
+     "roundRobin": 3,
+     "peak": 0.1058,
+     "seconds": 1.6
+    },
+    {
+     "file": "kick/kick_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "peak": 0.3916,
+     "seconds": 1.6
+    },
+    {
+     "file": "kick/kick_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "peak": 0.4114,
+     "seconds": 1.6
+    },
+    {
+     "file": "kick/kick_v03_r3.wav",
+     "layer": 3,
+     "roundRobin": 3,
+     "peak": 0.4397,
+     "seconds": 1.6
+    },
+    {
+     "file": "kick/kick_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "peak": 0.851,
+     "seconds": 1.6
+    },
+    {
+     "file": "kick/kick_v04_r2.wav",
+     "layer": 4,
+     "roundRobin": 2,
+     "peak": 0.871,
+     "seconds": 1.6
+    },
+    {
+     "file": "kick/kick_v04_r3.wav",
+     "layer": 4,
+     "roundRobin": 3,
+     "peak": 0.891,
+     "seconds": 1.6
+    }
+   ]
+  },
+  "snare": {
+   "mapping": "snare_center",
+   "mics": {
+    "snaremic": 1.0,
+    "oh": 0.6
+   },
+   "samples": [
+    {
+     "file": "snare/snare_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.0138,
+     "seconds": 1.6
+    },
+    {
+     "file": "snare/snare_v07_r1.wav",
+     "layer": 7,
+     "roundRobin": 1,
+     "peak": 0.0537,
+     "seconds": 1.341
+    },
+    {
+     "file": "snare/snare_v13_r1.wav",
+     "layer": 13,
+     "roundRobin": 1,
+     "peak": 0.1011,
+     "seconds": 1.348
+    },
+    {
+     "file": "snare/snare_v19_r1.wav",
+     "layer": 19,
+     "roundRobin": 1,
+     "peak": 0.1683,
+     "seconds": 1.052
+    },
+    {
+     "file": "snare/snare_v24_r1.wav",
+     "layer": 24,
+     "roundRobin": 1,
+     "peak": 0.3051,
+     "seconds": 0.922
+    },
+    {
+     "file": "snare/snare_v30_r1.wav",
+     "layer": 30,
+     "roundRobin": 1,
+     "peak": 0.4555,
+     "seconds": 1.001
+    },
+    {
+     "file": "snare/snare_v36_r1.wav",
+     "layer": 36,
+     "roundRobin": 1,
+     "peak": 0.891,
+     "seconds": 0.947
+    }
+   ]
+  },
+  "snareRim": {
+   "mapping": "snare_rimshot",
+   "mics": {
+    "snaremic": 1.0,
+    "oh": 0.6
+   },
+   "samples": [
+    {
+     "file": "snareRim/snareRim_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.0566,
+     "seconds": 1.8
+    },
+    {
+     "file": "snareRim/snareRim_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "peak": 0.3083,
+     "seconds": 1.579
+    },
+    {
+     "file": "snareRim/snareRim_v07_r1.wav",
+     "layer": 7,
+     "roundRobin": 1,
+     "peak": 0.5741,
+     "seconds": 1.166
+    },
+    {
+     "file": "snareRim/snareRim_v09_r1.wav",
+     "layer": 9,
+     "roundRobin": 1,
+     "peak": 0.3981,
+     "seconds": 1.548
+    },
+    {
+     "file": "snareRim/snareRim_v12_r1.wav",
+     "layer": 12,
+     "roundRobin": 1,
+     "peak": 0.891,
+     "seconds": 0.946
+    }
+   ]
+  },
+  "crossStick": {
+   "mapping": "ltom_crossstick",
+   "mics": {
+    "snaremic": 0.7,
+    "oh": 1.0
+   },
+   "samples": [
+    {
+     "file": "crossStick/crossStick_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.0277,
+     "seconds": 0.8
+    },
+    {
+     "file": "crossStick/crossStick_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "peak": 0.1888,
+     "seconds": 0.8
+    },
+    {
+     "file": "crossStick/crossStick_v07_r1.wav",
+     "layer": 7,
+     "roundRobin": 1,
+     "peak": 0.388,
+     "seconds": 0.8
+    },
+    {
+     "file": "crossStick/crossStick_v10_r1.wav",
+     "layer": 10,
+     "roundRobin": 1,
+     "peak": 0.891,
+     "seconds": 0.8
+    }
+   ]
+  },
+  "hhClosed": {
+   "mapping": "hh_closed",
+   "mics": {
+    "oh": 1.0
+   },
+   "samples": [
+    {
+     "file": "hhClosed/hhClosed_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.0388,
+     "seconds": 0.699
+    },
+    {
+     "file": "hhClosed/hhClosed_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "peak": 0.0523,
+     "seconds": 0.464
+    },
+    {
+     "file": "hhClosed/hhClosed_v01_r3.wav",
+     "layer": 1,
+     "roundRobin": 3,
+     "peak": 0.0436,
+     "seconds": 0.572
+    },
+    {
+     "file": "hhClosed/hhClosed_v02_r1.wav",
+     "layer": 2,
+     "roundRobin": 1,
+     "peak": 0.1217,
+     "seconds": 0.5
+    },
+    {
+     "file": "hhClosed/hhClosed_v02_r2.wav",
+     "layer": 2,
+     "roundRobin": 2,
+     "peak": 0.1102,
+     "seconds": 0.503
+    },
+    {
+     "file": "hhClosed/hhClosed_v02_r3.wav",
+     "layer": 2,
+     "roundRobin": 3,
+     "peak": 0.163,
+     "seconds": 0.585
+    },
+    {
+     "file": "hhClosed/hhClosed_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "peak": 0.2146,
+     "seconds": 0.539
+    },
+    {
+     "file": "hhClosed/hhClosed_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "peak": 0.1825,
+     "seconds": 0.524
+    },
+    {
+     "file": "hhClosed/hhClosed_v03_r3.wav",
+     "layer": 3,
+     "roundRobin": 3,
+     "peak": 0.2555,
+     "seconds": 0.552
+    },
+    {
+     "file": "hhClosed/hhClosed_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "peak": 0.6121,
+     "seconds": 0.506
+    },
+    {
+     "file": "hhClosed/hhClosed_v04_r2.wav",
+     "layer": 4,
+     "roundRobin": 2,
+     "peak": 0.8849,
+     "seconds": 0.408
+    },
+    {
+     "file": "hhClosed/hhClosed_v04_r3.wav",
+     "layer": 4,
+     "roundRobin": 3,
+     "peak": 0.891,
+     "seconds": 0.447
+    }
+   ]
+  },
+  "hhOpen": {
+   "mapping": "hh_open",
+   "mics": {
+    "oh": 1.0
+   },
+   "samples": [
+    {
+     "file": "hhOpen/hhOpen_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.0581,
+     "seconds": 2.5
+    },
+    {
+     "file": "hhOpen/hhOpen_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "peak": 0.0349,
+     "seconds": 2.5
+    },
+    {
+     "file": "hhOpen/hhOpen_v01_r3.wav",
+     "layer": 1,
+     "roundRobin": 3,
+     "peak": 0.0386,
+     "seconds": 2.5
+    },
+    {
+     "file": "hhOpen/hhOpen_v02_r1.wav",
+     "layer": 2,
+     "roundRobin": 1,
+     "peak": 0.1067,
+     "seconds": 2.5
+    },
+    {
+     "file": "hhOpen/hhOpen_v02_r2.wav",
+     "layer": 2,
+     "roundRobin": 2,
+     "peak": 0.0803,
+     "seconds": 2.5
+    },
+    {
+     "file": "hhOpen/hhOpen_v02_r3.wav",
+     "layer": 2,
+     "roundRobin": 3,
+     "peak": 0.1027,
+     "seconds": 2.5
+    },
+    {
+     "file": "hhOpen/hhOpen_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "peak": 0.18,
+     "seconds": 2.5
+    },
+    {
+     "file": "hhOpen/hhOpen_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "peak": 0.2054,
+     "seconds": 2.5
+    },
+    {
+     "file": "hhOpen/hhOpen_v03_r3.wav",
+     "layer": 3,
+     "roundRobin": 3,
+     "peak": 0.2415,
+     "seconds": 2.5
+    },
+    {
+     "file": "hhOpen/hhOpen_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "peak": 0.891,
+     "seconds": 2.5
+    },
+    {
+     "file": "hhOpen/hhOpen_v04_r2.wav",
+     "layer": 4,
+     "roundRobin": 2,
+     "peak": 0.6326,
+     "seconds": 2.5
+    },
+    {
+     "file": "hhOpen/hhOpen_v04_r3.wav",
+     "layer": 4,
+     "roundRobin": 3,
+     "peak": 0.6339,
+     "seconds": 2.5
+    }
+   ]
+  },
+  "ride": {
+   "mapping": "ride_ride",
+   "mics": {
+    "oh": 1.0,
+    "mid": 0.7,
+    "room": 0.5
+   },
+   "samples": [
+    {
+     "file": "ride/ride_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.1065,
+     "seconds": 6.0
+    },
+    {
+     "file": "ride/ride_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "peak": 0.1147,
+     "seconds": 6.0
+    },
+    {
+     "file": "ride/ride_v02_r1.wav",
+     "layer": 2,
+     "roundRobin": 1,
+     "peak": 0.4705,
+     "seconds": 6.0
+    },
+    {
+     "file": "ride/ride_v02_r2.wav",
+     "layer": 2,
+     "roundRobin": 2,
+     "peak": 0.4073,
+     "seconds": 6.0
+    },
+    {
+     "file": "ride/ride_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "peak": 0.891,
+     "seconds": 6.0
+    },
+    {
+     "file": "ride/ride_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "peak": 0.8542,
+     "seconds": 5.655
+    }
+   ]
+  },
+  "rideBell": {
+   "mapping": "ride_bell",
+   "mics": {
+    "oh": 1.0,
+    "mid": 0.7,
+    "room": 0.5
+   },
+   "samples": [
+    {
+     "file": "rideBell/rideBell_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.1142,
+     "seconds": 5.0
+    },
+    {
+     "file": "rideBell/rideBell_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "peak": 0.1153,
+     "seconds": 4.669
+    },
+    {
+     "file": "rideBell/rideBell_v02_r1.wav",
+     "layer": 2,
+     "roundRobin": 1,
+     "peak": 0.5292,
+     "seconds": 5.0
+    },
+    {
+     "file": "rideBell/rideBell_v02_r2.wav",
+     "layer": 2,
+     "roundRobin": 2,
+     "peak": 0.5252,
+     "seconds": 5.0
+    },
+    {
+     "file": "rideBell/rideBell_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "peak": 0.7938,
+     "seconds": 5.0
+    },
+    {
+     "file": "rideBell/rideBell_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "peak": 0.891,
+     "seconds": 5.0
+    }
+   ]
+  },
+  "flatRide": {
+   "mapping": "flatride_ride",
+   "mics": {
+    "oh": 1.0,
+    "mid": 0.7,
+    "room": 0.5
+   },
+   "samples": [
+    {
+     "file": "flatRide/flatRide_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.2754,
+     "seconds": 6.0
+    },
+    {
+     "file": "flatRide/flatRide_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "peak": 0.1818,
+     "seconds": 6.0
+    },
+    {
+     "file": "flatRide/flatRide_v02_r1.wav",
+     "layer": 2,
+     "roundRobin": 1,
+     "peak": 0.4931,
+     "seconds": 6.0
+    },
+    {
+     "file": "flatRide/flatRide_v02_r2.wav",
+     "layer": 2,
+     "roundRobin": 2,
+     "peak": 0.4074,
+     "seconds": 6.0
+    },
+    {
+     "file": "flatRide/flatRide_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "peak": 0.891,
+     "seconds": 6.0
+    },
+    {
+     "file": "flatRide/flatRide_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "peak": 0.645,
+     "seconds": 6.0
+    }
+   ]
+  },
+  "crash": {
+   "mapping": "crash_crash",
+   "mics": {
+    "oh": 1.0,
+    "mid": 0.7,
+    "room": 0.5
+   },
+   "samples": [
+    {
+     "file": "crash/crash_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.2224,
+     "seconds": 7.0
+    },
+    {
+     "file": "crash/crash_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "peak": 0.2519,
+     "seconds": 7.0
+    },
+    {
+     "file": "crash/crash_v02_r1.wav",
+     "layer": 2,
+     "roundRobin": 1,
+     "peak": 0.4438,
+     "seconds": 7.0
+    },
+    {
+     "file": "crash/crash_v02_r2.wav",
+     "layer": 2,
+     "roundRobin": 2,
+     "peak": 0.3382,
+     "seconds": 7.0
+    },
+    {
+     "file": "crash/crash_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "peak": 0.891,
+     "seconds": 7.0
+    },
+    {
+     "file": "crash/crash_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "peak": 0.8601,
+     "seconds": 7.0
+    }
+   ]
+  },
+  "crashSizzle": {
+   "mapping": "crash_sizzle",
+   "mics": {
+    "oh": 1.0,
+    "mid": 0.7,
+    "room": 0.5
+   },
+   "samples": [
+    {
+     "file": "crashSizzle/crashSizzle_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.2127,
+     "seconds": 7.0
+    },
+    {
+     "file": "crashSizzle/crashSizzle_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "peak": 0.2224,
+     "seconds": 7.0
+    },
+    {
+     "file": "crashSizzle/crashSizzle_v02_r1.wav",
+     "layer": 2,
+     "roundRobin": 1,
+     "peak": 0.2951,
+     "seconds": 7.0
+    },
+    {
+     "file": "crashSizzle/crashSizzle_v02_r2.wav",
+     "layer": 2,
+     "roundRobin": 2,
+     "peak": 0.292,
+     "seconds": 7.0
+    },
+    {
+     "file": "crashSizzle/crashSizzle_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "peak": 0.891,
+     "seconds": 7.0
+    },
+    {
+     "file": "crashSizzle/crashSizzle_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "peak": 0.6897,
+     "seconds": 7.0
+    }
+   ]
+  },
+  "highTom": {
+   "mapping": "htom_center",
+   "mics": {
+    "oh": 0.9,
+    "mid": 0.8,
+    "room": 0.5
+   },
+   "samples": [
+    {
+     "file": "highTom/highTom_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.0238,
+     "seconds": 2.032
+    },
+    {
+     "file": "highTom/highTom_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "peak": 0.0684,
+     "seconds": 2.206
+    },
+    {
+     "file": "highTom/highTom_v05_r1.wav",
+     "layer": 5,
+     "roundRobin": 1,
+     "peak": 0.1608,
+     "seconds": 1.952
+    },
+    {
+     "file": "highTom/highTom_v07_r1.wav",
+     "layer": 7,
+     "roundRobin": 1,
+     "peak": 0.2342,
+     "seconds": 2.137
+    },
+    {
+     "file": "highTom/highTom_v10_r1.wav",
+     "layer": 10,
+     "roundRobin": 1,
+     "peak": 0.3603,
+     "seconds": 1.842
+    },
+    {
+     "file": "highTom/highTom_v12_r1.wav",
+     "layer": 12,
+     "roundRobin": 1,
+     "peak": 0.4979,
+     "seconds": 1.629
+    },
+    {
+     "file": "highTom/highTom_v14_r1.wav",
+     "layer": 14,
+     "roundRobin": 1,
+     "peak": 0.6948,
+     "seconds": 1.823
+    },
+    {
+     "file": "highTom/highTom_v16_r1.wav",
+     "layer": 16,
+     "roundRobin": 1,
+     "peak": 0.891,
+     "seconds": 1.87
+    }
+   ]
+  },
+  "lowTom": {
+   "mapping": "ltom_center",
+   "mics": {
+    "oh": 0.9,
+    "mid": 0.8,
+    "room": 0.5
+   },
+   "samples": [
+    {
+     "file": "lowTom/lowTom_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.0237,
+     "seconds": 3.093
+    },
+    {
+     "file": "lowTom/lowTom_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "peak": 0.0642,
+     "seconds": 2.895
+    },
+    {
+     "file": "lowTom/lowTom_v05_r1.wav",
+     "layer": 5,
+     "roundRobin": 1,
+     "peak": 0.1377,
+     "seconds": 3.442
+    },
+    {
+     "file": "lowTom/lowTom_v07_r1.wav",
+     "layer": 7,
+     "roundRobin": 1,
+     "peak": 0.273,
+     "seconds": 4.022
+    },
+    {
+     "file": "lowTom/lowTom_v10_r1.wav",
+     "layer": 10,
+     "roundRobin": 1,
+     "peak": 0.4418,
+     "seconds": 3.7
+    },
+    {
+     "file": "lowTom/lowTom_v12_r1.wav",
+     "layer": 12,
+     "roundRobin": 1,
+     "peak": 0.4947,
+     "seconds": 4.5
+    },
+    {
+     "file": "lowTom/lowTom_v14_r1.wav",
+     "layer": 14,
+     "roundRobin": 1,
+     "peak": 0.8586,
+     "seconds": 4.5
+    },
+    {
+     "file": "lowTom/lowTom_v16_r1.wav",
+     "layer": 16,
+     "roundRobin": 1,
+     "peak": 0.891,
+     "seconds": 3.867
+    }
+   ]
+  }
+ }
+}

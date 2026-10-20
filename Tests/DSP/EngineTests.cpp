@@ -13,6 +13,8 @@
 #include <functional>
 #include <new>
 #include <random>
+#include <set>
+#include <tuple>
 #include <string>
 #include <vector>
 
@@ -1127,7 +1129,8 @@ static double crossingsPerSecond(const std::vector<float> &x, size_t from, size_
 }
 
 static void testModelCatalogue() {
-    const uint8_t expected[BL_PIECE_COUNT] = {4, 4, 3, 3, 6, 3, 3, 3, 4};
+    // Synthesized models, then recorded ones.
+    const uint8_t expected[BL_PIECE_COUNT] = {8, 8, 4, 4, 9, 6, 6, 6, 5};
     for (uint8_t piece = 0; piece < BL_PIECE_COUNT; ++piece) {
         CHECK(bl_kit_model_count(piece) == expected[piece], "piece %d has %d models", piece, bl_kit_model_count(piece));
         for (uint8_t m = 0; m < bl_kit_model_count(piece); ++m) {
@@ -1263,7 +1266,7 @@ static void testPunch() {
 
 // The six built-in kits: named, in range, and deterministic.
 static void testBuiltInKits() {
-    CHECK(bl_kit_builtin_count() == 6, "%d kits", bl_kit_builtin_count());
+    CHECK(bl_kit_builtin_count() == 7, "%d kits", bl_kit_builtin_count());
     CHECK(std::string(bl_kit_builtin_name(0)) == "Garage Kit", "kit 0 is %s", bl_kit_builtin_name(0));
     for (uint8_t k = 0; k < bl_kit_builtin_count(); ++k) {
         BLKit kit;
@@ -1659,6 +1662,134 @@ static void testAttack() {
     CHECK(g == audition(neutral, BL_PIECE_KICK, BL_VEL_LOUD, 0.2).left, "NaN attack isn't treated as 0.5");
 }
 
+// MARK: - Recorded sounds
+
+// A take that's easy to recognize: a decaying ramp at `level`, with the
+// right channel at half the left (so it has a side signal).
+static std::vector<int16_t> fakeTake(float level, uint32_t frames, int16_t marker) {
+    std::vector<int16_t> pcm(frames * 2);
+    for (uint32_t i = 0; i < frames; ++i) {
+        const float env = level * (1.0f - static_cast<float>(i) / frames);
+        pcm[2 * i] = static_cast<int16_t>(i == 0 ? marker : 30000.0f * env);
+        pcm[2 * i + 1] = static_cast<int16_t>(pcm[2 * i] / 2);
+    }
+    return pcm;
+}
+
+static BLSampleBank *fakeBank() {
+    BLSampleBank *bank = bl_sample_bank_create();
+    // Snare: three layers (soft, medium, loud), the loud one with two takes.
+    for (auto [layer, level, marker] : {std::tuple{1u, 0.1f, 1001}, {2u, 0.4f, 1002}, {3u, 1.0f, 5000}, {3u, 1.0f, 20000}}) {
+        const auto pcm = fakeTake(level, 4800, static_cast<int16_t>(marker));
+        bl_sample_bank_add_pcm(bank, BL_SOUND_SNARE, layer, pcm.data(), 4800, 2, 48000);
+    }
+    const auto hat = fakeTake(1.0f, 48000, 2001);
+    bl_sample_bank_add_pcm(bank, BL_SOUND_HH_OPEN, 1, hat.data(), 48000, 2, 48000);
+    const auto closed = fakeTake(1.0f, 2400, 2002);
+    bl_sample_bank_add_pcm(bank, BL_SOUND_HH_CLOSED, 1, closed.data(), 2400, 2, 48000);
+    return bank;
+}
+
+static BLKit recordedKit() {
+    BLKit kit = dryKit();
+    for (auto &v : kit.voices) v.volumeDB = -12.0f; // keep the limiter out of it
+    return kit;
+}
+
+static void testRecordedSounds() {
+    CHECK(bl_sound_index("hhOpen") == BL_SOUND_HH_OPEN && bl_sound_index("lowTom") == BL_SOUND_LOW_TOM &&
+              bl_sound_index("nope") == -1,
+          "sound names");
+    const BLKit kit = recordedKit();
+    // Without a bank, a recorded model plays its synthesized stand-in.
+    bl_samples_install(nullptr);
+    BLKit standIn = kit;
+    standIn.voices[BL_PIECE_SNARE].model = 1; // Fat 70s stands in for the club snare
+    const auto fallback = audition(kit, BL_PIECE_SNARE, BL_VEL_LOUD, 0.3).left;
+    CHECK(fallback == audition(standIn, BL_PIECE_SNARE, BL_VEL_LOUD, 0.3).left, "stand-in differs");
+
+    bl_samples_install(fakeBank());
+    // A loud hit plays a loud take, from the first sample, in stereo.
+    const Render loud = audition(kit, BL_PIECE_SNARE, BL_VEL_LOUD, 0.3);
+    CHECK(loud.left[0] != 0.0f && loud.left != fallback, "the recording didn't play");
+    CHECK(std::fabs(loud.left[100]) > 1.5f * std::fabs(loud.right[100]), "not stereo: %f vs %f", loud.left[100],
+          loud.right[100]);
+    CHECK(peakOf(loud.left, 6000) == 0.0f, "rings past the take's end");
+    // Softer hits pick softer layers: the level falls more than the gain range allows.
+    const float soft = peakOf(audition(kit, BL_PIECE_SNARE, BL_VEL_SOFT, 0.3).left, 10, 4000);
+    const float normal = peakOf(audition(kit, BL_PIECE_SNARE, BL_VEL_NORMAL, 0.3).left, 10, 4000);
+    const float hard = peakOf(loud.left, 10, 4000);
+    CHECK(soft < normal && normal < hard, "levels %.3f %.3f %.3f", soft, normal, hard);
+
+    // Round robins come from the hit's seed: the same song renders the same,
+    // and both loud takes get used.
+    BLEngine *e = bl_engine_create(48000.0);
+    bl_engine_set_kit(e, &kit);
+    bl_engine_set_tempo(e, 120.0);
+    BLSectionDesc d = section(1, 4, only(BL_PIECE_SNARE, {0, 2, 4, 6, 8, 10, 12, 14}));
+    for (int s = 0; s < 16; s += 2) bl_pattern_set(&d.main, BL_PIECE_SNARE, static_cast<uint8_t>(s), BL_VEL_LOUD);
+    bl_engine_set_timeline(e, timelineOf({d}));
+    bl_engine_play_from(e, 0, false);
+    std::vector<float> l(4 * kBar), r(4 * kBar);
+    for (size_t done = 0; done < l.size(); done += 256) bl_engine_render(e, l.data() + done, r.data() + done, 256);
+    bl_engine_destroy(e);
+    std::set<int> markers;
+    for (size_t at = 0; at < l.size(); at += kBeat / 2) markers.insert(static_cast<int>(std::lround(l[at] * 1e4f)));
+    CHECK(markers.size() >= 2, "only %zu different first samples across 32 hits", markers.size());
+
+    // Tune: +12 semitones plays the take twice as fast.
+    BLKit up = kit;
+    up.voices[BL_PIECE_SNARE].tune = 12.0f;
+    const auto fast = audition(up, BL_PIECE_SNARE, BL_VEL_LOUD, 0.3).left;
+    CHECK(peakOf(fast, 2500) == 0.0f && peakOf(fast, 0, 2300) > 0.0f, "an octave up isn't twice as fast");
+
+    // Decay below 50% ends the hit early; Tone and Character change it.
+    BLKit shortKit = kit;
+    shortKit.voices[BL_PIECE_SNARE].decay = 0.0f;
+    const auto shortHit = audition(shortKit, BL_PIECE_SNARE, BL_VEL_LOUD, 0.3).left;
+    CHECK(rmsOf(shortHit, 3600, 4800) < 0.15 * rmsOf(loud.left, 3600, 4800), "decay didn't shorten it: %.4f vs %.4f",
+          rmsOf(shortHit, 3600, 4800), rmsOf(loud.left, 3600, 4800));
+    BLKit dark = kit;
+    dark.voices[BL_PIECE_SNARE].tone = 0.0f;
+    CHECK(audition(dark, BL_PIECE_SNARE, BL_VEL_LOUD, 0.3).left != loud.left, "tone does nothing");
+
+    // A closed hat chokes a ringing open one.
+    BLEngine *h = bl_engine_create(48000.0);
+    bl_engine_set_kit(h, &kit);
+    bl_engine_audition(h, BL_PIECE_OPEN_HAT, BL_VEL_LOUD);
+    std::vector<float> hl(24000), hr(24000);
+    bl_engine_render(h, hl.data(), hr.data(), 4800);
+    bl_engine_audition(h, BL_PIECE_HI_HAT, BL_VEL_LOUD);
+    bl_engine_render(h, hl.data() + 4800, hr.data() + 4800, 19200);
+    bl_engine_destroy(h);
+    CHECK(peakOf(hl, 4800 + 2400 + 2000) == 0.0f, "the open hat kept ringing after the closed hat");
+
+    // No allocations while playing recorded sounds.
+    BLEngine *a = bl_engine_create(48000.0);
+    bl_engine_set_kit(a, &kit);
+    std::vector<float> al(256), ar(256);
+    gAllocations = 0;
+    gTrackAllocations = true;
+    for (int i = 0; i < 200; ++i) {
+        if (i % 10 == 0) bl_engine_audition(a, BL_PIECE_SNARE, BL_VEL_NORMAL);
+        bl_engine_render(a, al.data(), ar.data(), 256);
+    }
+    gTrackAllocations = false;
+    bl_engine_destroy(a);
+    CHECK(gAllocations <= 20, "%ld allocations (only the audition commands may allocate)", gAllocations);
+
+    bl_samples_install(nullptr);
+}
+
+// The bundled recordings load, if they're here (they are in the repository).
+static void testBundledSamples() {
+    BLSampleBank *bank = bl_sample_bank_create();
+    const std::string dir = std::string(BACKLINE_SOURCE_DIR) + "/Backline/Library/Samples/snare/";
+    CHECK(bl_sample_bank_add_wav(bank, BL_SOUND_SNARE, 36, (dir + "snare_v36_r1.wav").c_str()), "couldn't read a bundled WAV");
+    CHECK(!bl_sample_bank_add_wav(bank, BL_SOUND_SNARE, 1, (dir + "missing.wav").c_str()), "read a missing file");
+    CHECK(bl_sample_bank_count(bank, BL_SOUND_SNARE) == 1, "count %u", bl_sample_bank_count(bank, BL_SOUND_SNARE));
+}
+
 // How much faster than real time the engine renders (headroom for 5 ms buffers).
 static void reportSpeed() {
     const auto start = std::chrono::steady_clock::now();
@@ -1734,6 +1865,8 @@ int main() {
         {"feel in other meters", testMeterFeel},
         {"export meters", testExportMeters},
         {"attack", testAttack},
+        {"recorded sounds", testRecordedSounds},
+        {"bundled samples", testBundledSamples},
         {"render speed", reportSpeed},
     };
     for (const auto &t : tests) {
