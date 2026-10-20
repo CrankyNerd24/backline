@@ -26,6 +26,11 @@ struct SongBuilderView: View {
         VStack(spacing: 0) {
             SongHeader()
             if let error { errorBanner(error) }
+            AskBar(currentSectionID: selection)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+                .background(Theme.bgDeep)
+                .overlay(alignment: .bottom) { Theme.line.frame(height: 1) }
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     SongRow(selectedID: $selectedID, selection: selection)
