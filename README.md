@@ -6,6 +6,15 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 
 ## Status: milestone 10 (polish): all v1 milestones built
 
+**Tell Backline** (for players who aren't drummers): a bar under the header, and a big mic in Play-along, takes requests in plain words. Type, or hold the mic and speak.
+- **Feel and sound:** "more swing", "make the chorus hit harder", "simpler verses", "tighter", "punchier", "bigger room", "darker cymbals", "louder kick", "half time in the bridge", "put the solo on the ride", "big fill into the chorus", "use the metal kit".
+- **Tempo and grooves:** "faster", "slow it down a bit", "90 BPM", "make it funky", "a shuffle", "different groove".
+- **Structure:** "add a bridge after the second chorus", "remove the solo", "make the verses 16 bars", "count in two bars", "repeat the solo until I step".
+- **Play-along:** "play from the chorus", "next section", "go back", "give me a fill", "loop this", "end it", "stop".
+- Every request shows what changed, and one **Undo** takes all of it back.
+- `Assistant/PhraseInterpreter.swift` handles everyday phrasings on every iPad, instantly. When some part of a request isn't covered, Apple's on-device model takes over on iPads with Apple Intelligence (iPadOS 26), via `Assistant/OnDeviceInterpreter.swift`. It returns structured steps in the same vocabulary. Both run privately and offline.
+- **Voice:** hold to talk, using Apple's on-device speech recognition. The words appear as you speak, and the drums duck while the mic is held. The first use switches the audio session to play-and-record, which stops playback once. Headphones help.
+
 **Recorded kit:** every built-in kit now plays real recordings by default. They come from [Virtuosity Drums](https://github.com/sfzinstruments/virtuosity_drums), a club jazz kit by Versilian Studios released under CC0, so exports remain the player's own with no credit needed.
 - 98 takes across 13 articulations: kick, snare, rimshot, cross-stick, closed and open hats, ride, ride bell, flat ride, crash, sizzle crash, and high and low tom. Each has three to eight hit strengths and up to three alternate takes. Kick and snare are mixed from the close mics and overheads, hats from the overheads, and toms and cymbals from the overheads plus the mid and room mics. They're stored as 48 kHz 16-bit stereo, about 57 MB, in `Backline/Library/Samples/`.
 - `python3 tools/fetch_samples.py` rebuilds them from the library: it downloads, picks layers, mixes, trims and writes the manifest.

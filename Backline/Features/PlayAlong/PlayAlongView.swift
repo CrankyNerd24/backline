@@ -56,6 +56,11 @@ struct PlayAlongView: View {
                 .padding(.horizontal, 28)
                 .padding(.bottom, 12)
             transport
+            // Hands are on the guitar: hold the big mic and say "next section".
+            AskBar(currentSectionID: currentSection?.id, compact: true)
+                .padding(.horizontal, 28)
+                .padding(.vertical, 10)
+                .background(Theme.bg)
             footer
         }
         .background(Theme.bgDeep)

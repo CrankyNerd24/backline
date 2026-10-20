@@ -314,10 +314,32 @@ final class EngineController {
 
     // MARK: Audio graph
 
+    /// Opens the microphone for voice requests. The session switches to
+    /// play-and-record once and stays there (switching back and forth would
+    /// stop playback each time). Output stays on the speaker or on Bluetooth
+    /// headphones at full quality; the iPad's own mic listens.
+    func enableMicrophone() {
+        guard !microphoneOn else { return }
+        microphoneOn = true
+        configureSession()
+    }
+
+    /// Turns the drums down while listening, so the speech recognizer can
+    /// hear the player over them.
+    func duck(_ on: Bool) {
+        avEngine.mainMixerNode.outputVolume = Float(drumsLevel * (on ? 0.2 : 1.0))
+    }
+
+    @ObservationIgnored private var microphoneOn = false
+
     private func configureSession() {
         let session = AVAudioSession.sharedInstance()
         do {
-            try session.setCategory(.playback, mode: .default)
+            if microphoneOn {
+                try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetoothA2DP])
+            } else {
+                try session.setCategory(.playback, mode: .default)
+            }
             try session.setPreferredIOBufferDuration(0.005)
             try session.setActive(true)
         } catch {

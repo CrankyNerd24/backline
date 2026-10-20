@@ -6,6 +6,7 @@ struct TransportBar: View {
     @Environment(SongStore.self) private var store
     @Environment(EngineController.self) private var engine
     @Environment(PedalController.self) private var pedals
+    @Environment(Assistant.self) private var assistant
     let selection: UUID?
     @State private var playingAlong = false
 
@@ -52,6 +53,7 @@ struct TransportBar: View {
                 .environment(store)
                 .environment(engine)
                 .environment(pedals)
+                .environment(assistant)
         }
     }
 

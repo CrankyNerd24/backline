@@ -7,6 +7,7 @@ struct BacklineApp: App {
     @State private var store: SongStore
     @State private var engine: EngineController
     @State private var pedals: PedalController
+    @State private var assistant: Assistant
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -20,6 +21,7 @@ struct BacklineApp: App {
         _store = State(initialValue: store)
         _engine = State(initialValue: engine)
         _pedals = State(initialValue: PedalController(engine: engine, store: store))
+        _assistant = State(initialValue: Assistant(store: store, library: library, kits: kits, engine: engine))
     }
 
     var body: some Scene {
@@ -30,6 +32,7 @@ struct BacklineApp: App {
                 .environment(store)
                 .environment(engine)
                 .environment(pedals)
+                .environment(assistant)
                 .preferredColorScheme(.dark)
                 .onChange(of: scenePhase) { _, phase in
                     if phase != .active { store.saveNow() }
