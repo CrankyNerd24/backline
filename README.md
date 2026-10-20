@@ -6,6 +6,17 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 
 ## Status: milestone 10 (polish): all v1 milestones built
 
+**Song templates:** 14 ready-made layouts (`Model/SongTemplate.swift`), each with its own sections, grooves and tempo:
+- Verse–Chorus Rock and Classic Rock (with a solo and a bridge)
+- 12-Bar Blues Shuffle and Slow Blues in 12/8
+- Country Two-step and Country Waltz (3/4)
+- Ballad and 6/8 Ballad
+- Funk Jam, Punk, Reggae One Drop and Hip-hop
+- Jazz Standard (AABA), with solos that repeat until you step
+- Practice Loop: one groove that repeats until you step
+
+Start one from **New Song ▸ From a template** in the song menu, or from the cards on an empty song.
+
 **Attack knob** (Kit Editor): every piece has an **Attack** control, from softer to snappier. Turned down, the hit fades in over up to 25 ms, which rounds off the stick. Turned up, the first few milliseconds are pushed up by as much as 9.5 dB. The middle (50%) plays the sound as designed, and kits saved before this change open there. The toms' old "Attack" knob, which sets the stick noise level, is now called **Stick**.
 
 **Time signatures** (after milestone 10; the spec had them for later): each section has its own time signature, set in its groove card. The options are 4/4, 3/4, 6/8 and 12/8.

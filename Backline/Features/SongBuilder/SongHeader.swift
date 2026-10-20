@@ -112,8 +112,14 @@ struct SongHeader: View {
                 }
             }
             Divider()
-            Button("New Song", systemImage: "plus") { store.newSong() }
-            Button("New Empty Song", systemImage: "doc") { store.newSong(empty: true) }
+            Menu("New Song", systemImage: "plus") {
+                Button("Empty Song", systemImage: "doc") { store.newSong(from: nil, library: library) }
+                SwiftUI.Section("From a template") { // `Section` alone is the song's section type
+                    ForEach(SongTemplate.all) { template in
+                        Button(template.name) { store.newSong(from: template, library: library) }
+                    }
+                }
+            }
             Button("Rename…", systemImage: "pencil") {
                 newName = store.song.name
                 renaming = true

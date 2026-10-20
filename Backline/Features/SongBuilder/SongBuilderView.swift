@@ -5,6 +5,7 @@ import SwiftUI
 struct SongBuilderView: View {
     @Environment(SongStore.self) private var store
     @Environment(EngineController.self) private var engine
+    @Environment(GrooveLibrary.self) private var library
     @State private var selectedID: UUID?
     @State private var dismissedError: String?
     @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
@@ -63,17 +64,19 @@ struct SongBuilderView: View {
                 Text("No sections yet")
                     .font(Theme.condensed(28, weight: .bold))
                     .accessibilityAddTraits(.isHeader)
-                Text("Start from a ready-made layout, or tap + in the song row to add any section.")
+                Text("Start from a template (it sets the tempo too), or tap + in the song row to add any section.")
                     .font(Theme.body(16))
                     .foregroundStyle(Theme.textMuted)
-                HStack(spacing: 12) {
-                    Button {
-                        store.song.addStarterSections()
-                        selectedID = store.song.sections.first?.id
-                    } label: {
-                        Label("Intro, verses, choruses and outro", systemImage: "rectangle.split.3x1")
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
+                    ForEach(SongTemplate.all) { template in
+                        TemplateCard(template: template) {
+                            template.apply(to: &store.song, library: library)
+                            selectedID = store.song.sections.first?.id
+                        }
                     }
-                    .buttonStyle(ChipButtonStyle(prominent: true))
+                }
+                .padding(.top, 8)
+                HStack(spacing: 12) {
                     Button {
                         let section = Section(kind: .verse, name: store.song.nextName(for: .verse),
                                               grooveID: GrooveLibrary.fallbackID)
@@ -106,5 +109,43 @@ struct SongBuilderView: View {
         .background(Theme.panel)
         .overlay(alignment: .bottom) { Theme.line.frame(height: 1) }
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// One template in the empty song: its name, what it is, and its shape.
+private struct TemplateCard: View {
+    let template: SongTemplate
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(template.name)
+                    .font(Theme.condensed(22, weight: .bold))
+                    .lineLimit(1)
+                Text(template.summary)
+                    .font(Theme.body(13))
+                    .foregroundStyle(Theme.textMuted)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                Text(shape)
+                    .font(Theme.body(12, weight: .semibold))
+                    .foregroundStyle(Theme.textMuted)
+                    .lineLimit(1)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, minHeight: 130, alignment: .topLeading)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+            .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.card))
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Fills the song with this layout")
+    }
+
+    /// "6 sections · 112 BPM"
+    private var shape: String {
+        "\(template.parts.count) \(template.parts.count == 1 ? "section" : "sections") · \(Int(template.bpm)) BPM"
     }
 }
