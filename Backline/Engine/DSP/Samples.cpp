@@ -11,7 +11,8 @@ namespace {
 std::atomic<const BLSampleBank *> gBank{nullptr};
 
 constexpr const char *kSoundNames[BL_SOUND_COUNT] = {"kick",     "snare", "snareRim",  "crossStick", "hhClosed", "hhOpen",
-                                                     "ride",     "rideBell", "crash", "highTom",    "lowTom"};
+                                                     "ride",     "rideBell", "crash", "highTom",    "lowTom",
+                                                     "flatRide", "crashSizzle"};
 
 float semitones(float tune) { return std::exp2(std::clamp(tune, -24.0f, 24.0f) / 12.0f); }
 

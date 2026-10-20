@@ -68,6 +68,8 @@ constexpr ModelInfo kCymbalInfo[] = {
     {"cymbal.bigCrash", "Big Crash", "Wide and loud, with a long wash"},
     {"cymbal.clubRide", "Club Ride (recorded)", "A real ride; turn Bell up for bell hits"},
     {"cymbal.clubCrash", "Club Crash (recorded)", "A real crash cymbal"},
+    {"cymbal.clubFlatRide", "Club Flat Ride (recorded)", "A dry, bell-less ride with a clear stick sound"},
+    {"cymbal.clubSizzle", "Club Sizzle Crash (recorded)", "A crash with rivets that keep sizzling"},
 };
 constexpr CymbalModel kCymbals[] = {
     {1.10f, 4500.0f, 0.90f, 0.15f, 0.15f},
@@ -179,7 +181,9 @@ constexpr RecordedModel kRecordedSnares[] = {{BL_SOUND_SNARE, BL_SOUND_SNARE, 0.
                                              {BL_SOUND_CROSS_STICK, BL_SOUND_CROSS_STICK, 0.0f, 5, 1.8f}};
 constexpr RecordedModel kRecordedHats[] = {{BL_SOUND_HH_CLOSED, BL_SOUND_HH_OPEN, 0.0f, 1, 2.2f}};
 constexpr RecordedModel kRecordedCymbals[] = {{BL_SOUND_RIDE, BL_SOUND_RIDE_BELL, 0.0f, 0, 2.2f},
-                                              {BL_SOUND_CRASH, BL_SOUND_CRASH, 0.0f, 3, 1.6f}};
+                                              {BL_SOUND_CRASH, BL_SOUND_CRASH, 0.0f, 3, 1.6f},
+                                              {BL_SOUND_FLAT_RIDE, BL_SOUND_FLAT_RIDE, 0.0f, 0, 3.2f},
+                                              {BL_SOUND_CRASH_SIZZLE, BL_SOUND_CRASH_SIZZLE, 0.0f, 3, 1.6f}};
 constexpr RecordedModel kRecordedToms[] = {{BL_SOUND_HIGH_TOM, BL_SOUND_HIGH_TOM, 0.0f, 0, 1.6f},
                                            {BL_SOUND_LOW_TOM, BL_SOUND_LOW_TOM, 0.0f, 1, 1.6f},
                                            {BL_SOUND_LOW_TOM, BL_SOUND_LOW_TOM, -4.0f, 2, 1.6f}};

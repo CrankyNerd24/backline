@@ -28,21 +28,26 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 OUT = os.path.join(ROOT, "Backline", "Library", "Samples")
 RATE = 48000
 
-# id: (sfz mapping name, {mic: gain}, max seconds, velocity layers to keep)
+# Toms and cymbals take the mid-distance and room mics too: the overheads
+# alone sound thin and distant on them.
+ROOMY = {"oh": 1.0, "mid": 0.7, "room": 0.5}
+
+# id: (sfz mapping name, {mic: gain}, max seconds, velocity layers to keep, round robins to keep)
 ARTICULATIONS = {
-    "kick": ("kick_snon", {"kickmic": 1.0, "oh": 0.55}, 1.6, 6),
-    "snare": ("snare_center", {"snaremic": 1.0, "oh": 0.6}, 1.6, 7),
-    "snareRim": ("snare_rimshot", {"snaremic": 1.0, "oh": 0.6}, 1.8, 5),
-    "crossStick": ("ltom_crossstick", {"snaremic": 0.7, "oh": 1.0}, 0.8, 4),
-    "hhClosed": ("hh_closed", {"oh": 1.0}, 1.0, 6),
-    "hhOpen": ("hh_open", {"oh": 1.0}, 2.5, 5),
-    "ride": ("ride_ride", {"oh": 1.0}, 4.0, 5),
-    "rideBell": ("ride_bell", {"oh": 1.0}, 4.0, 4),
-    "crash": ("crash_crash", {"oh": 1.0}, 5.0, 4),
-    "highTom": ("htom_center", {"oh": 1.0, "snaremic": 0.5}, 2.5, 5),
-    "lowTom": ("ltom_center", {"oh": 1.0, "snaremic": 0.5}, 3.0, 5),
+    "kick": ("kick_snon", {"kickmic": 1.0, "oh": 0.55}, 1.6, 6, 3),
+    "snare": ("snare_center", {"snaremic": 1.0, "oh": 0.6}, 1.6, 7, 3),
+    "snareRim": ("snare_rimshot", {"snaremic": 1.0, "oh": 0.6}, 1.8, 5, 3),
+    "crossStick": ("ltom_crossstick", {"snaremic": 0.7, "oh": 1.0}, 0.8, 4, 3),
+    "hhClosed": ("hh_closed", {"oh": 1.0}, 1.0, 6, 3),
+    "hhOpen": ("hh_open", {"oh": 1.0}, 2.5, 5, 3),
+    "ride": ("ride_ride", ROOMY, 6.0, 5, 2),
+    "rideBell": ("ride_bell", ROOMY, 5.0, 4, 2),
+    "flatRide": ("flatride_ride", ROOMY, 6.0, 5, 2),
+    "crash": ("crash_crash", ROOMY, 7.0, 4, 2),
+    "crashSizzle": ("crash_sizzle", ROOMY, 7.0, 4, 2),
+    "highTom": ("htom_center", {"oh": 0.9, "mid": 0.8, "room": 0.5}, 3.5, 8, 3),
+    "lowTom": ("ltom_center", {"oh": 0.9, "mid": 0.8, "room": 0.5}, 4.5, 8, 3),
 }
-MAX_ROUND_ROBINS = 3
 
 
 def fetch(path, cache):
@@ -103,7 +108,7 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     manifest = {"source": "Virtuosity Drums by Versilian Studios (CC0 1.0)", "rate": RATE, "articulations": {}}
 
-    for name, (mapping, mics, max_seconds, keep) in ARTICULATIONS.items():
+    for name, (mapping, mics, max_seconds, keep, max_round_robins) in ARTICULATIONS.items():
         by_mic = {mic: regions(mic, mapping, cache) for mic in mics}
         mics = {mic: g for mic, g in mics.items() if by_mic[mic]}
         if not mics:
@@ -113,7 +118,7 @@ def main():
         layers = spread(sorted({vl for vl, _, _ in by_mic[lead]}), keep)
         hits = []
         for vl in layers:
-            rrs = sorted({rr for v, rr, _ in by_mic[lead] if v == vl})[:MAX_ROUND_ROBINS]
+            rrs = sorted({rr for v, rr, _ in by_mic[lead] if v == vl})[:max_round_robins]
             for rr in rrs:
                 mix = None
                 for mic, gain in mics.items():

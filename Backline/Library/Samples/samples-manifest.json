@@ -421,301 +421,392 @@
   "ride": {
    "mapping": "ride_ride",
    "mics": {
-    "oh": 1.0
+    "oh": 1.0,
+    "mid": 0.7,
+    "room": 0.5
    },
    "samples": [
     {
      "file": "ride/ride_v01_r1.wav",
      "layer": 1,
      "roundRobin": 1,
-     "peak": 0.1067,
-     "seconds": 4.0
+     "peak": 0.1065,
+     "seconds": 6.0
     },
     {
      "file": "ride/ride_v01_r2.wav",
      "layer": 1,
      "roundRobin": 2,
-     "peak": 0.1158,
-     "seconds": 4.0
-    },
-    {
-     "file": "ride/ride_v01_r3.wav",
-     "layer": 1,
-     "roundRobin": 3,
-     "peak": 0.1227,
-     "seconds": 4.0
+     "peak": 0.1147,
+     "seconds": 6.0
     },
     {
      "file": "ride/ride_v02_r1.wav",
      "layer": 2,
      "roundRobin": 1,
-     "peak": 0.4695,
-     "seconds": 4.0
+     "peak": 0.4705,
+     "seconds": 6.0
     },
     {
      "file": "ride/ride_v02_r2.wav",
      "layer": 2,
      "roundRobin": 2,
-     "peak": 0.4059,
-     "seconds": 4.0
-    },
-    {
-     "file": "ride/ride_v02_r3.wav",
-     "layer": 2,
-     "roundRobin": 3,
-     "peak": 0.4473,
-     "seconds": 4.0
+     "peak": 0.4073,
+     "seconds": 6.0
     },
     {
      "file": "ride/ride_v03_r1.wav",
      "layer": 3,
      "roundRobin": 1,
      "peak": 0.891,
-     "seconds": 4.0
+     "seconds": 6.0
     },
     {
      "file": "ride/ride_v03_r2.wav",
      "layer": 3,
      "roundRobin": 2,
      "peak": 0.8542,
-     "seconds": 4.0
-    },
-    {
-     "file": "ride/ride_v03_r3.wav",
-     "layer": 3,
-     "roundRobin": 3,
-     "peak": 0.7586,
-     "seconds": 4.0
+     "seconds": 5.655
     }
    ]
   },
   "rideBell": {
    "mapping": "ride_bell",
    "mics": {
-    "oh": 1.0
+    "oh": 1.0,
+    "mid": 0.7,
+    "room": 0.5
    },
    "samples": [
     {
      "file": "rideBell/rideBell_v01_r1.wav",
      "layer": 1,
      "roundRobin": 1,
-     "peak": 0.1133,
-     "seconds": 4.0
+     "peak": 0.1142,
+     "seconds": 5.0
     },
     {
      "file": "rideBell/rideBell_v01_r2.wav",
      "layer": 1,
      "roundRobin": 2,
-     "peak": 0.1151,
-     "seconds": 4.0
-    },
-    {
-     "file": "rideBell/rideBell_v01_r3.wav",
-     "layer": 1,
-     "roundRobin": 3,
-     "peak": 0.0934,
-     "seconds": 4.0
+     "peak": 0.1153,
+     "seconds": 4.669
     },
     {
      "file": "rideBell/rideBell_v02_r1.wav",
      "layer": 2,
      "roundRobin": 1,
-     "peak": 0.457,
-     "seconds": 4.0
+     "peak": 0.5292,
+     "seconds": 5.0
     },
     {
      "file": "rideBell/rideBell_v02_r2.wav",
      "layer": 2,
      "roundRobin": 2,
-     "peak": 0.5227,
-     "seconds": 4.0
-    },
-    {
-     "file": "rideBell/rideBell_v02_r3.wav",
-     "layer": 2,
-     "roundRobin": 3,
-     "peak": 0.5474,
-     "seconds": 4.0
+     "peak": 0.5252,
+     "seconds": 5.0
     },
     {
      "file": "rideBell/rideBell_v03_r1.wav",
      "layer": 3,
      "roundRobin": 1,
-     "peak": 0.7905,
-     "seconds": 4.0
+     "peak": 0.7938,
+     "seconds": 5.0
     },
     {
      "file": "rideBell/rideBell_v03_r2.wav",
      "layer": 3,
      "roundRobin": 2,
-     "peak": 0.8882,
-     "seconds": 4.0
+     "peak": 0.891,
+     "seconds": 5.0
+    }
+   ]
+  },
+  "flatRide": {
+   "mapping": "flatride_ride",
+   "mics": {
+    "oh": 1.0,
+    "mid": 0.7,
+    "room": 0.5
+   },
+   "samples": [
+    {
+     "file": "flatRide/flatRide_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.2754,
+     "seconds": 6.0
     },
     {
-     "file": "rideBell/rideBell_v03_r3.wav",
+     "file": "flatRide/flatRide_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "peak": 0.1818,
+     "seconds": 6.0
+    },
+    {
+     "file": "flatRide/flatRide_v02_r1.wav",
+     "layer": 2,
+     "roundRobin": 1,
+     "peak": 0.4931,
+     "seconds": 6.0
+    },
+    {
+     "file": "flatRide/flatRide_v02_r2.wav",
+     "layer": 2,
+     "roundRobin": 2,
+     "peak": 0.4074,
+     "seconds": 6.0
+    },
+    {
+     "file": "flatRide/flatRide_v03_r1.wav",
      "layer": 3,
-     "roundRobin": 3,
+     "roundRobin": 1,
      "peak": 0.891,
-     "seconds": 4.0
+     "seconds": 6.0
+    },
+    {
+     "file": "flatRide/flatRide_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "peak": 0.645,
+     "seconds": 6.0
     }
    ]
   },
   "crash": {
    "mapping": "crash_crash",
    "mics": {
-    "oh": 1.0
+    "oh": 1.0,
+    "mid": 0.7,
+    "room": 0.5
    },
    "samples": [
     {
      "file": "crash/crash_v01_r1.wav",
      "layer": 1,
      "roundRobin": 1,
-     "peak": 0.1883,
-     "seconds": 5.0
+     "peak": 0.2224,
+     "seconds": 7.0
     },
     {
      "file": "crash/crash_v01_r2.wav",
      "layer": 1,
      "roundRobin": 2,
-     "peak": 0.1935,
-     "seconds": 5.0
-    },
-    {
-     "file": "crash/crash_v01_r3.wav",
-     "layer": 1,
-     "roundRobin": 3,
-     "peak": 0.2022,
-     "seconds": 5.0
+     "peak": 0.2519,
+     "seconds": 7.0
     },
     {
      "file": "crash/crash_v02_r1.wav",
      "layer": 2,
      "roundRobin": 1,
-     "peak": 0.3717,
-     "seconds": 5.0
+     "peak": 0.4438,
+     "seconds": 7.0
     },
     {
      "file": "crash/crash_v02_r2.wav",
      "layer": 2,
      "roundRobin": 2,
-     "peak": 0.3347,
-     "seconds": 5.0
-    },
-    {
-     "file": "crash/crash_v02_r3.wav",
-     "layer": 2,
-     "roundRobin": 3,
-     "peak": 0.3483,
-     "seconds": 5.0
+     "peak": 0.3382,
+     "seconds": 7.0
     },
     {
      "file": "crash/crash_v03_r1.wav",
      "layer": 3,
      "roundRobin": 1,
      "peak": 0.891,
-     "seconds": 5.0
+     "seconds": 7.0
     },
     {
      "file": "crash/crash_v03_r2.wav",
      "layer": 3,
      "roundRobin": 2,
-     "peak": 0.7018,
-     "seconds": 5.0
+     "peak": 0.8601,
+     "seconds": 7.0
+    }
+   ]
+  },
+  "crashSizzle": {
+   "mapping": "crash_sizzle",
+   "mics": {
+    "oh": 1.0,
+    "mid": 0.7,
+    "room": 0.5
+   },
+   "samples": [
+    {
+     "file": "crashSizzle/crashSizzle_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "peak": 0.2127,
+     "seconds": 7.0
     },
     {
-     "file": "crash/crash_v03_r3.wav",
+     "file": "crashSizzle/crashSizzle_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "peak": 0.2224,
+     "seconds": 7.0
+    },
+    {
+     "file": "crashSizzle/crashSizzle_v02_r1.wav",
+     "layer": 2,
+     "roundRobin": 1,
+     "peak": 0.2951,
+     "seconds": 7.0
+    },
+    {
+     "file": "crashSizzle/crashSizzle_v02_r2.wav",
+     "layer": 2,
+     "roundRobin": 2,
+     "peak": 0.292,
+     "seconds": 7.0
+    },
+    {
+     "file": "crashSizzle/crashSizzle_v03_r1.wav",
      "layer": 3,
-     "roundRobin": 3,
-     "peak": 0.7954,
-     "seconds": 5.0
+     "roundRobin": 1,
+     "peak": 0.891,
+     "seconds": 7.0
+    },
+    {
+     "file": "crashSizzle/crashSizzle_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "peak": 0.6897,
+     "seconds": 7.0
     }
    ]
   },
   "highTom": {
    "mapping": "htom_center",
    "mics": {
-    "oh": 1.0,
-    "snaremic": 0.5
+    "oh": 0.9,
+    "mid": 0.8,
+    "room": 0.5
    },
    "samples": [
     {
      "file": "highTom/highTom_v01_r1.wav",
      "layer": 1,
      "roundRobin": 1,
-     "peak": 0.0247,
-     "seconds": 1.95
+     "peak": 0.0238,
+     "seconds": 2.032
+    },
+    {
+     "file": "highTom/highTom_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "peak": 0.0684,
+     "seconds": 2.206
     },
     {
      "file": "highTom/highTom_v05_r1.wav",
      "layer": 5,
      "roundRobin": 1,
-     "peak": 0.1591,
-     "seconds": 1.843
+     "peak": 0.1608,
+     "seconds": 1.952
     },
     {
-     "file": "highTom/highTom_v09_r1.wav",
-     "layer": 9,
+     "file": "highTom/highTom_v07_r1.wav",
+     "layer": 7,
      "roundRobin": 1,
-     "peak": 0.3894,
-     "seconds": 1.374
+     "peak": 0.2342,
+     "seconds": 2.137
+    },
+    {
+     "file": "highTom/highTom_v10_r1.wav",
+     "layer": 10,
+     "roundRobin": 1,
+     "peak": 0.3603,
+     "seconds": 1.842
     },
     {
      "file": "highTom/highTom_v12_r1.wav",
      "layer": 12,
      "roundRobin": 1,
-     "peak": 0.5283,
-     "seconds": 1.309
+     "peak": 0.4979,
+     "seconds": 1.629
+    },
+    {
+     "file": "highTom/highTom_v14_r1.wav",
+     "layer": 14,
+     "roundRobin": 1,
+     "peak": 0.6948,
+     "seconds": 1.823
     },
     {
      "file": "highTom/highTom_v16_r1.wav",
      "layer": 16,
      "roundRobin": 1,
      "peak": 0.891,
-     "seconds": 1.227
+     "seconds": 1.87
     }
    ]
   },
   "lowTom": {
    "mapping": "ltom_center",
    "mics": {
-    "oh": 1.0,
-    "snaremic": 0.5
+    "oh": 0.9,
+    "mid": 0.8,
+    "room": 0.5
    },
    "samples": [
     {
      "file": "lowTom/lowTom_v01_r1.wav",
      "layer": 1,
      "roundRobin": 1,
-     "peak": 0.0169,
-     "seconds": 3.0
+     "peak": 0.0237,
+     "seconds": 3.093
+    },
+    {
+     "file": "lowTom/lowTom_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "peak": 0.0642,
+     "seconds": 2.895
     },
     {
      "file": "lowTom/lowTom_v05_r1.wav",
      "layer": 5,
      "roundRobin": 1,
-     "peak": 0.0954,
-     "seconds": 3.0
+     "peak": 0.1377,
+     "seconds": 3.442
     },
     {
-     "file": "lowTom/lowTom_v09_r1.wav",
-     "layer": 9,
+     "file": "lowTom/lowTom_v07_r1.wav",
+     "layer": 7,
      "roundRobin": 1,
-     "peak": 0.3166,
-     "seconds": 3.0
+     "peak": 0.273,
+     "seconds": 4.022
+    },
+    {
+     "file": "lowTom/lowTom_v10_r1.wav",
+     "layer": 10,
+     "roundRobin": 1,
+     "peak": 0.4418,
+     "seconds": 3.7
     },
     {
      "file": "lowTom/lowTom_v12_r1.wav",
      "layer": 12,
      "roundRobin": 1,
-     "peak": 0.4878,
-     "seconds": 3.0
+     "peak": 0.4947,
+     "seconds": 4.5
+    },
+    {
+     "file": "lowTom/lowTom_v14_r1.wav",
+     "layer": 14,
+     "roundRobin": 1,
+     "peak": 0.8586,
+     "seconds": 4.5
     },
     {
      "file": "lowTom/lowTom_v16_r1.wav",
      "layer": 16,
      "roundRobin": 1,
      "peak": 0.891,
-     "seconds": 2.437
+     "seconds": 3.867
     }
    ]
   }
