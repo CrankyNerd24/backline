@@ -116,7 +116,7 @@ nonisolated enum PhraseInterpreter {
            let kind = words.first(where: { AssistantApplier.kind(in: $0) != nil }), !has(c, ["fill", "swing"]) {
             var after: String?
             if let at = words.firstIndex(of: "after"), at + 1 < words.count {
-                after = target(in: words[(at + 1)...].joined(separator: " "), sectionNames: sectionNames)
+                after = Self.target(in: words[(at + 1)...].joined(separator: " "), sectionNames: sectionNames)
             }
             let bars = has(c, ["bar", "bars"]) ? number(in: c).map(Double.init) : nil
             return [AssistantStep(.addSection, target: after, amount: bars, value: kind)]
