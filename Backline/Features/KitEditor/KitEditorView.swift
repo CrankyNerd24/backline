@@ -29,18 +29,24 @@ struct KitEditorView: View {
                 pieceList
                     .frame(width: 230)
                 Theme.line.frame(width: 1)
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
+                // The knobs stay put below the scrolling list of sounds:
+                // dragging on a knob turns it, so they can't be what scrolls.
+                VStack(spacing: 0) {
+                    ScrollView {
                         startingSounds
-                        shapeIt
+                            .padding(24)
                     }
-                    .padding(24)
+                    Theme.line.frame(height: 1)
+                    shapeIt
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 Theme.line.frame(width: 1)
                 rightPanel
                     .frame(width: 300)
             }
-            Text("Every sound is generated inside the app — anything you export is yours to use, no credit needed.")
+            Text("Every sound is synthesized in the app or recorded and released into the public domain — anything you export is yours to use, no credit needed.")
                 .font(Theme.body(13, weight: .medium))
                 .foregroundStyle(Theme.textMuted)
                 .frame(maxWidth: .infinity, minHeight: 40)
@@ -168,7 +174,7 @@ struct KitEditorView: View {
             Text(piece.displayName)
                 .font(Theme.condensed(36, weight: .bold))
             Eyebrow("Starting sound")
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                 ForEach(models) { model in
                     let selected = model.id == voice.model
                     Button {
@@ -176,14 +182,17 @@ struct KitEditorView: View {
                         engine.audition(piece, velocity: strength)
                     } label: {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(model.name).font(Theme.condensed(22, weight: .bold))
+                            Text(model.name)
+                                .font(Theme.condensed(20, weight: .bold))
+                                .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
                             Text(model.description)
                                 .font(Theme.body(13))
                                 .foregroundStyle(Theme.textMuted)
                                 .lineLimit(2)
                                 .multilineTextAlignment(.leading)
                         }
-                        .padding(14)
+                        .padding(12)
                         .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
                         .background(Theme.panel, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
                         .overlay(

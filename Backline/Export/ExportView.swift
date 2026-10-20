@@ -40,7 +40,7 @@ struct ExportView: View {
             notes
             Spacer(minLength: 0)
             action
-            Text("Every sound is generated inside the app — anything you export is yours to use, no credit needed.")
+            Text("Every sound is synthesized in the app or recorded and released into the public domain — anything you export is yours to use, no credit needed.")
                 .font(Theme.body(13))
                 .foregroundStyle(Theme.textMuted)
         }
