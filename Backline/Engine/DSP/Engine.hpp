@@ -5,6 +5,7 @@
 
 #include "Effects.hpp"
 #include "SPSCQueue.hpp"
+#include "Samples.hpp"
 #include "Timeline.hpp"
 #include "Voices.hpp"
 #include "backline_engine.h"
@@ -129,6 +130,7 @@ private:
     TomVoice toms_[3]; // high, low, floor
     ClickVoice click_;
     AttackShaper attack_[BL_PIECE_COUNT];
+    SampleVoice sampled_[BL_PIECE_COUNT]; // recorded sounds, per piece
     Reverb reverb_;
     Compressor compressor_;
     bool reverbOn_ = false;

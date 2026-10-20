@@ -50,8 +50,21 @@ struct TomModel {
 
 enum class Family : uint8_t { Kick, Snare, Hat, Cymbal, Tom };
 
+// A recorded starting sound: which sounds of the sample bank it plays.
+struct RecordedModel {
+    uint8_t sound;    // BL_SOUND_*
+    uint8_t altSound; // the open hat for hats; the ride's bell (Bell control) for the ride
+    float tune;       // semitones on top of the Tune control
+    uint8_t fallback; // the synthesized model of the family that stands in without the bank
+    float level;      // brings the recording up to the synthesized sounds' loudness
+};
+
 Family familyOf(int piece);
 uint8_t modelCount(int piece);
+// The recorded model at this index, or nullptr for a synthesized one.
+const RecordedModel *recordedModel(int piece, uint8_t model);
+// The synthesized model to configure: the model itself, or a recorded one's stand-in.
+uint8_t synthModel(int piece, uint8_t model);
 const KickModel &kickModel(uint8_t index);
 const SnareModel &snareModel(uint8_t index);
 const HatModel &hatModel(uint8_t index);

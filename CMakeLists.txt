@@ -11,7 +11,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(DSP_DIR ${CMAKE_SOURCE_DIR}/Backline/Engine/DSP)
-add_library(backline_dsp STATIC ${DSP_DIR}/Engine.cpp ${DSP_DIR}/Effects.cpp ${DSP_DIR}/Export.cpp ${DSP_DIR}/KitModels.cpp ${DSP_DIR}/Timeline.cpp
+add_library(backline_dsp STATIC ${DSP_DIR}/Engine.cpp ${DSP_DIR}/Effects.cpp ${DSP_DIR}/Export.cpp ${DSP_DIR}/KitModels.cpp ${DSP_DIR}/Samples.cpp ${DSP_DIR}/Timeline.cpp
             ${DSP_DIR}/Voices.cpp)
 target_include_directories(backline_dsp PUBLIC ${DSP_DIR})
 target_compile_options(backline_dsp PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -23,6 +23,7 @@ target_compile_options(backline_pedal PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
 add_executable(engine_tests Tests/DSP/EngineTests.cpp)
 target_link_libraries(engine_tests backline_dsp)
+target_compile_definitions(engine_tests PRIVATE BACKLINE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
 add_executable(backline-render tools/RenderWav.cpp)
 target_link_libraries(backline-render backline_dsp)
@@ -33,3 +34,6 @@ target_link_libraries(pedal_tests backline_pedal)
 enable_testing()
 add_test(NAME engine_tests COMMAND engine_tests)
 add_test(NAME pedal_tests COMMAND pedal_tests)
+
+add_executable(backline-kit-demo tools/KitDemo.cpp)
+target_link_libraries(backline-kit-demo backline_dsp)

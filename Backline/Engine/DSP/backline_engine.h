@@ -87,6 +87,51 @@ uint8_t bl_kit_builtin_count(void);
 const char *bl_kit_builtin_name(uint8_t index);
 void bl_kit_builtin(uint8_t index, BLKit *out);
 
+// MARK: Recorded sounds
+//
+// Besides the synthesized starting sounds, every piece has recorded ones,
+// played from a sample bank the app loads at launch: several hit strengths
+// ("layers") per articulation, each with a few alternate takes ("round
+// robins"). A recorded model plays its synthesized stand-in until the bank is
+// installed, or if the bank lacks its articulation.
+
+enum {
+    BL_SOUND_KICK = 0,
+    BL_SOUND_SNARE,
+    BL_SOUND_SNARE_RIM,
+    BL_SOUND_CROSS_STICK,
+    BL_SOUND_HH_CLOSED,
+    BL_SOUND_HH_OPEN,
+    BL_SOUND_RIDE,
+    BL_SOUND_RIDE_BELL,
+    BL_SOUND_CRASH,
+    BL_SOUND_HIGH_TOM,
+    BL_SOUND_LOW_TOM,
+    BL_SOUND_COUNT
+};
+
+typedef struct BLSampleBank BLSampleBank;
+
+// The articulation for a folder name in the bundled kit ("kick", "hhOpen"…),
+// or -1.
+int32_t bl_sound_index(const char *name);
+
+// Control thread. Build a bank, add samples, then install it.
+BLSampleBank *bl_sample_bank_create(void);
+// 16-bit PCM, mono or interleaved stereo, at any rate (it plays at its own
+// rate). `layer` orders hit strengths within the articulation (any numbers,
+// higher = harder); takes with the same layer are round robins. Returns false
+// for a bad argument.
+bool bl_sample_bank_add_pcm(BLSampleBank *bank, uint8_t sound, uint32_t layer, const int16_t *frames,
+                            uint32_t frameCount, uint8_t channels, uint32_t sampleRate);
+// The same, from a 16-bit PCM WAV file. Returns false if it can't be read.
+bool bl_sample_bank_add_wav(BLSampleBank *bank, uint8_t sound, uint32_t layer, const char *path);
+uint32_t bl_sample_bank_count(const BLSampleBank *bank, uint8_t sound);
+// Makes the bank the one every engine plays from (export engines too). The
+// bank is never freed and must not be changed afterwards; installing another
+// replaces it for hits that start later. NULL removes it (tests).
+void bl_samples_install(BLSampleBank *bank);
+
 // MARK: Timeline
 //
 // A timeline is the whole song flattened into bars of hits, with the feel
