@@ -9,6 +9,7 @@ struct SectionSettings: View {
     let sectionID: UUID
     @Binding var selectedID: UUID?
     @State private var confirmingDelete = false
+    @State private var confirmingDeleteAll = false
     @State private var choosingGroove = false
     @State private var editingPattern = false
 
@@ -26,6 +27,12 @@ struct SectionSettings: View {
             .confirmationDialog("Delete “\(section.wrappedValue.name)”?", isPresented: $confirmingDelete,
                                 titleVisibility: .visible) {
                 Button("Delete Section", role: .destructive) { delete() }
+            }
+            .confirmationDialog("Delete all \(store.song.sections.count) sections?", isPresented: $confirmingDeleteAll,
+                                titleVisibility: .visible) {
+                Button("Delete All Sections", role: .destructive) { deleteAll() }
+            } message: {
+                Text("Every section of “\(store.song.name)” goes, leaving an empty song to start again.")
             }
             .fullScreenCover(isPresented: $choosingGroove) {
                 GroovePickerView(section: section.wrappedValue)
@@ -92,6 +99,11 @@ struct SectionSettings: View {
                 .buttonStyle(ChipButtonStyle())
             Button(role: .destructive) { confirmingDelete = true } label: { Label("Delete", systemImage: "trash") }
                 .buttonStyle(ChipButtonStyle())
+            Button(role: .destructive) { confirmingDeleteAll = true } label: {
+                Label("Delete All", systemImage: "trash.slash")
+            }
+            .buttonStyle(ChipButtonStyle())
+            .accessibilityLabel("Delete all sections")
         }
     }
 
@@ -244,6 +256,12 @@ struct SectionSettings: View {
         let copy = section.duplicated(named: store.song.nextName(for: section.kind))
         store.song.sections.insert(copy, at: index + 1)
         selectedID = copy.id
+    }
+
+    private func deleteAll() {
+        engine.stop()
+        store.song.sections.removeAll()
+        selectedID = nil
     }
 
     private func delete() {
