@@ -35,6 +35,9 @@ final class Tutorial {
     }
 
     private(set) var index: Int?
+    /// Counts finishes (and skips), so open screens know to close and
+    /// playback stops: the tour always ends back on the song.
+    private(set) var endings = 0
     var isActive: Bool { index != nil }
     var step: Step? { index.map { steps[$0] } }
     var position: (Int, Int)? { index.map { ($0 + 1, steps.count) } }
@@ -68,8 +71,12 @@ final class Tutorial {
 
     func finish() {
         index = nil
+        endings += 1
         UserDefaults.standard.set(true, forKey: Self.seenKey)
     }
+
+    /// The last step: playback stops and the tour's screens close for it.
+    var isAtEnd: Bool { step?.id == "done" }
 
     /// Something happened on a screen. Moves on if the current step was
     /// waiting for it. Data events only count from the step's own screen,
@@ -176,8 +183,8 @@ final class Tutorial {
         Step(id: "export", chapter: "Kits & export", screen: .builder, anchor: "export",
              title: "Take it with you",
              text: "Export makes a WAV of the whole song to share or put in your recording app. It's yours to use anywhere, no credit needed."),
-        Step(id: "done", chapter: "Done", screen: .builder, anchor: nil,
-             title: "You're ready",
-             text: "Build a song, shape it in plain words, and play along. Replay this tour from the song menu › Take the Tour."),
+        Step(id: "done", chapter: "Tour complete", screen: .builder, anchor: "songMenu",
+             title: "You've finished the tour",
+             text: "That's everything you need: build a song, shape it in plain words, and play along. The tour is always here if you want it again: tap your song's name, up here, and choose Take the Tour."),
     ]
 }

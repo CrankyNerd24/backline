@@ -12,7 +12,7 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 - **Play along:** the play-along screen, queued actions, foot pedals, and voice.
 - **Kits & export:** the Kit Editor and Export.
 
-Each step dims the screen around one control and explains it. Hands-on steps wait until you've actually done the thing ("Press Play", "Drag any slider", "Tap a groove"); you can also skip a step, go back, or skip the whole tour. **Take the Tour** in the song menu replays it. Controls opt in with `.tutorialAnchor("id")`, and each screen hosts the steps that belong to it with `.tutorialHost(.screen)`.
+Each step dims the screen around one control and explains it. Hands-on steps wait until you've actually done the thing ("Press Play", "Drag any slider", "Tap a groove"); you can also skip a step, go back, or skip the whole tour. The tour always ends on the song screen: it stops playback and closes any screen it opened (it also closes them if you skip or step past them), then shows a **Tour complete** note that points at the song menu, where **Take the Tour** replays it. Controls opt in with `.tutorialAnchor("id")`, and each screen hosts the steps that belong to it with `.tutorialHost(.screen)`.
 
 **Tell Backline** (for players who aren't drummers): a bar under the header, and a big mic in Play-along, takes requests in plain words. Type, or hold the mic and speak.
 - **Feel and sound:** "more swing", "make the chorus hit harder", "simpler verses", "tighter", "punchier", "bigger room", "darker cymbals", "louder kick", "half time in the bridge", "put the solo on the ride", "big fill into the chorus", "use the metal kit".

@@ -32,6 +32,7 @@ struct SongHeader: View {
             .accessibilityHidden(true)
 
             songMenu
+                .tutorialAnchor("songMenu")
             Spacer(minLength: 12)
             tempo
             Text(store.song.timeSignatureLabel)

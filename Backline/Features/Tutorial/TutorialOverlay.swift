@@ -29,6 +29,7 @@ private struct TutorialHost: ViewModifier {
     @Environment(EngineController.self) private var engine
     @Environment(SongStore.self) private var store
     @Environment(Assistant.self) private var assistant
+    @Environment(\.dismiss) private var dismiss
 
     func body(content: Content) -> some View {
         content
@@ -47,6 +48,16 @@ private struct TutorialHost: ViewModifier {
             .onChange(of: store.song) { tutorial.notice(.songEdited, from: screen) }
             .onChange(of: engine.previewingGrooveID) { _, id in if id != nil { tutorial.notice(.previewing, from: screen) } }
             .onChange(of: assistant.reply) { _, reply in if reply != nil { tutorial.notice(.assistantReplied, from: screen) } }
+            // A screen the tour opened closes itself when the tour moves to a
+            // step on the song screen (Next, Back or a skipped step), and when
+            // the tour ends. Reaching the end, or ending, stops playback.
+            .onChange(of: tutorial.step?.id) {
+                if tutorial.isAtEnd { engine.stop() }
+                if screen != .builder, let step = tutorial.step, step.screen != screen { dismiss() }
+            }
+            .onChange(of: tutorial.endings) {
+                if screen == .builder { engine.stop() } else { dismiss() }
+            }
     }
 }
 
@@ -113,9 +124,17 @@ private struct TutorialOverlay: View {
                         .foregroundStyle(Theme.textMuted)
                 }
             }
-            Text(step.title)
-                .font(Theme.condensed(26, weight: .bold))
-                .accessibilityAddTraits(.isHeader)
+            HStack(spacing: 10) {
+                if step.id == "done" {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundStyle(Theme.ok)
+                        .accessibilityHidden(true)
+                }
+                Text(step.title)
+                    .font(Theme.condensed(26, weight: .bold))
+                    .accessibilityAddTraits(.isHeader)
+            }
             Text(step.text)
                 .font(Theme.body(15))
                 .foregroundStyle(Theme.text)
@@ -152,7 +171,7 @@ private struct TutorialOverlay: View {
     private var primaryTitle: String {
         switch step.id {
         case "welcome": "Start the tour"
-        case "done": "Done"
+        case "done": "Finish"
         default: step.wait == .next ? "Next" : "Skip this step"
         }
     }
