@@ -12,8 +12,11 @@ struct TutorialAnchors: PreferenceKey {
 
 extension View {
     /// Names this view so a tour step can highlight it.
+    /// Names this view so a tour step can highlight it, and so a scroll view
+    /// holding it can bring it into view first (`tutorialScrollID(_:)`).
     func tutorialAnchor(_ id: String) -> some View {
-        anchorPreference(key: TutorialAnchors.self, value: .bounds) { [id: $0] }
+        self.id(tutorialScrollID(id))
+            .anchorPreference(key: TutorialAnchors.self, value: .bounds) { [id: $0] }
     }
 
     /// Hosts the tour on a screen: shows the steps that belong here and
@@ -22,6 +25,8 @@ extension View {
         modifier(TutorialHost(screen: screen))
     }
 }
+
+func tutorialScrollID(_ anchor: String) -> String { "tutorial.\(anchor)" }
 
 private struct TutorialHost: ViewModifier {
     let screen: Tutorial.Screen
@@ -77,7 +82,15 @@ private struct TutorialOverlay: View {
     private static let gap: CGFloat = 16
 
     var body: some View {
-        let hole = rect?.insetBy(dx: -8, dy: -8)
+        // A control mostly off screen (on a small iPad, still scrolling into
+        // view) gets a centred note rather than a ring nobody can see.
+        let bounds = CGRect(origin: .zero, size: size)
+        let visible = rect.map { $0.intersection(bounds) }
+        let onScreen = rect.map { r in
+            guard let visible, !visible.isNull, r.width * r.height > 0 else { return false }
+            return visible.width * visible.height >= 0.6 * r.width * r.height
+        } ?? false
+        let hole = onScreen ? rect?.insetBy(dx: -8, dy: -8) : nil
         ZStack(alignment: .topLeading) {
             Path { path in
                 path.addRect(CGRect(origin: .zero, size: size))

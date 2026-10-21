@@ -32,17 +32,27 @@ struct SongBuilderView: View {
                 .padding(.vertical, 12)
                 .background(Theme.bgDeep)
                 .overlay(alignment: .bottom) { Theme.line.frame(height: 1) }
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    SongRow(selectedID: $selectedID, selection: selection)
-                        .tutorialAnchor("songRow")
-                    if let selection {
-                        SectionSettings(sectionID: selection, selectedID: $selectedID)
-                    } else {
-                        emptyState
+            ScrollViewReader { scroller in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        SongRow(selectedID: $selectedID, selection: selection)
+                            .tutorialAnchor("songRow")
+                        if let selection {
+                            SectionSettings(sectionID: selection, selectedID: $selectedID)
+                        } else {
+                            emptyState
+                        }
+                    }
+                    .padding(24)
+                }
+                // On a small iPad the tour's next control may be below the
+                // fold: bring it into view before pointing at it.
+                .onChange(of: tutorial.step?.id) {
+                    guard let step = tutorial.step, step.screen == .builder, let anchor = step.anchor else { return }
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        scroller.scrollTo(tutorialScrollID(anchor), anchor: .center)
                     }
                 }
-                .padding(24)
             }
             TransportBar(selection: selection)
         }
