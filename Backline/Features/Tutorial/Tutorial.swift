@@ -178,6 +178,6 @@ final class Tutorial {
              text: "Export makes a WAV of the whole song to share or put in your recording app. It's yours to use anywhere, no credit needed."),
         Step(id: "done", chapter: "Done", screen: .builder, anchor: nil,
              title: "You're ready",
-             text: "Build a song, shape it in plain words, and play along. Replay this tour from the song menu › How Backline Works."),
+             text: "Build a song, shape it in plain words, and play along. Replay this tour from the song menu › Take the Tour."),
     ]
 }
