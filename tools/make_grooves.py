@@ -14,12 +14,12 @@ two beats of three eighths); 12/8 is 12 eighths (four beats of three).
 Fills keep the start of the main bar and swap the end for one of the runs
 below (the second half in 4/4 and 12/8, beats 2-3 in 3/4, beat 2 in 6/8).
 
-Every groove is written from scratch for Backline. Don't name grooves after
+Every groove is written from scratch for HouseKit. Don't name grooves after
 songs or famous drummers (spec §10).
 """
 import json, os, re, sys
 
-OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "Backline", "Library", "Grooves")
+OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "HouseKit", "Library", "Grooves")
 
 RUNS16 = {  # steps 8-15
     "snareToms": {"snare": "2222....", "highTom": "....32..", "lowTom": "......3.", "floorTom": ".......3", "kick": "3......."},

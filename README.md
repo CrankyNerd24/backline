@@ -1,6 +1,6 @@
-# Backline
+# HouseKit
 
-An easy drum-track creator for iPad, for guitarists and other non-drummers. Build a song from sections, pick a groove for each one in plain language, shape the feel, and play along, with foot-pedal control built in. Every sound is synthesized in the app, so anything you export is yours to use.
+An easy drum-track creator for iPad, for guitarists and other non-drummers. Build a song from sections, pick a groove for each one in plain language, shape the feel, and play along, with foot-pedal control built in. Every sound is either a public-domain (CC0) recording or synthesized in the app, so anything you export is yours to use.
 
 The full product spec is in [`docs/spec.md`](docs/spec.md).
 
@@ -8,13 +8,13 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 
 **Guided tour** (`Features/Tutorial/`): the first launch runs a 23-step walkthrough on the real screens, in place of the old three-card welcome. It covers four chapters:
 - **Your first song:** the song row, Play, the feel sliders, changing a groove in the Groove Picker, Stop, and adding sections.
-- **Tell Backline:** typing or tapping a suggestion, the reply and Undo, and the mic.
+- **Tell HouseKit:** typing or tapping a suggestion, the reply and Undo, and the mic.
 - **Play along:** the play-along screen, queued actions, foot pedals, and voice.
 - **Kits & export:** the Kit Editor and Export.
 
 Each step dims the screen around one control and explains it. Hands-on steps wait until you've actually done the thing ("Press Play", "Drag any slider", "Tap a groove"); you can also skip a step, go back, or skip the whole tour. The tour always ends on the song screen: it stops playback and closes any screen it opened (it also closes them if you skip or step past them), then shows a **Tour complete** note that points at the song menu, where **Take the Tour** replays it. Controls opt in with `.tutorialAnchor("id")`, and each screen hosts the steps that belong to it with `.tutorialHost(.screen)`.
 
-**Tell Backline** (for players who aren't drummers): a bar under the header, and a big mic in Play-along, takes requests in plain words. Type, or hold the mic and speak.
+**Tell HouseKit** (for players who aren't drummers): a bar under the header, and a big mic in Play-along, takes requests in plain words. Type, or hold the mic and speak.
 - **Feel and sound:** "more swing", "make the chorus hit harder", "simpler verses", "tighter", "punchier", "bigger room", "darker cymbals", "louder kick", "half time in the bridge", "put the solo on the ride", "big fill into the chorus", "use the metal kit".
 - **Tempo and grooves:** "faster", "slow it down a bit", "90 BPM", "make it funky", "a shuffle", "different groove".
 - **Structure:** "add a bridge after the second chorus", "remove the solo", "make the verses 16 bars", "count in two bars", "repeat the solo until I step".
@@ -24,7 +24,7 @@ Each step dims the screen around one control and explains it. Hands-on steps wai
 - **Voice:** hold to talk, using Apple's on-device speech recognition. The words appear as you speak, and the drums duck while the mic is held. The first use switches the audio session to play-and-record, which stops playback once. Headphones help.
 
 **Recorded kit:** every built-in kit now plays real recordings by default. They come from [Virtuosity Drums](https://github.com/sfzinstruments/virtuosity_drums), a club jazz kit by Versilian Studios released under CC0, so exports remain the player's own with no credit needed.
-- 98 takes across 13 articulations: kick, snare, rimshot, cross-stick, closed and open hats, ride, ride bell, flat ride, crash, sizzle crash, and high and low tom. Each has three to eight hit strengths and up to three alternate takes. Kick and snare are mixed from the close mics and overheads, hats from the overheads, and toms and cymbals from the overheads plus the mid and room mics. They're stored as 48 kHz 16-bit stereo, about 57 MB, in `Backline/Library/Samples/`.
+- 98 takes across 13 articulations: kick, snare, rimshot, cross-stick, closed and open hats, ride, ride bell, flat ride, crash, sizzle crash, and high and low tom. Each has three to eight hit strengths and up to three alternate takes. Kick and snare are mixed from the close mics and overheads, hats from the overheads, and toms and cymbals from the overheads plus the mid and room mics. They're stored as 48 kHz 16-bit stereo, about 57 MB, in `HouseKit/Library/Samples/`.
 - `python3 tools/fetch_samples.py` rebuilds them from the library: it downloads, picks layers, mixes, trims and writes the manifest.
 - The engine plays each hit from the layer nearest its strength, picks a take from the hit's seed (so playback and export match), and allows up to four overlapping hits per piece. A closed hat chokes an open one.
 - Kit Editor controls on recordings: Tune changes pitch, Decay below 50% shortens the ring, Tone tilts the top, and Character adds or removes low body. On the ride, Character past 75% switches to bell hits. Room, Punch, Volume and Attack work as before.
@@ -78,7 +78,7 @@ Start one from **New Song ▸ From a template** in the song menu, or from the ca
   Edits stay with the song until you save them as a kit.
 - Toms are now audible and ride and crash have their own voices, so fills sound complete.
 
-`./build/backline-render demo.wav 112 1` renders the demo song on any built-in kit (0–5).
+`./build/housekit-render demo.wav 112 1` renders the demo song on any built-in kit (0–5).
 
 **Milestone 7**: **Edit pattern** opens the Pattern Editor (spec §6.4):
 - **Grid:** nine rows (crash, ride, open hat, hi-hat, snare, three toms, kick), grouped with a little space between them, under a "1 e & a…" ruler. Tapping a step cycles off → normal → loud → soft (ghost) → off. The fill height shows the level (a third, two thirds, full), loud steps get a white outline, and alternate beats sit on a slightly different background. Every row has a speaker button to hear that drum.
@@ -137,13 +137,13 @@ Start one from **New Song ▸ From a template** in the song menu, or from the ca
 - **Big ending:** a song that ends with an outro finishes on a crash and kick, rings out and stops.
 - **Same every time:** randomness is seeded per section, so a song sounds identical on every play. A section also sounds the same wherever you move it.
 
-`./build/backline-render demo.wav` renders a short demo song that uses all of this.
+`./build/housekit-render demo.wav` renders a short demo song that uses all of this.
 
 **Milestone 2**
-- **Song model** (`Backline/Model/`): `Song`, `Section`, `Feel`, `Groove`, `Kit` and the rest of spec §3, all `Codable`.
+- **Song model** (`HouseKit/Model/`): `Song`, `Section`, `Feel`, `Groove`, `Kit` and the rest of spec §3, all `Codable`.
 - **Saving**: each song is a JSON file in Application Support/Songs. Edits save themselves shortly after you stop, and again when the app goes to the background. A first-time user gets a starter song: Intro, Verse, Chorus, Verse, Chorus, Outro in Rock.
-- **Groove library** (`Backline/Library/Grooves/`): a starter set of 29 grooves (61 since milestone 4). Each has a main bar and a fill. `python3 tools/check_grooves.py -v` validates them and prints each one as a grid.
-- **Song Builder** (`Backline/Features/SongBuilder/`), now the home screen:
+- **Groove library** (`HouseKit/Library/Grooves/`): a starter set of 29 grooves (61 since milestone 4). Each has a main bar and a fill. `python3 tools/check_grooves.py -v` validates them and prints each one as a grid.
+- **Song Builder** (`HouseKit/Features/SongBuilder/`), now the home screen:
   - Song row with blocks sized by bar count. Tap to select, drag to reorder, long-press to duplicate or delete, + to add.
   - Section settings: name, type, bar count, repeat-until-I-step, groove (chosen from a menu until the Groove Picker lands), the feel sliders, and time, cymbals and fill.
   - Transport: play from the selected section, stop, loop a section, position readout, count-in.
@@ -178,7 +178,7 @@ Still to check on an iPad: no dropouts with a 5 ms buffer, using Instruments.
 
 ## Building
 
-**App:** open `Backline.xcodeproj` in Xcode 26 and run on an iPad or the iPad simulator. Minimum iPadOS 17, landscape only.
+**App:** open `HouseKit.xcodeproj` in Xcode 26 and run on an iPad or the iPad simulator. Minimum iPadOS 17, landscape only.
 
 **Engine and pedal tests** (macOS or Linux, no Xcode needed):
 
@@ -191,20 +191,20 @@ ctest --test-dir build --output-on-failure   # or ./build/engine_tests and ./bui
 **Edit and check the groove library:**
 
 ```sh
-python3 tools/make_grooves.py      # regenerate Backline/Library/Grooves/*.json from the source
+python3 tools/make_grooves.py      # regenerate HouseKit/Library/Grooves/*.json from the source
 python3 tools/check_grooves.py -v  # validate, and print every groove as a grid
 ```
 
 **Hear the kit without an iPad:**
 
 ```sh
-./build/backline-render demo.wav 112 0   # file, BPM, kit (0–5) → 48 kHz / 24-bit WAV of a short demo song
+./build/housekit-render demo.wav 112 0   # file, BPM, kit (0–5) → 48 kHz / 24-bit WAV of a short demo song
 ```
 
 ## Layout
 
 ```
-Backline/            app sources (Xcode synchronized folder: new files are picked up automatically)
+HouseKit/            app sources (Xcode synchronized folder: new files are picked up automatically)
   App/               app entry point, design tokens
   Features/          one folder per screen (SongBuilder/, Shared/ components)
   Model/             Codable model types, SongStore (saving)

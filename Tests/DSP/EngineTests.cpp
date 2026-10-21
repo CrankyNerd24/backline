@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "TestPatterns.hpp"
-#include "backline_engine.h"
+#include "housekit_engine.h"
 
 // MARK: - Allocation tracking
 
@@ -1440,7 +1440,7 @@ static void testExportWithoutEnding() {
 }
 
 static void testWavWriter() {
-    const std::string path = "backline_wav_test.wav";
+    const std::string path = "housekit_wav_test.wav";
     BLWavWriter *w = bl_wav_open(path.c_str(), 48000);
     CHECK(w != nullptr, "couldn't open %s", path.c_str());
     if (!w) return;
@@ -1784,7 +1784,7 @@ static void testRecordedSounds() {
 // The bundled recordings load, if they're here (they are in the repository).
 static void testBundledSamples() {
     BLSampleBank *bank = bl_sample_bank_create();
-    const std::string dir = std::string(BACKLINE_SOURCE_DIR) + "/Backline/Library/Samples/snare/";
+    const std::string dir = std::string(HOUSEKIT_SOURCE_DIR) + "/HouseKit/Library/Samples/snare/";
     CHECK(bl_sample_bank_add_wav(bank, BL_SOUND_SNARE, 36, (dir + "snare_v36_r1.wav").c_str()), "couldn't read a bundled WAV");
     CHECK(!bl_sample_bank_add_wav(bank, BL_SOUND_SNARE, 1, (dir + "missing.wav").c_str()), "read a missing file");
     CHECK(bl_sample_bank_count(bank, BL_SOUND_SNARE) == 1, "count %u", bl_sample_bank_count(bank, BL_SOUND_SNARE));

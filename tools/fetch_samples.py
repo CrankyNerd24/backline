@@ -12,7 +12,7 @@ https://github.com/sfzinstruments/virtuosity_drums
 For each articulation it reads the library's SFZ mappings, picks a spread of
 velocity layers and up to three round robins, downloads the FLACs for the
 close mic and the overheads, mixes them to stereo, trims the tail and writes
-48 kHz 16-bit WAVs plus a manifest to Backline/Library/Samples/. Needs ffmpeg.
+48 kHz 16-bit WAVs plus a manifest to HouseKit/Library/Samples/. Needs ffmpeg.
 """
 import json
 import os
@@ -25,7 +25,7 @@ from array import array
 
 RAW = "https://raw.githubusercontent.com/sfzinstruments/virtuosity_drums/master"
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-OUT = os.path.join(ROOT, "Backline", "Library", "Samples")
+OUT = os.path.join(ROOT, "HouseKit", "Library", "Samples")
 RATE = 48000
 
 # Toms and cymbals take the mid-distance and room mics too: the overheads

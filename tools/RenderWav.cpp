@@ -3,7 +3,7 @@
 // small fill, a busier, harder chorus on the ride with a big fill (and a
 // crash after it), and a half-time outro with the big ending.
 //
-//   backline-render out.wav [bpm=112] [kit=0]
+//   housekit-render out.wav [bpm=112] [kit=0]
 //
 // Kits: 0 Garage Kit, 1 Studio Rock, 2 Vintage 60s, 3 Metal, 4 Jazz Brushes, 5 Lo-fi.
 //
@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "../Tests/DSP/TestPatterns.hpp"
-#include "backline_engine.h"
+#include "housekit_engine.h"
 
 int main(int argc, char **argv) {
     if (argc < 2) {
