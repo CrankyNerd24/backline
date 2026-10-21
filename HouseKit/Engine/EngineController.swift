@@ -183,14 +183,14 @@ final class EngineController {
     // MARK: Transport
 
     /// Plays from the start of a section (or the top of the song), after the
-    /// song's count-in.
-    func play(from sectionID: UUID? = nil) {
+    /// song's count-in unless `countIn` is false.
+    func play(from sectionID: UUID? = nil, countIn: Bool = true) {
         guard let core, let song, !song.sections.isEmpty else { return }
         stopPreview()
         startEngineIfNeeded()
         pushPendingChanges() // the engine must have the current timeline first
         let bar = sectionID.map { song.startBar(of: $0) } ?? 0
-        bl_engine_play_from(core, UInt32(bar), true)
+        bl_engine_play_from(core, UInt32(bar), countIn)
         isPlaying = true
         playRequestedAt = .now
     }
