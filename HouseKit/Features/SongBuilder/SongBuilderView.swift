@@ -9,6 +9,8 @@ struct SongBuilderView: View {
     @State private var selectedID: UUID?
     @State private var dismissedError: String?
     @Environment(Tutorial.self) private var tutorial
+    @Environment(KitLibrary.self) private var kits
+    @State private var building = false
 
     /// Something that went wrong saving or with audio, until it's dismissed.
     private var error: String? {
@@ -66,6 +68,21 @@ struct SongBuilderView: View {
         }
         .pedalConfirmations()
         .tutorialHost(.builder)
+        .fullScreenCover(isPresented: $building) {
+            // Fills the empty song in place, keeping its name.
+            BuildItView { built in
+                var song = store.song
+                song.sections = built.sections
+                song.bpm = built.bpm
+                song.countInBars = built.countInBars
+                song.kitID = built.kitID
+                song.kitOverride = nil
+                store.song = song
+                selectedID = song.sections.first?.id
+            }
+            .environment(library)
+            .environment(kits)
+        }
         .onAppear { tutorial.startIfFirstLaunch() }
         .onChange(of: store.song.id) {
             engine.stop()
@@ -80,9 +97,16 @@ struct SongBuilderView: View {
                 Text("No sections yet")
                     .font(Theme.condensed(28, weight: .bold))
                     .accessibilityAddTraits(.isHeader)
-                Text("Start from a template (it sets the tempo too), or tap + in the song row to add any section.")
+                Text("Let HouseKit arrange a whole song for you, start from a template, or tap + in the song row to add any section.")
                     .font(Theme.body(16))
                     .foregroundStyle(Theme.textMuted)
+                Button {
+                    building = true
+                } label: {
+                    Label("Build it for me", systemImage: "wand.and.stars")
+                }
+                .buttonStyle(ChipButtonStyle(prominent: true))
+                .padding(.top, 4)
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
                     ForEach(SongTemplate.all) { template in
                         TemplateCard(template: template) {

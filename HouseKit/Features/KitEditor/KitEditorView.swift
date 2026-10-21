@@ -22,6 +22,10 @@ struct KitEditorView: View {
     private var kit: Kit { store.song.kitOverride ?? base }
     private var voice: VoiceSettings { kit.voice(piece) }
 
+    /// Simple mode shows Tone, Room and Volume; advanced adds Tune, Attack,
+    /// Decay and the piece's character control.
+    @AppStorage("showAdvanced") private var showAdvanced = false
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -220,16 +224,20 @@ struct KitEditorView: View {
             // character and where it sits in the mix.
             LazyVGrid(columns: Array(repeating: GridItem(.fixed(96), spacing: 18), count: 4), alignment: .leading,
                       spacing: 16) {
-                Knob(title: "Tune", value: binding(\.tune), range: -12...12, defaultValue: 0,
-                     format: { $0 == 0 ? "0 st" : String(format: "%+.0f st", $0) }, hint: "Lower ↔ Higher", step: 1)
-                Knob(title: "Attack", value: binding(\.attack), range: 0...1, defaultValue: 0.5,
-                     format: percent, hint: "Softer ↔ Snappier")
-                Knob(title: "Decay", value: binding(\.decay), range: 0...1, defaultValue: 0.5,
-                     format: percent, hint: "Shorter ↔ Longer")
+                if showAdvanced {
+                    Knob(title: "Tune", value: binding(\.tune), range: -12...12, defaultValue: 0,
+                         format: { $0 == 0 ? "0 st" : String(format: "%+.0f st", $0) }, hint: "Lower ↔ Higher", step: 1)
+                    Knob(title: "Attack", value: binding(\.attack), range: 0...1, defaultValue: 0.5,
+                         format: percent, hint: "Softer ↔ Snappier")
+                    Knob(title: "Decay", value: binding(\.decay), range: 0...1, defaultValue: 0.5,
+                         format: percent, hint: "Shorter ↔ Longer")
+                }
                 Knob(title: "Tone", value: binding(\.tone), range: 0...1, defaultValue: 0.5,
                      format: percent, hint: "Darker ↔ Brighter")
-                Knob(title: characterTitle, value: binding(\.character), range: 0...1, defaultValue: 0.5,
-                     format: percent, hint: characterHint)
+                if showAdvanced {
+                    Knob(title: characterTitle, value: binding(\.character), range: 0...1, defaultValue: 0.5,
+                         format: percent, hint: characterHint)
+                }
                 Knob(title: "Room", value: binding(\.room), range: 0...1, defaultValue: 0.3,
                      format: percent, hint: "Dry ↔ Roomy")
                 Knob(title: "Volume", value: binding(\.volumeDB), range: -24...6, defaultValue: 0,

@@ -72,6 +72,17 @@ final class SongStore {
         defaults.set(song.id.uuidString, forKey: Self.lastSongKey)
     }
 
+    /// Opens a song made elsewhere (Build it for me) as a new song.
+    func newSong(_ prepared: Song) {
+        saveNow()
+        var next = prepared
+        next.id = UUID()
+        next.name = uniqueName(prepared.name)
+        song = next
+        saveNow()
+        defaults.set(song.id.uuidString, forKey: Self.lastSongKey)
+    }
+
     func duplicateSong() {
         saveNow()
         var copy = song

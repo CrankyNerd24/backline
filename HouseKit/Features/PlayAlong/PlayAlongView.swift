@@ -39,8 +39,12 @@ struct PlayAlongView: View {
                     nowPlaying
                         .tutorialAnchor("nowPlaying")
                     BeatLights(beat: currentBeat, count: beatsInBar, reduceMotion: reduceMotion)
+                    // A queued action says what's about to happen; otherwise,
+                    // near the end of a section, what's coming next.
                     if let banner = bannerContent {
                         QueuedBanner(content: banner)
+                    } else if let countdown {
+                        NextUpBanner(countdown: countdown, reduceMotion: reduceMotion)
                     } else {
                         Color.clear.frame(height: QueuedBanner.height)
                     }
@@ -168,6 +172,28 @@ struct PlayAlongView: View {
     }
 
     // MARK: Banner
+
+    /// The last two bars of a section (and the count-in): what's next and
+    /// how long until it, so nobody has to count bars. Loops and repeating
+    /// sections don't count down; they only move on when asked.
+    private var countdown: NextUpBanner.Countdown? {
+        guard engine.isPlaying, let position = engine.position, let beat = currentBeat else { return nil }
+        let beatsLeftInBar = max(1, position.beatsInBar - beat)
+        if position.isCountIn {
+            let barsLeft = song.countInBars - position.barInSection
+            let first = song.sections.first { $0.id == cuedSectionID } ?? song.sections.first
+            guard let first else { return nil }
+            return .init(next: first.name, color: first.kind.color, barsLeft: barsLeft, beatsLeft: beatsLeftInBar,
+                         beat: beat)
+        }
+        guard let section = currentSection, let index = song.index(of: section.id) else { return nil }
+        if section.repeatUntilStep || engine.loopingSectionID == section.id { return nil }
+        let barsLeft = section.bars - position.barInSection
+        guard barsLeft <= 2, barsLeft >= 1 else { return nil }
+        let next = index + 1 < song.sections.count ? song.sections[index + 1] : nil
+        return .init(next: next?.name ?? (section.kind == .outro ? "The ending" : "The end"),
+                     color: next?.kind.color, barsLeft: barsLeft, beatsLeft: beatsLeftInBar, beat: beat)
+    }
 
     private var bannerContent: QueuedBanner.Content? {
         guard let pending = engine.pending, let section = currentSection else { return nil }
@@ -398,6 +424,67 @@ private struct BeatLights: View {
         }
         .accessibilityElement()
         .accessibilityLabel(beat.map { "Beat \($0 + 1)" } ?? "Stopped")
+    }
+}
+
+/// What's coming next, counting down the last two bars: "Chorus 1 in 2
+/// bars", then the beats of the last bar, with the next section's colour
+/// filling in so the change can be seen from across the room.
+private struct NextUpBanner: View {
+    struct Countdown {
+        var next: String
+        var color: Color?
+        var barsLeft: Int  // 1 = this is the last bar
+        var beatsLeft: Int // in this bar
+        var beat: Int      // for the per-beat pulse
+    }
+
+    let countdown: Countdown
+    let reduceMotion: Bool
+
+    var body: some View {
+        let lastBar = countdown.barsLeft == 1
+        let color = countdown.color ?? Theme.textMuted
+        HStack(spacing: 18) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("NEXT")
+                    .font(Theme.condensed(15, weight: .bold))
+                    .tracking(2)
+                    .opacity(0.8)
+                Text(countdown.next)
+                    .font(Theme.condensed(40, weight: .bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+            }
+            Spacer(minLength: 0)
+            VStack(alignment: .trailing, spacing: 0) {
+                Text(lastBar ? "\(countdown.beatsLeft)" : "\(countdown.barsLeft) bars")
+                    .font(Theme.condensed(lastBar ? 64 : 40, weight: .bold))
+                    .monospacedDigit()
+                    .contentTransition(.numericText(countsDown: true))
+                if lastBar {
+                    Text(countdown.beatsLeft == 1 ? "beat" : "beats")
+                        .font(Theme.condensed(15, weight: .bold))
+                        .tracking(1.5)
+                        .opacity(0.8)
+                }
+            }
+        }
+        .foregroundStyle(lastBar ? Theme.SectionColor.onColor : Theme.text)
+        .padding(.horizontal, 22)
+        .frame(height: QueuedBanner.height)
+        .frame(maxWidth: .infinity)
+        .background {
+            RoundedRectangle(cornerRadius: Theme.Radius.card)
+                .fill(lastBar ? color : color.opacity(0.18))
+                .opacity(lastBar && !reduceMotion && countdown.beat % 2 == 1 ? 0.8 : 1)
+        }
+        .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).stroke(color, lineWidth: 2))
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: countdown.beat)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(lastBar ? "\(countdown.next) in \(countdown.beatsLeft) \(countdown.beatsLeft == 1 ? "beat" : "beats")"
+                                    : "\(countdown.next) in \(countdown.barsLeft) bars")
+        .accessibilityAddTraits(.updatesFrequently)
     }
 }
 
