@@ -48,6 +48,12 @@ Engine::Engine(double sampleRate) : sampleRate_(sampleRate) {
     reverb_.prepare(sr); // the only allocation, here on the control thread
     compressor_.prepare(sr);
     applyKit(defaultKit());
+    for (int piece = 0; piece < BL_PIECE_COUNT; ++piece) {
+        mixLeft_[piece] = gainLeft_[piece];
+        mixRight_[piece] = gainRight_[piece];
+        mixSend_[piece] = send_[piece];
+    }
+    glide_ = 1.0f - std::exp(-1.0f / (0.005f * static_cast<float>(sr)));
     beatLength_ = sampleRate_ * 60.0 / bpm_;
 }
 
@@ -148,6 +154,12 @@ void Engine::applyCommands() {
             break;
         case Command::SetKit:
             applyKit(c.kit);
+            if (now_ == 0) // nothing rendered yet (an export): start on the kit's levels
+                for (int piece = 0; piece < BL_PIECE_COUNT; ++piece) {
+                    mixLeft_[piece] = gainLeft_[piece];
+                    mixRight_[piece] = gainRight_[piece];
+                    mixSend_[piece] = send_[piece];
+                }
             break;
         }
     }
@@ -460,7 +472,6 @@ void Engine::scheduleNextEvent() {
 void Engine::trigger(int piece, float amp, float bright, uint32_t seed, int64_t at) {
     const Hit hit{amp, bright, seed};
     if (piece < 0 || piece >= BL_PIECE_COUNT) return;
-    attack_[piece].start();
     if (piece == BL_PIECE_HI_HAT) {
         openHat_.choke();
         sampled_[BL_PIECE_OPEN_HAT].choke();
@@ -470,6 +481,7 @@ void Engine::trigger(int piece, float amp, float bright, uint32_t seed, int64_t 
             log_[logCount_++] = {at, static_cast<uint8_t>(piece), amp, static_cast<int32_t>(songBar_)};
         return;
     }
+    attack_[piece].start();
     switch (piece) {
     case BL_PIECE_KICK: kick_.trigger(hit); break;
     case BL_PIECE_SNARE: snare_.trigger(hit); break;
@@ -503,12 +515,15 @@ void Engine::renderVoices(float *left, float *right, uint32_t frames) {
         for (int piece = 0; piece < BL_PIECE_COUNT; ++piece) {
             // Recorded sounds are stereo (the overheads' picture of the kit):
             // their side signal widens the piece and cancels in mono.
-            const float attack = attack_[piece].next();
-            const float mid = (v[piece] + sampled_[piece].process()) * attack;
-            const float side = sampled_[piece].side() * attack;
-            l += (mid + side) * gainLeft_[piece];
-            r += (mid - side) * gainRight_[piece];
-            send += mid * send_[piece];
+            // Recorded hits shape their own attack (see SampleVoice).
+            const float mid = v[piece] * attack_[piece].next() + sampled_[piece].process();
+            const float side = sampled_[piece].side();
+            mixLeft_[piece] += glide_ * (gainLeft_[piece] - mixLeft_[piece]);
+            mixRight_[piece] += glide_ * (gainRight_[piece] - mixRight_[piece]);
+            mixSend_[piece] += glide_ * (send_[piece] - mixSend_[piece]);
+            l += (mid + side) * mixLeft_[piece];
+            r += (mid - side) * mixRight_[piece];
+            send += mid * mixSend_[piece];
         }
         compressor_.process(l, r); // the drum bus; bypassed at punch 0
         if (reverbOn_) {

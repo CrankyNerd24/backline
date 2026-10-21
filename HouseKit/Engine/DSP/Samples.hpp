@@ -45,13 +45,14 @@ namespace housekit {
 // The installed bank, or nullptr. Read on the render thread.
 const BLSampleBank *installedBank();
 
-// Plays a piece's recorded sounds: up to four overlapping hits, each picking
+// Plays a piece's recorded sounds: up to four ringing hits, each picking
 // the layer nearest its strength and a take by its seed, at the Tune
 // control's rate. Decay below 50% fades hits early; Tone tilts the top;
 // Character adds or takes away low body. Output is stereo, as mid and side.
 class SampleVoice {
 public:
-    static constexpr int kVoices = 4;
+    static constexpr int kVoices = 8;   // slots, so a stolen hit can fade out
+    static constexpr int kSounding = 4; // hits ringing at once before the oldest fades
 
     void prepare(float sampleRate) { sr_ = sampleRate; }
     void configure(const RecordedModel *model, const BLVoiceSettings &settings, bool openHat);
@@ -71,6 +72,8 @@ private:
         bool fading = false;
         Decay chokeEnv; // a closed hat cutting an open one
         bool choked = false;
+        uint32_t order = 0; // when it started, to find the oldest
+        AttackShaper attack; // its own, so a new hit leaves the last one's ring alone
     };
 
     float sr_ = 48000.0f;
@@ -80,7 +83,8 @@ private:
     float fadeTau_ = 0.0f;   // 0 = ring naturally
     float tone_ = 0.0f;      // -1 dark … +1 bright
     float body_ = 0.0f;      // -1 thin … +1 full
-    int next_ = 0;
+    AttackShaper attack_;    // the Attack control, copied into each hit
+    uint32_t started_ = 0;
     Play play_[kVoices];
     float lowL_ = 0, lowR_ = 0, highL_ = 0, highR_ = 0; // filter states
     float lowCoeff_ = 0, highCoeff_ = 0;

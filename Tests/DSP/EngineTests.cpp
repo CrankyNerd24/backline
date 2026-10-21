@@ -1764,6 +1764,29 @@ static void testRecordedSounds() {
     bl_engine_destroy(h);
     CHECK(peakOf(hl, 4800 + 2400 + 2000) == 0.0f, "the open hat kept ringing after the closed hat");
 
+    // A fifth ringing hit fades the first out over a few milliseconds rather
+    // than cutting it dead (a click). Rendering hits 2-5 alone gives the
+    // first hit's part as the difference.
+    auto openHats = [&](int first) {
+        BLEngine *o = bl_engine_create(48000.0);
+        bl_engine_set_kit(o, &kit);
+        std::vector<float> ol(5 * 2400 + 9600), orr(ol.size());
+        size_t done = 0;
+        for (int hit = 0; hit < 5; ++hit) {
+            if (hit >= first) bl_engine_audition(o, BL_PIECE_OPEN_HAT, BL_VEL_LOUD);
+            bl_engine_render(o, ol.data() + done, orr.data() + done, 2400);
+            done += 2400;
+        }
+        bl_engine_render(o, ol.data() + done, orr.data() + done, static_cast<uint32_t>(ol.size() - done));
+        bl_engine_destroy(o);
+        return ol;
+    };
+    const auto all = openHats(0), later = openHats(1);
+    const size_t fifth = 4 * 2400;
+    const float before = all[fifth - 1] - later[fifth - 1], after = all[fifth + 1] - later[fifth + 1];
+    CHECK(before > 0.01f && after > 0.5f * before, "the oldest hit was cut: %.4f then %.4f", before, after);
+    CHECK(std::fabs(all[fifth + 2400] - later[fifth + 2400]) < 1e-4f, "the oldest hit kept ringing");
+
     // No allocations while playing recorded sounds.
     BLEngine *a = bl_engine_create(48000.0);
     bl_engine_set_kit(a, &kit);

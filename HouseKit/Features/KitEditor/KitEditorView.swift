@@ -219,7 +219,17 @@ struct KitEditorView: View {
 
     private var shapeIt: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Eyebrow("Shape it")
+            HStack {
+                Eyebrow("Shape it")
+                Spacer()
+                // The same setting as Show Advanced Controls in the song menu.
+                Toggle("Advanced controls", isOn: $showAdvanced)
+                    .toggleStyle(.switch)
+                    .tint(Theme.accent)
+                    .font(Theme.body(14, weight: .medium))
+                    .fixedSize()
+                    .accessibilityHint("Shows Tune, Attack, Decay and \(characterTitle)")
+            }
             // Two rows: pitch and how the hit starts and ends, then its
             // character and where it sits in the mix.
             LazyVGrid(columns: Array(repeating: GridItem(.fixed(96), spacing: 18), count: 4), alignment: .leading,

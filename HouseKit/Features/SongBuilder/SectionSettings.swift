@@ -102,12 +102,31 @@ struct SectionSettings: View {
 
             Spacer(minLength: 0)
 
-            Button { duplicate() } label: { Label("Duplicate", systemImage: "plus.square.on.square") }
-                .buttonStyle(ChipButtonStyle())
-            Button(role: .destructive) { confirmingDelete = true } label: { Label("Delete", systemImage: "trash") }
-                .buttonStyle(ChipButtonStyle())
+            // Icons only when the row is short of room (smaller iPads).
+            ViewThatFits(in: .horizontal) {
+                actions(compact: false)
+                actions(compact: true)
+            }
+        }
+    }
+
+    private func actions(compact: Bool) -> some View {
+        HStack(spacing: compact ? 8 : 14) {
+            Button { duplicate() } label: {
+                Label("Duplicate", systemImage: "plus.square.on.square")
+                    .labelStyle(CompactLabelStyle(iconOnly: compact))
+            }
+            .buttonStyle(ChipButtonStyle())
+            .accessibilityLabel("Duplicate section")
+            Button(role: .destructive) { confirmingDelete = true } label: {
+                Label("Delete", systemImage: "trash")
+                    .labelStyle(CompactLabelStyle(iconOnly: compact))
+            }
+            .buttonStyle(ChipButtonStyle())
+            .accessibilityLabel("Delete section")
             Button(role: .destructive) { confirmingDeleteAll = true } label: {
                 Label("Delete All", systemImage: "trash.slash")
+                    .labelStyle(CompactLabelStyle(iconOnly: compact))
             }
             .buttonStyle(ChipButtonStyle())
             .accessibilityLabel("Delete all sections")

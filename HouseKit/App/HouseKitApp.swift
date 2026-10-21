@@ -37,7 +37,7 @@ struct HouseKitApp: App {
                 .environment(tutorial)
                 .preferredColorScheme(.dark)
                 .onChange(of: scenePhase) { _, phase in
-                    if phase != .active { store.saveNow() }
+                    if phase == .active { engine.resume() } else { store.saveNow() }
                 }
         }
     }

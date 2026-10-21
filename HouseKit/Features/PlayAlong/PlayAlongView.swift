@@ -70,6 +70,8 @@ struct PlayAlongView: View {
             footer
         }
         .background(Theme.bgDeep)
+        // The screen keeps its layout under the keyboard (typing happens in a pop-up).
+        .ignoresSafeArea(.keyboard)
         .tutorialHost(.playAlong)
         .foregroundStyle(Theme.text)
         // VoiceOver's two-finger double tap plays and stops, like any player.

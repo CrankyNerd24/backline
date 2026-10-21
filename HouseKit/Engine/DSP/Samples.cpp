@@ -44,6 +44,7 @@ const BLSampleBank *installedBank() { return gBank.load(std::memory_order_acquir
 
 void SampleVoice::configure(const RecordedModel *model, const BLVoiceSettings &s, bool openHat) {
     model_ = model;
+    attack_.configure(s.attack, sr_);
     if (!model) return;
     sound_ = openHat ? model->altSound : model->sound;
     rate_ = semitones(s.tune + model->tune);
@@ -80,8 +81,31 @@ bool SampleVoice::trigger(const Hit &hit) {
     const float gain = std::clamp(target / std::max(best->level, 1e-4f), 0.5f, 2.0f);
     const SampleData &take = set.takes[best->first + hit.seed % best->count];
 
-    Play &p = play_[next_];
-    next_ = (next_ + 1) % kVoices;
+    // Past four ringing hits, the oldest fades out over a few milliseconds;
+    // cutting it dead would click. The new hit takes a free slot (or, if
+    // every slot is still fading, the oldest).
+    Play *oldest = nullptr, *slot = nullptr;
+    int sounding = 0;
+    for (Play &q : play_) {
+        if (!q.sample) {
+            if (!slot) slot = &q;
+            continue;
+        }
+        if (q.choked) continue;
+        ++sounding;
+        if (!oldest || q.order < oldest->order) oldest = &q;
+    }
+    if (sounding >= kSounding && oldest) {
+        oldest->choked = true;
+        oldest->chokeEnv.start(1.0f, 0.005f, sr_);
+    }
+    if (!slot) {
+        slot = &play_[0];
+        for (Play &q : play_)
+            if (q.order < slot->order) slot = &q;
+    }
+    Play &p = *slot;
+    p.order = ++started_;
     p.sample = &take;
     p.pos = 0.0;
     p.step = static_cast<double>(take.sampleRate) / sr_ * rate_;
@@ -89,6 +113,8 @@ bool SampleVoice::trigger(const Hit &hit) {
     p.fading = fadeTau_ > 0.0f;
     if (p.fading) p.env.start(1.0f, fadeTau_, sr_);
     p.choked = false;
+    p.attack = attack_;
+    p.attack.start();
     return true;
 }
 
@@ -112,7 +138,7 @@ float SampleVoice::process() {
             continue;
         }
         const float frac = static_cast<float>(p.pos - i);
-        float g = p.gain * (1.0f / 32768.0f);
+        float g = p.gain * (1.0f / 32768.0f) * p.attack.next();
         if (p.fading) g *= p.env.next();
         if (p.choked) {
             g *= p.chokeEnv.next();

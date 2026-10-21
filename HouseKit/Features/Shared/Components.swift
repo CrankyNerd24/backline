@@ -32,6 +32,7 @@ struct ChipButtonStyle: ButtonStyle {
         var body: some View {
             configuration.label
                 .font(Theme.body(15, weight: .semibold))
+                .lineLimit(1) // a chip never wraps ("T A P"); rows switch to icons instead
                 .padding(.horizontal, 14)
                 .frame(minWidth: 44, minHeight: 44)
                 .background(background, in: RoundedRectangle(cornerRadius: Theme.Radius.control))

@@ -1,5 +1,6 @@
 import AVFoundation
 import Observation
+import UIKit
 
 /// Swift façade over the C++ DSP core. The UI talks only to this; it never
 /// touches the render thread. Commands go to the core through its lock-free
@@ -291,6 +292,7 @@ final class EngineController {
     func audition(_ piece: Piece, velocity: Velocity = .normal) {
         guard let core else { return }
         startEngineIfNeeded()
+        pushKit() // a sound just picked plays now, not on the next poll
         bl_engine_audition(core, piece.engineIndex, velocity.rawValue)
     }
 
@@ -343,7 +345,10 @@ final class EngineController {
             try session.setPreferredIOBufferDuration(0.005)
             try session.setActive(true)
         } catch {
-            lastError = "Audio session: \(error.localizedDescription)"
+            // In the background this is expected; resume() tries again.
+            if UIApplication.shared.applicationState != .background {
+                lastError = "Audio session: \(error.localizedDescription)"
+            }
         }
     }
 
@@ -387,8 +392,23 @@ final class EngineController {
         }
     }
 
+    /// The app is in front again: take the audio session back (another app
+    /// or a call may have had it) and restart the engine if it stopped.
+    func resume() {
+        configureSession()
+        startEngineIfNeeded()
+        // An audio problem from while the app was away is over once it runs.
+        if avEngine.isRunning, let error = lastError,
+           error.hasPrefix("Couldn't start audio") || error.hasPrefix("Audio session") {
+            lastError = nil
+        }
+    }
+
     private func startEngineIfNeeded() {
         guard !avEngine.isRunning else { return }
+        // In the background iOS refuses to start audio that doesn't mix with
+        // other apps; resume() starts it when the app comes back.
+        guard UIApplication.shared.applicationState != .background else { return }
         do {
             try avEngine.start()
             lastError = nil
@@ -438,7 +458,9 @@ final class EngineController {
         if began {
             stop()
         } else {
-            // Bring audio back, but never resume playback by surprise.
+            // Bring audio back, but never resume playback by surprise. The
+            // session has to be made active again first.
+            configureSession()
             startEngineIfNeeded()
         }
     }
