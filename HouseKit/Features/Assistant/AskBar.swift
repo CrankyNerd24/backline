@@ -9,6 +9,9 @@ struct AskBar: View {
     let currentSectionID: UUID?
     /// Play-along: no suggestion chips, so the screen stays readable.
     var compact = false
+    /// Told when typing starts and stops, so the screen can keep still under
+    /// the keyboard.
+    var onTyping: ((Bool) -> Void)? = nil
     @State private var text = ""
     @FocusState private var typing: Bool
     /// Play-along types in a pop-up, so the keyboard doesn't squash the screen.
@@ -67,6 +70,7 @@ struct AskBar: View {
                 TextField("Tell HouseKit what you want: “more swing in the chorus”, “punchier”, “add a bridge”…",
                           text: $text)
                     .focused($typing)
+                    .onChange(of: typing) { _, now in onTyping?(now) }
                     .submitLabel(.go)
                     .onSubmit { send(text) }
                     .autocorrectionDisabled()

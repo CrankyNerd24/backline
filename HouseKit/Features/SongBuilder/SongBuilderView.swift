@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Home screen (spec §6.1): the song as a row of sections, settings for the
 /// selected one, and the transport. Every edit is heard live while playing.
@@ -11,6 +12,7 @@ struct SongBuilderView: View {
     @Environment(Tutorial.self) private var tutorial
     @Environment(KitLibrary.self) private var kits
     @State private var building = false
+    @State private var askTyping = false
 
     /// Something that went wrong saving or with audio, until it's dismissed.
     private var error: String? {
@@ -28,7 +30,7 @@ struct SongBuilderView: View {
         VStack(spacing: 0) {
             SongHeader()
             if let error { errorBanner(error) }
-            AskBar(currentSectionID: selection)
+            AskBar(currentSectionID: selection, onTyping: { if $0 { askTyping = true } })
                 .tutorialAnchor("askBar")
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
@@ -59,6 +61,16 @@ struct SongBuilderView: View {
             TransportBar(selection: selection)
         }
         .background(Theme.bg)
+        // Typing in the bar at the top: the keyboard covers only the bottom of
+        // the screen, so nothing needs to move. Making room for it re-laid out
+        // the whole screen on every frame of the keyboard's slide, which on
+        // older iPads starved the audio and the drums stuttered.
+        .ignoresSafeArea(.keyboard, edges: askTyping ? .bottom : [])
+        // Stay still until the keyboard is fully gone, or its slide away
+        // would re-lay out the screen just the same.
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidHideNotification)) { _ in
+            askTyping = false
+        }
         .foregroundStyle(Theme.text)
         .onChange(of: store.song, initial: true) { _, song in
             engine.load(song)
