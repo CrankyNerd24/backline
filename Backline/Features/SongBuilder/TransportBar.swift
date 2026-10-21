@@ -7,6 +7,7 @@ struct TransportBar: View {
     @Environment(EngineController.self) private var engine
     @Environment(PedalController.self) private var pedals
     @Environment(Assistant.self) private var assistant
+    @Environment(Tutorial.self) private var tutorial
     let selection: UUID?
     @State private var playingAlong = false
 
@@ -22,6 +23,7 @@ struct TransportBar: View {
             .buttonStyle(ChipButtonStyle(prominent: true))
             .disabled(store.song.sections.isEmpty)
             .accessibilityLabel(engine.isPlaying ? "Stop" : "Play from \(selectedName ?? "the start")")
+            .tutorialAnchor("play")
 
             loopButton
 
@@ -42,6 +44,7 @@ struct TransportBar: View {
                 Label("Play-along mode", systemImage: "music.mic")
             }
             .buttonStyle(ChipButtonStyle(prominent: true))
+            .tutorialAnchor("playAlong")
             .disabled(store.song.sections.isEmpty)
         }
         .padding(.horizontal, 24)
@@ -54,6 +57,7 @@ struct TransportBar: View {
                 .environment(engine)
                 .environment(pedals)
                 .environment(assistant)
+                .environment(tutorial)
         }
     }
 

@@ -82,6 +82,7 @@ struct SongRow: View {
                 .frame(width: Self.addWidth, height: Self.height)
         }
         .accessibilityLabel("Add a section")
+        .tutorialAnchor("addSection")
     }
 
     // MARK: Layout

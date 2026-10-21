@@ -37,6 +37,7 @@ struct PlayAlongView: View {
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 20) {
                     nowPlaying
+                        .tutorialAnchor("nowPlaying")
                     BeatLights(beat: currentBeat, count: beatsInBar, reduceMotion: reduceMotion)
                     if let banner = bannerContent {
                         QueuedBanner(content: banner)
@@ -56,6 +57,7 @@ struct PlayAlongView: View {
                 .padding(.horizontal, 28)
                 .padding(.bottom, 12)
             transport
+                .tutorialAnchor("playAlongTransport")
             // Hands are on the guitar: hold the big mic and say "next section".
             AskBar(currentSectionID: currentSection?.id, compact: true)
                 .padding(.horizontal, 28)
@@ -64,6 +66,7 @@ struct PlayAlongView: View {
             footer
         }
         .background(Theme.bgDeep)
+        .tutorialHost(.playAlong)
         .foregroundStyle(Theme.text)
         // VoiceOver's two-finger double tap plays and stops, like any player.
         .accessibilityAction(.magicTap) {
@@ -108,6 +111,7 @@ struct PlayAlongView: View {
             }
             .buttonStyle(.plain)
             .accessibilityHint("Opens foot pedal setup")
+            .tutorialAnchor("pedalChip")
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 12)

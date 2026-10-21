@@ -34,10 +34,12 @@ struct KitEditorView: View {
                 VStack(spacing: 0) {
                     ScrollView {
                         startingSounds
+                            .tutorialAnchor("startingSounds")
                             .padding(24)
                     }
                     Theme.line.frame(height: 1)
                     shapeIt
+                        .tutorialAnchor("shapeIt")
                         .padding(.horizontal, 24)
                         .padding(.vertical, 16)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -54,6 +56,7 @@ struct KitEditorView: View {
                 .overlay(alignment: .top) { Theme.line.frame(height: 1) }
         }
         .background(Theme.bg)
+        .tutorialHost(.kitEditor)
         .foregroundStyle(Theme.text)
         .onDisappear { if hearInGroove { engine.stopPreview() } }
         .onChange(of: hearInGroove) { _, on in on ? startGroove() : engine.stopPreview() }

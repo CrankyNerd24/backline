@@ -6,6 +6,8 @@ struct SectionSettings: View {
     @Environment(SongStore.self) private var store
     @Environment(GrooveLibrary.self) private var library
     @Environment(EngineController.self) private var engine
+    @Environment(Assistant.self) private var assistant
+    @Environment(Tutorial.self) private var tutorial
     let sectionID: UUID
     @Binding var selectedID: UUID?
     @State private var confirmingDelete = false
@@ -39,6 +41,8 @@ struct SectionSettings: View {
                     .environment(store)
                     .environment(library)
                     .environment(engine)
+                    .environment(assistant)
+                    .environment(tutorial)
             }
             .fullScreenCover(isPresented: $editingPattern) {
                 PatternEditorView(sectionID: sectionID)
@@ -153,6 +157,7 @@ struct SectionSettings: View {
                         Label("Change groove", systemImage: "music.note.list")
                     }
                     .buttonStyle(ChipButtonStyle(prominent: true))
+                    .tutorialAnchor("changeGroove")
                     Button {
                         editingPattern = true
                     } label: {
@@ -178,6 +183,7 @@ struct SectionSettings: View {
                 FeelSlider(low: "Locked in", high: "Human", value: section.feel.human)
             }
         }
+        .tutorialAnchor("feel")
     }
 
     // MARK: Options

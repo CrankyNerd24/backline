@@ -9,6 +9,8 @@ struct SongHeader: View {
     @Environment(PedalController.self) private var pedals
     @Environment(KitLibrary.self) private var kits
     @Environment(GrooveLibrary.self) private var library
+    @Environment(Assistant.self) private var assistant
+    @Environment(Tutorial.self) private var tutorial
     @State private var settingUpPedals = false
     @State private var editingKit = false
     @State private var exporting = false
@@ -16,7 +18,6 @@ struct SongHeader: View {
     @State private var newName = ""
     @State private var confirmingDelete = false
     @State private var tapTempo = TapTempo()
-    @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
 
     var body: some View {
         HStack(spacing: 16) {
@@ -31,6 +32,7 @@ struct SongHeader: View {
             .accessibilityHidden(true)
 
             songMenu
+                .tutorialAnchor("songMenu")
             Spacer(minLength: 12)
             tempo
             Text(store.song.timeSignatureLabel)
@@ -52,6 +54,7 @@ struct SongHeader: View {
                     .lineLimit(1)
             }
             .buttonStyle(ChipButtonStyle())
+            .tutorialAnchor("kitChip")
             .accessibilityHint("Opens the Kit Editor")
             Button {
                 exporting = true
@@ -59,6 +62,7 @@ struct SongHeader: View {
                 Label("Export", systemImage: "square.and.arrow.up")
             }
             .buttonStyle(ChipButtonStyle())
+            .tutorialAnchor("export")
             .disabled(store.song.sections.isEmpty)
             .accessibilityHint("Saves the song as a WAV file to share")
         }
@@ -79,6 +83,8 @@ struct SongHeader: View {
                 .environment(store)
                 .environment(kits)
                 .environment(engine)
+                .environment(assistant)
+                .environment(tutorial)
         }
         .sheet(isPresented: $exporting) {
             ExportView()
@@ -127,7 +133,7 @@ struct SongHeader: View {
             Button("Duplicate", systemImage: "plus.square.on.square") { store.duplicateSong() }
             Button("Delete…", systemImage: "trash", role: .destructive) { confirmingDelete = true }
             Divider()
-            Button("How Backline Works", systemImage: "questionmark.circle") { hasSeenWelcome = false }
+            Button("Take the Tour", systemImage: "questionmark.circle") { tutorial.start() }
         } label: {
             HStack(spacing: 6) {
                 Text(store.song.name)

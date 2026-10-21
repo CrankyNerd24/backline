@@ -16,6 +16,7 @@ struct AskBar: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
                 MicButton(currentSectionID: currentSectionID, size: compact ? 56 : 48)
+                    .tutorialAnchor("mic")
                 field
                 Button {
                     send(text)
