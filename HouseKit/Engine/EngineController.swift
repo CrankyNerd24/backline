@@ -342,7 +342,11 @@ final class EngineController {
             } else {
                 try session.setCategory(.playback, mode: .default)
             }
-            try session.setPreferredIOBufferDuration(0.005)
+            // About 10 ms (512 frames at 48 kHz). At 5 ms, older iPads broke
+            // up when the system got busy, e.g. bringing up the keyboard. The
+            // song's hits are scheduled to the sample, so only taps and
+            // auditions hear the extra latency.
+            try session.setPreferredIOBufferDuration(0.0107)
             try session.setActive(true)
         } catch {
             // In the background this is expected; resume() tries again.
