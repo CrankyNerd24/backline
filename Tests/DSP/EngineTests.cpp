@@ -7,6 +7,8 @@
 #include <climits>
 #include <cstdint>
 #include <cmath>
+#include <regex>
+#include <filesystem>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -1130,7 +1132,7 @@ static double crossingsPerSecond(const std::vector<float> &x, size_t from, size_
 
 static void testModelCatalogue() {
     // Synthesized models, then recorded ones.
-    const uint8_t expected[BL_PIECE_COUNT] = {8, 8, 4, 4, 9, 6, 6, 6, 5};
+    const uint8_t expected[BL_PIECE_COUNT] = {12, 12, 6, 6, 13, 12, 12, 12, 7};
     for (uint8_t piece = 0; piece < BL_PIECE_COUNT; ++piece) {
         CHECK(bl_kit_model_count(piece) == expected[piece], "piece %d has %d models", piece, bl_kit_model_count(piece));
         for (uint8_t m = 0; m < bl_kit_model_count(piece); ++m) {
@@ -1264,9 +1266,9 @@ static void testPunch() {
           punchy.first, punchy.second);
 }
 
-// The six built-in kits: named, in range, and deterministic.
+// The built-in kits: named, in range, and deterministic.
 static void testBuiltInKits() {
-    CHECK(bl_kit_builtin_count() == 7, "%d kits", bl_kit_builtin_count());
+    CHECK(bl_kit_builtin_count() == 12, "%d kits", bl_kit_builtin_count());
     CHECK(std::string(bl_kit_builtin_name(0)) == "Garage Kit", "kit 0 is %s", bl_kit_builtin_name(0));
     for (uint8_t k = 0; k < bl_kit_builtin_count(); ++k) {
         BLKit kit;
@@ -1811,6 +1813,22 @@ static void testBundledSamples() {
     CHECK(bl_sample_bank_add_wav(bank, BL_SOUND_SNARE, 36, (dir + "snare_v36_r1.wav").c_str()), "couldn't read a bundled WAV");
     CHECK(!bl_sample_bank_add_wav(bank, BL_SOUND_SNARE, 1, (dir + "missing.wav").c_str()), "read a missing file");
     CHECK(bl_sample_bank_count(bank, BL_SOUND_SNARE) == 1, "count %u", bl_sample_bank_count(bank, BL_SOUND_SNARE));
+
+    // Every recorded sound has takes in the bundle, loaded the way the app
+    // does it: by file name, from anywhere under Samples (one folder per kit).
+    BLSampleBank *all = bl_sample_bank_create();
+    const std::regex name(R"((\w+)_v(\d+)_r(\d+)\.wav)");
+    for (const auto &entry :
+         std::filesystem::recursive_directory_iterator(std::string(HOUSEKIT_SOURCE_DIR) + "/HouseKit/Library/Samples")) {
+        std::smatch m;
+        const std::string file = entry.path().filename().string();
+        if (!std::regex_match(file, m, name)) continue;
+        const int32_t sound = bl_sound_index(m[1].str().c_str());
+        CHECK(sound >= 0, "%s isn't a known sound", file.c_str());
+        if (sound >= 0) bl_sample_bank_add_wav(all, static_cast<uint8_t>(sound), std::stoul(m[2]), entry.path().string().c_str());
+    }
+    for (uint8_t sound = 0; sound < BL_SOUND_COUNT; ++sound)
+        CHECK(bl_sample_bank_count(all, sound) >= 2, "sound %d has %u takes", sound, bl_sample_bank_count(all, sound));
 }
 
 // How much faster than real time the engine renders (headroom for 5 ms buffers).

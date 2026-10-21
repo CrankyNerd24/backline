@@ -10,9 +10,13 @@ namespace {
 
 std::atomic<const BLSampleBank *> gBank{nullptr};
 
-constexpr const char *kSoundNames[BL_SOUND_COUNT] = {"kick",     "snare", "snareRim",  "crossStick", "hhClosed", "hhOpen",
-                                                     "ride",     "rideBell", "crash", "highTom",    "lowTom",
-                                                     "flatRide", "crashSizzle"};
+constexpr const char *kSoundNames[BL_SOUND_COUNT] = {
+    "kick", "snare", "snareRim", "crossStick", "hhClosed", "hhOpen", "ride", "rideBell", "crash", "highTom", "lowTom",
+    "flatRide", "crashSizzle",
+    "rustyKick", "rustySnare", "rustyRim", "rustyCrossStick", "rustyHhClosed", "rustyHhOpen", "rustyRide",
+    "rustyRideBell", "rustyCrash", "rustyHighTom", "rustyLowTom", "rustyFloorTom",
+    "swirlyKick", "swirlySnare", "swirlyHhClosed", "swirlyHhOpen", "swirlyRide", "swirlyCrash", "swirlyHighTom",
+    "swirlyLowTom", "swirlyFloorTom"};
 
 float semitones(float tune) { return std::exp2(std::clamp(tune, -24.0f, 24.0f) / 12.0f); }
 
@@ -57,7 +61,8 @@ void SampleVoice::configure(const RecordedModel *model, const BLVoiceSettings &s
     lowCoeff_ = onePoleCoeff(180.0f, sr_);
     highCoeff_ = onePoleCoeff(tone_ < 0.0f ? 1800.0f : 3500.0f, sr_);
     // The ride's Bell control: turned up past 75%, hits land on the bell.
-    if (model->sound == BL_SOUND_RIDE && !openHat && s.character > 0.75f) sound_ = model->altSound;
+    const bool bellRide = model->sound == BL_SOUND_RIDE || model->sound == BL_SOUND_RUSTY_RIDE;
+    if (bellRide && !openHat && s.character > 0.75f) sound_ = model->altSound;
 }
 
 bool SampleVoice::trigger(const Hit &hit) {

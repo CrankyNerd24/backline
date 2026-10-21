@@ -181,11 +181,19 @@ def main():
 
     with open(os.path.join(OUT, "samples-manifest.json"), "w") as f:
         json.dump(manifest, f, indent=1)
+    # The folder's licence covers the Karoryfer kits too (fetch_karoryfer.py).
     with open(os.path.join(OUT, "LICENSE-samples.txt"), "w") as f:
-        f.write("The recorded drum samples in this folder are derived from Virtuosity Drums by Versilian Studios,\n"
+        f.write("The recorded drum samples in this folder (outside rusty/ and swirly/) are derived from Virtuosity Drums by Versilian Studios,\n"
                 "recorded at Virtuosity Musical Instruments, Boston, MA, performed by Austin McMahon.\n"
                 "https://github.com/sfzinstruments/virtuosity_drums\n\n"
                 "They are released under CC0 1.0 Universal (public domain dedication):\n"
+                "https://creativecommons.org/publicdomain/zero/1.0/\n"
+                "No credit is required to use them, or anything made with them.\n\n"
+                "The samples in rusty/ are derived from Big Rusty Drums by Karoryfer Samples,\n"
+                "and those in swirly/ from Swirly Drums by Karoryfer Samples.\n"
+                "https://github.com/sfzinstruments/karoryfer.big-rusty-drums\n"
+                "https://github.com/sfzinstruments/karoryfer.swirly-drums\n\n"
+                "Both are also released under CC0 1.0 Universal (public domain dedication):\n"
                 "https://creativecommons.org/publicdomain/zero/1.0/\n"
                 "No credit is required to use them, or anything made with them.\n")
 
