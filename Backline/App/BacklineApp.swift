@@ -8,6 +8,7 @@ struct BacklineApp: App {
     @State private var engine: EngineController
     @State private var pedals: PedalController
     @State private var assistant: Assistant
+    @State private var tutorial = Tutorial()
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -33,6 +34,7 @@ struct BacklineApp: App {
                 .environment(engine)
                 .environment(pedals)
                 .environment(assistant)
+                .environment(tutorial)
                 .preferredColorScheme(.dark)
                 .onChange(of: scenePhase) { _, phase in
                     if phase != .active { store.saveNow() }

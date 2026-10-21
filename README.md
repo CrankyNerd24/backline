@@ -6,6 +6,14 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 
 ## Status: milestone 10 (polish): all v1 milestones built
 
+**Guided tour** (`Features/Tutorial/`): the first launch runs a 23-step walkthrough on the real screens, in place of the old three-card welcome. It covers four chapters:
+- **Your first song:** the song row, Play, the feel sliders, changing a groove in the Groove Picker, Stop, and adding sections.
+- **Tell Backline:** typing or tapping a suggestion, the reply and Undo, and the mic.
+- **Play along:** the play-along screen, queued actions, foot pedals, and voice.
+- **Kits & export:** the Kit Editor and Export.
+
+Each step dims the screen around one control and explains it. Hands-on steps wait until you've actually done the thing ("Press Play", "Drag any slider", "Tap a groove"); you can also skip a step, go back, or skip the whole tour. **Take the Tour** in the song menu replays it. Controls opt in with `.tutorialAnchor("id")`, and each screen hosts the steps that belong to it with `.tutorialHost(.screen)`.
+
 **Tell Backline** (for players who aren't drummers): a bar under the header, and a big mic in Play-along, takes requests in plain words. Type, or hold the mic and speak.
 - **Feel and sound:** "more swing", "make the chorus hit harder", "simpler verses", "tighter", "punchier", "bigger room", "darker cymbals", "louder kick", "half time in the bridge", "put the solo on the ride", "big fill into the chorus", "use the metal kit".
 - **Tempo and grooves:** "faster", "slow it down a bit", "90 BPM", "make it funky", "a shuffle", "different groove".
@@ -43,7 +51,7 @@ Start one from **New Song ▸ From a template** in the song menu, or from the ca
 - Three older 4/4 triplet grooves that were named after 12/8 or 6/8 are now called "Slow Triplet Blues", "Triplet Ballad" and "Triplet Bell Feel".
 
 **Milestone 10**: polish.
-- **Onboarding:** on first launch, a short welcome explains the starter song (Intro, Verse, Chorus, Verse, Chorus, Outro in Rock), the Groove Picker, and Play-along with pedals. **How Backline Works** in the song menu shows it again.
+- **Onboarding:** on first launch, a guided tour (see below) walks through the starter song and the app.
 - **Empty states:** a song with no sections offers the starter layout or a single verse in one tap. Pedal Setup says when no pedal is connected. The Groove Picker has a message for an empty list.
 - **Errors are shown:** save and audio problems, which were recorded but never displayed, now show as a dismissible banner.
 - **Accessibility (spec §11):** every text and background token pair meets 4.5:1. The played part of a section block is now lightened rather than darkened, which had dropped labels to about 3.6:1. In Play-along, VoiceOver reads "Chorus 1, bar 3 of 8" whenever it's focused, and the song map says which section this is and what's next. Two-finger double tap (Magic Tap) plays and stops.

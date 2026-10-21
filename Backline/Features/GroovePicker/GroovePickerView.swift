@@ -39,8 +39,10 @@ struct GroovePickerView: View {
         VStack(spacing: 0) {
             header
             styleTabs
+                .tutorialAnchor("styleTabs")
             HStack(spacing: 0) {
                 list
+                    .tutorialAnchor("grooveList")
                 Theme.line.frame(width: 1)
                 detail
                     .frame(width: 360)
@@ -48,6 +50,7 @@ struct GroovePickerView: View {
         }
         .background(Theme.bg)
         .foregroundStyle(Theme.text)
+        .tutorialHost(.groovePicker)
         .onDisappear { engine.stopPreview() }
         .onChange(of: variations) {
             if engine.previewingGrooveID != nil { startPreview() }
@@ -207,6 +210,7 @@ struct GroovePickerView: View {
                             Text("Use for \(section.name)").frame(maxWidth: .infinity)
                         }
                         .buttonStyle(ChipButtonStyle(prominent: true))
+                        .tutorialAnchor("useGroove")
 
                         let sameKind = store.song.sections.filter { $0.kind == section.kind }
                         if sameKind.count > 1 {

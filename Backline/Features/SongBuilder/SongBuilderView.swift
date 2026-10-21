@@ -8,7 +8,7 @@ struct SongBuilderView: View {
     @Environment(GrooveLibrary.self) private var library
     @State private var selectedID: UUID?
     @State private var dismissedError: String?
-    @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
+    @Environment(Tutorial.self) private var tutorial
 
     /// Something that went wrong saving or with audio, until it's dismissed.
     private var error: String? {
@@ -27,6 +27,7 @@ struct SongBuilderView: View {
             SongHeader()
             if let error { errorBanner(error) }
             AskBar(currentSectionID: selection)
+                .tutorialAnchor("askBar")
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
                 .background(Theme.bgDeep)
@@ -34,6 +35,7 @@ struct SongBuilderView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     SongRow(selectedID: $selectedID, selection: selection)
+                        .tutorialAnchor("songRow")
                     if let selection {
                         SectionSettings(sectionID: selection, selectedID: $selectedID)
                     } else {
@@ -53,9 +55,8 @@ struct SongBuilderView: View {
             engine.cuedSectionID = id // where a pedal's Play starts
         }
         .pedalConfirmations()
-        .sheet(isPresented: Binding(get: { !hasSeenWelcome }, set: { hasSeenWelcome = !$0 })) {
-            WelcomeView()
-        }
+        .tutorialHost(.builder)
+        .onAppear { tutorial.startIfFirstLaunch() }
         .onChange(of: store.song.id) {
             engine.stop()
             engine.setLoop(nil)
