@@ -6,6 +6,21 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 
 ## Status: milestone 10 (polish): all v1 milestones built
 
+**Build it for me** (`Model/Arranger.swift`, `Features/BuildIt/`): **New Song ▸ Build It for Me…**, or the button on an empty song, asks four plain questions: style, count (4/4, waltz, 6/8, slow 12/8), vibe (Laid back, Driving, Epic), tempo (suggested for the style, or tap along) and length (Short, Normal, Long). It then arranges the whole song:
+- a calmer groove for verses and a bigger one for choruses, chosen by tags and tempo fit;
+- energy that lifts into each chorus and peaks at the last one;
+- big fills into choruses and no fill out of the last section;
+- a half-time breakdown for Epic songs;
+- a kit that suits the style.
+
+Blues verses and solos are 12 bars long. Three-beat songs get twice the bars.
+
+**Energy** (`Model/Energy.swift`): each section's feel card leads with one control, from **Chill** through Laid back, Steady and Driving to **Big**. It sets busy and intensity together. Driving moves the hi-hat to the ride, Big goes to the crash, and the fill size follows. The four sliders are still under **Fine-tune**.
+
+**Simple mode:** by default, the drummer's controls are hidden. These are the pattern editor, time signatures, the busy, intensity and human sliders, time feel, cymbals, and the Kit Editor's tune, attack, decay and character knobs. Energy, swing, fills, tone, room and volume stay. Turn on **Show Advanced Controls** in the song menu to see everything.
+
+**Next-up countdown** (Play-along): over the last two bars of a section, and during the count-in, a banner shows what's next and how many bars are left. On the final bar it fills with the next section's colour and counts the beats, 4-3-2-1. It doesn't show for looping sections, which wait for a step.
+
 **Guided tour** (`Features/Tutorial/`): the first launch runs a 23-step walkthrough on the real screens, in place of the old three-card welcome. It covers four chapters:
 - **Your first song:** the song row, Play, the feel sliders, changing a groove in the Groove Picker, Stop, and adding sections.
 - **Tell HouseKit:** typing or tapping a suggestion, the reply and Undo, and the mic.

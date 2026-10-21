@@ -14,10 +14,12 @@ struct SongHeader: View {
     @State private var settingUpPedals = false
     @State private var editingKit = false
     @State private var exporting = false
+    @State private var building = false
     @State private var renaming = false
     @State private var newName = ""
     @State private var confirmingDelete = false
     @State private var tapTempo = TapTempo()
+    @AppStorage("showAdvanced") private var showAdvanced = false
 
     var body: some View {
         HStack(spacing: 16) {
@@ -86,6 +88,11 @@ struct SongHeader: View {
                 .environment(assistant)
                 .environment(tutorial)
         }
+        .fullScreenCover(isPresented: $building) {
+            BuildItView { store.newSong($0) }
+                .environment(library)
+                .environment(kits)
+        }
         .sheet(isPresented: $exporting) {
             ExportView()
                 .environment(store)
@@ -119,6 +126,7 @@ struct SongHeader: View {
             }
             Divider()
             Menu("New Song", systemImage: "plus") {
+                Button("Build It for Me…", systemImage: "wand.and.stars") { building = true }
                 Button("Empty Song", systemImage: "doc") { store.newSong(from: nil, library: library) }
                 SwiftUI.Section("From a template") { // `Section` alone is the song's section type
                     ForEach(SongTemplate.all) { template in
@@ -133,6 +141,9 @@ struct SongHeader: View {
             Button("Duplicate", systemImage: "plus.square.on.square") { store.duplicateSong() }
             Button("Delete…", systemImage: "trash", role: .destructive) { confirmingDelete = true }
             Divider()
+            Toggle(isOn: $showAdvanced) {
+                Label("Show Advanced Controls", systemImage: "slider.horizontal.3")
+            }
             Button("Take the Tour", systemImage: "questionmark.circle") { tutorial.start() }
         } label: {
             HStack(spacing: 6) {

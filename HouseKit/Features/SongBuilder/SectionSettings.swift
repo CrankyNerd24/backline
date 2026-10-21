@@ -14,6 +14,9 @@ struct SectionSettings: View {
     @State private var confirmingDeleteAll = false
     @State private var choosingGroove = false
     @State private var editingPattern = false
+    /// Simple mode (the default) hides the drummer's controls: the pattern
+    /// editor, time signatures, the four feel sliders, time feel and cymbals.
+    @AppStorage("showAdvanced") private var showAdvanced = false
 
     var body: some View {
         if let index = store.song.index(of: sectionID) {
@@ -142,13 +145,15 @@ struct SectionSettings: View {
                     .fixedSize(horizontal: false, vertical: true)
                 MiniPattern(pattern: section.wrappedValue.mainPattern(library: library))
                     .padding(.vertical, 4)
-                VStack(alignment: .leading, spacing: 8) {
-                    Eyebrow("Time signature")
-                    SegmentedPicker(options: TimeSig.allCases,
-                                    selection: Binding(get: { section.wrappedValue.timeSignature },
-                                                       set: { setTimeSignature($0, of: section) })) { $0.label }
-                        .frame(maxWidth: 320)
-                        .accessibilityLabel("Time signature")
+                if showAdvanced {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Eyebrow("Time signature")
+                        SegmentedPicker(options: TimeSig.allCases,
+                                        selection: Binding(get: { section.wrappedValue.timeSignature },
+                                                           set: { setTimeSignature($0, of: section) })) { $0.label }
+                            .frame(maxWidth: 320)
+                            .accessibilityLabel("Time signature")
+                    }
                 }
                 HStack(spacing: 8) {
                     Button {
@@ -158,12 +163,14 @@ struct SectionSettings: View {
                     }
                     .buttonStyle(ChipButtonStyle(prominent: true))
                     .tutorialAnchor("changeGroove")
-                    Button {
-                        editingPattern = true
-                    } label: {
-                        Label("Edit pattern", systemImage: "square.grid.3x3")
+                    if showAdvanced {
+                        Button {
+                            editingPattern = true
+                        } label: {
+                            Label("Edit pattern", systemImage: "square.grid.3x3")
+                        }
+                        .buttonStyle(ChipButtonStyle())
                     }
-                    .buttonStyle(ChipButtonStyle())
                 }
             }
         }
@@ -174,13 +181,29 @@ struct SectionSettings: View {
     private func feelCard(_ section: Binding<Section>) -> some View {
         Card {
             VStack(alignment: .leading, spacing: 14) {
-                Eyebrow("Feel")
-                FeelSlider(low: "Simpler", high: "Busier", value: section.feel.busy)
-                FeelSlider(low: "Softer", high: "Harder", value: section.feel.intensity)
-                FeelSlider(low: "Straight", high: "Swung", value: section.feel.swing)
-                    .disabled(!section.wrappedValue.timeSignature.allowsSwing)
-                    .opacity(section.wrappedValue.timeSignature.allowsSwing ? 1 : 0.4)
-                FeelSlider(low: "Locked in", high: "Human", value: section.feel.human)
+                Eyebrow("Energy")
+                SegmentedPicker(options: EnergyLevel.allCases,
+                                selection: Binding(get: { EnergyLevel.nearest(section.wrappedValue.energy) },
+                                                   set: { level in setEnergy(level, of: section) })) { $0.label }
+                    .accessibilityLabel("Energy")
+                Text(energyHint(EnergyLevel.nearest(section.wrappedValue.energy)))
+                    .font(Theme.body(13))
+                    .foregroundStyle(Theme.textMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+                if showAdvanced {
+                    Eyebrow("Fine-tune")
+                        .padding(.top, 4)
+                    FeelSlider(low: "Simpler", high: "Busier", value: section.feel.busy)
+                    FeelSlider(low: "Softer", high: "Harder", value: section.feel.intensity)
+                    FeelSlider(low: "Straight", high: "Swung", value: section.feel.swing)
+                        .disabled(!section.wrappedValue.timeSignature.allowsSwing)
+                        .opacity(section.wrappedValue.timeSignature.allowsSwing ? 1 : 0.4)
+                    FeelSlider(low: "Locked in", high: "Human", value: section.feel.human)
+                } else {
+                    FeelSlider(low: "Straight", high: "Swung", value: section.feel.swing)
+                        .disabled(!section.wrappedValue.timeSignature.allowsSwing)
+                        .opacity(section.wrappedValue.timeSignature.allowsSwing ? 1 : 0.4)
+                }
             }
         }
         .tutorialAnchor("feel")
@@ -196,13 +219,15 @@ struct SectionSettings: View {
             : sections[index].kind == .outro ? "ending" : nil
         return Card {
             HStack(alignment: .top, spacing: 24) {
-                option("Time") {
-                    SegmentedPicker(options: TimeFeel.allCases, selection: section.time) { $0.label }
-                        .disabled(!section.wrappedValue.timeSignature.allowsTimeFeel)
-                        .opacity(section.wrappedValue.timeSignature.allowsTimeFeel ? 1 : 0.4)
-                }
-                option("Cymbals") {
-                    SegmentedPicker(options: CymbalChoice.allCases, selection: section.cymbals) { $0.label }
+                if showAdvanced {
+                    option("Time") {
+                        SegmentedPicker(options: TimeFeel.allCases, selection: section.time) { $0.label }
+                            .disabled(!section.wrappedValue.timeSignature.allowsTimeFeel)
+                            .opacity(section.wrappedValue.timeSignature.allowsTimeFeel ? 1 : 0.4)
+                    }
+                    option("Cymbals") {
+                        SegmentedPicker(options: CymbalChoice.allCases, selection: section.cymbals) { $0.label }
+                    }
                 }
                 option(next.map { "Fill into \($0)" } ?? "Fill (last section)") {
                     SegmentedPicker(options: FillSize.allCases, selection: section.fillIntoNext) { $0.label }
@@ -237,6 +262,22 @@ struct SectionSettings: View {
                 store.song.sections[index] = newValue
             }
         )
+    }
+
+    private func setEnergy(_ level: EnergyLevel, of section: Binding<Section>) {
+        var next = section.wrappedValue
+        next.setEnergy(level.value, naturalCymbals: library.groove(next.grooveID).naturalCymbals)
+        section.wrappedValue = next
+    }
+
+    private func energyHint(_ level: EnergyLevel) -> String {
+        switch level {
+        case .chill: "Sparse and soft. For quiet verses and intros."
+        case .laidBack: "Relaxed, with room for the guitar."
+        case .steady: "The groove as written."
+        case .driving: "Busier and harder, on the ride. For choruses."
+        case .big: "Everything in, on the crash. For the last chorus."
+        }
     }
 
     /// Grooves are written in one time, so a new time signature brings a
