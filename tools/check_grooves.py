@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checks the built-in groove library (Backline/Library/Grooves/*.json).
+"""Checks the built-in groove library (HouseKit/Library/Grooves/*.json).
 
     python3 tools/check_grooves.py        # validate
     python3 tools/check_grooves.py -v     # validate and print every groove as a grid
@@ -21,7 +21,7 @@ RULERS = {("fourFour", "sixteenths"): "1e&a2e&a3e&a4e&a", ("fourFour", "triplets
           ("sixEight", "sixteenths"): "1&2&3&4&5&6&", ("twelveEight", "eighths"): "123456789abc"}
 STYLES = ["Rock", "Blues & Shuffle", "Funk", "Country", "Metal", "Punk", "Pop", "Ballad", "Reggae",
           "Jazz & Swing", "Hip-hop", "Latin"]
-ROOT = os.path.join(os.path.dirname(__file__), "..", "Backline", "Library", "Grooves")
+ROOT = os.path.join(os.path.dirname(__file__), "..", "HouseKit", "Library", "Grooves")
 
 
 def check_pattern(where, p, errors, meter):

@@ -1,9 +1,9 @@
 // Renders listening clips of the synthesized kit, for judging the sounds
 // without an iPad:
 //
-//   backline-kit-demo outdir [samplesdir]
+//   housekit-kit-demo outdir [samplesdir]
 //
-// With samplesdir (Backline/Library/Samples), the recorded sounds load first.
+// With samplesdir (HouseKit/Library/Samples), the recorded sounds load first.
 //
 // writes, as 48 kHz 24-bit stereo WAV:
 //   <piece>-<model id>.wav each starting sound of each piece: loud, normal and
@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "../Tests/DSP/TestPatterns.hpp"
-#include "backline_engine.h"
+#include "housekit_engine.h"
 
 namespace {
 

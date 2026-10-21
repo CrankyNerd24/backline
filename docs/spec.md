@@ -1,6 +1,6 @@
-# Backline — iPad Drum Track App · Build Spec
+# HouseKit — iPad Drum Track App · Build Spec
 
-> **Working name:** "Backline" (placeholder; check availability before shipping).
+> **Working name:** "HouseKit" (placeholder; check availability before shipping).
 > **Platform:** iPadOS, landscape-first, SwiftUI.
 > **Design reference:** the mockup canvas "Drum Track App Mockups" (6 screens). This file describes everything in it, so the canvas is helpful but not required.
 
