@@ -135,6 +135,7 @@ struct KitEditorView: View {
         Button {
             store.song.kitID = kit.id
             store.song.kitOverride = nil
+            engine.load(store.song)
         } label: {
             if kit.id == store.song.kitID {
                 Label(kit.name, systemImage: "checkmark")
@@ -371,6 +372,10 @@ struct KitEditorView: View {
         var next = kit
         change(&next)
         store.song.kitOverride = next == base ? nil : next
+        // Straight to the engine, so a sound tapped right after plays as
+        // picked. (The Song Builder passes changes on too, but only once it
+        // updates, after this tap's audition had already played the old one.)
+        engine.load(store.song)
     }
 
     private func resetPiece() {
@@ -382,6 +387,7 @@ struct KitEditorView: View {
         let saved = kits.saveUserKit(named: kitName, from: kit)
         store.song.kitID = saved.id
         store.song.kitOverride = nil
+        engine.load(store.song)
     }
 
     /// Loops the section being worked on so kit changes are heard in context.
