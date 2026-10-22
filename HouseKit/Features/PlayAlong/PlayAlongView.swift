@@ -289,13 +289,12 @@ struct PlayAlongView: View {
 
                 VStack(alignment: .leading, spacing: 10) {
                     Eyebrow("Actions")
-                    HStack(spacing: 8) {
-                        Button("Fill now") { engine.queue(.fillNow) }
-                            .buttonStyle(ChipButtonStyle())
-                        Button("Big ending") { engine.queue(.bigEnding) }
-                            .buttonStyle(ChipButtonStyle())
-                        Button("Tap tempo") { tap() }
-                            .buttonStyle(ChipButtonStyle())
+                    // Two to a row: three across didn't fit the panel, and the
+                    // labels were cut to "Big endi…" and "Tap te…".
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2), spacing: 8) {
+                        actionButton("Fill now", systemImage: "music.note") { engine.queue(.fillNow) }
+                        actionButton("Big ending", systemImage: "flag.checkered") { engine.queue(.bigEnding) }
+                        actionButton("Tap tempo", systemImage: "hand.tap") { tap() }
                     }
                     .disabled(!engine.isPlaying)
                     Text("Tap an action again before it lands to cancel it.")
@@ -307,7 +306,15 @@ struct PlayAlongView: View {
         }
     }
 
-    private func levelRow(_ title: String, value: Binding<Double>) -> some View {
+    private func actionButton(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(ChipButtonStyle())
+    }
+
+        private func levelRow(_ title: String, value: Binding<Double>) -> some View {
         HStack(spacing: 12) {
             Text(title)
                 .font(Theme.body(15, weight: .medium))
