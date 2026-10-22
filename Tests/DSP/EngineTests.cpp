@@ -1829,6 +1829,10 @@ static void testBundledSamples() {
     }
     for (uint8_t sound = 0; sound < BL_SOUND_COUNT; ++sound)
         CHECK(bl_sample_bank_count(all, sound) >= 2, "sound %d has %u takes", sound, bl_sample_bank_count(all, sound));
+    bl_samples_install(all);
+    CHECK(bl_samples_keep_warm() > 10000, "kept %u pages warm", bl_samples_keep_warm());
+    bl_samples_install(nullptr);
+    CHECK(bl_samples_keep_warm() == 0, "pages without a bank");
 }
 
 // How much faster than real time the engine renders (headroom for 5 ms buffers).

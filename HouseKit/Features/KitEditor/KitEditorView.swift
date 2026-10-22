@@ -36,10 +36,17 @@ struct KitEditorView: View {
                 // The knobs stay put below the scrolling list of sounds:
                 // dragging on a knob turns it, so they can't be what scrolls.
                 VStack(spacing: 0) {
-                    ScrollView {
-                        startingSounds
-                            .tutorialAnchor("startingSounds")
-                            .padding(24)
+                    ScrollViewReader { scroller in
+                        ScrollView {
+                            startingSounds
+                                .tutorialAnchor("startingSounds")
+                                .padding(24)
+                        }
+                        // The chosen sound may be far down the list (the
+                        // recorded kits come last): bring it into view.
+                        .onChange(of: piece, initial: true) {
+                            scroller.scrollTo(kit.voice(piece).model, anchor: .center)
+                        }
                     }
                     Theme.line.frame(height: 1)
                     shapeIt
@@ -199,8 +206,9 @@ struct KitEditorView: View {
                                 .lineLimit(2)
                                 .multilineTextAlignment(.leading)
                         }
-                        .padding(12)
-                        .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .frame(maxWidth: .infinity, minHeight: 68, alignment: .topLeading)
                         .background(Theme.panel, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
                         .overlay(
                             RoundedRectangle(cornerRadius: Theme.Radius.card)
@@ -208,6 +216,7 @@ struct KitEditorView: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    .id(model.id)
                     .accessibilityLabel("\(model.name): \(model.description)")
                     .accessibilityAddTraits(selected ? .isSelected : [])
                 }
@@ -230,10 +239,10 @@ struct KitEditorView: View {
                     .fixedSize()
                     .accessibilityHint("Shows Tune, Attack, Decay and \(characterTitle)")
             }
-            // Two rows: pitch and how the hit starts and ends, then its
-            // character and where it sits in the mix.
-            LazyVGrid(columns: Array(repeating: GridItem(.fixed(96), spacing: 18), count: 4), alignment: .leading,
-                      spacing: 16) {
+            // As many knobs to a row as fit: one row on bigger iPads, which
+            // leaves the list of sounds above the most room.
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 96, maximum: 108), spacing: 14)], alignment: .leading,
+                      spacing: 14) {
                 if showAdvanced {
                     Knob(title: "Tune", value: binding(\.tune), range: -12...12, defaultValue: 0,
                          format: { $0 == 0 ? "0 st" : String(format: "%+.0f st", $0) }, hint: "Lower ↔ Higher", step: 1)

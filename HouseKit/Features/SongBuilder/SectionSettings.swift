@@ -17,6 +17,7 @@ struct SectionSettings: View {
     /// Simple mode (the default) hides the drummer's controls: the pattern
     /// editor, time signatures, the four feel sliders, time feel and cymbals.
     @AppStorage("showAdvanced") private var showAdvanced = false
+    @Environment(\.compactWidth) private var compactWidth
 
     var body: some View {
         if let index = store.song.index(of: sectionID) {
@@ -102,11 +103,9 @@ struct SectionSettings: View {
 
             Spacer(minLength: 0)
 
-            // Icons only when the row is short of room (smaller iPads).
-            ViewThatFits(in: .horizontal) {
-                actions(compact: false)
-                actions(compact: true)
-            }
+            // Icons only on smaller iPads, where the row is short of room.
+            actions(compact: compactWidth)
+                .fixedSize()
         }
     }
 

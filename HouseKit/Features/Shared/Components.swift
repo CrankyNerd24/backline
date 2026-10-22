@@ -187,3 +187,10 @@ extension TimeInterval {
         return String(format: "%d:%02d", total / 60, total % 60)
     }
 }
+
+extension EnvironmentValues {
+    /// True on narrower iPads (under 1180 points across, such as a 10.2" or
+    /// 9.7" iPad in landscape): rows switch to shorter labels and icons. Set
+    /// by the Song Builder from its own width.
+    @Entry var compactWidth = false
+}

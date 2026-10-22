@@ -156,6 +156,11 @@ uint32_t bl_sample_bank_count(const BLSampleBank *bank, uint8_t sound);
 // bank is never freed and must not be changed afterwards; installing another
 // replaces it for hits that start later. NULL removes it (tests).
 void bl_samples_install(BLSampleBank *bank);
+// Reads one value from every memory page of the installed bank and returns
+// how many pages it read. Call it every few seconds off the audio thread:
+// pages iOS hasn't seen used get compressed or paged out under memory
+// pressure, and bringing one back on the audio thread is a dropout.
+uint32_t bl_samples_keep_warm(void);
 
 // MARK: Timeline
 //

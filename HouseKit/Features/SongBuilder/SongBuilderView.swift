@@ -13,6 +13,7 @@ struct SongBuilderView: View {
     @Environment(KitLibrary.self) private var kits
     @State private var building = false
     @State private var askTyping = false
+    @State private var compactWidth = false
 
     /// Something that went wrong saving or with audio, until it's dismissed.
     private var error: String? {
@@ -61,6 +62,8 @@ struct SongBuilderView: View {
             TransportBar(selection: selection)
         }
         .background(Theme.bg)
+        .environment(\.compactWidth, compactWidth)
+        .onGeometryChange(for: Bool.self) { $0.size.width < 1180 } action: { compactWidth = $0 }
         // Typing in the bar at the top: the keyboard covers only the bottom of
         // the screen, so nothing needs to move. Making room for it re-laid out
         // the whole screen on every frame of the keyboard's slide, which on

@@ -1,6 +1,7 @@
 #include "Samples.hpp"
 
 #include <algorithm>
+#include <sys/mman.h>
 #include <cstdio>
 #include <cstring>
 
@@ -259,8 +260,33 @@ uint32_t bl_sample_bank_count(const BLSampleBank *bank, uint8_t sound) {
 
 void bl_samples_install(BLSampleBank *bank) {
     if (bank)
-        for (auto &set : bank->sounds) set.finish();
+        for (auto &set : bank->sounds) {
+            set.finish();
+            // Pin the recordings in memory where the system allows it, so
+            // the audio thread never waits for one to be paged back in.
+            // Where it doesn't, bl_samples_keep_warm() keeps them in use.
+            for (const auto &take : set.takes)
+                if (!take.pcm.empty()) mlock(take.pcm.data(), take.pcm.size() * sizeof(int16_t));
+        }
     housekit::gBank.store(bank, std::memory_order_release);
+}
+
+static std::atomic<int32_t> gWarmSink{0};
+
+uint32_t bl_samples_keep_warm(void) {
+    const BLSampleBank *bank = housekit::installedBank();
+    if (!bank) return 0;
+    constexpr size_t kStep = 4096 / sizeof(int16_t); // one value per 4 KB page
+    uint32_t pages = 0;
+    int32_t sum = 0;
+    for (const auto &set : bank->sounds)
+        for (const auto &take : set.takes)
+            for (size_t i = 0; i < take.pcm.size(); i += kStep) {
+                sum += take.pcm[i];
+                ++pages;
+            }
+    gWarmSink.store(sum, std::memory_order_relaxed); // so the reads aren't optimised away
+    return pages;
 }
 
 } // extern "C"

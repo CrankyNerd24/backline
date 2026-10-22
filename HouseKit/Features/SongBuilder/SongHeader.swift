@@ -20,14 +20,13 @@ struct SongHeader: View {
     @State private var confirmingDelete = false
     @State private var tapTempo = TapTempo()
     @AppStorage("showAdvanced") private var showAdvanced = false
+    @Environment(\.compactWidth) private var compactWidth
 
     var body: some View {
-        // Smaller iPads (1024 points across) get the compact header: no
-        // wordmark, and Export as an icon.
-        ViewThatFits(in: .horizontal) {
-            row(compact: false)
-            row(compact: true)
-        }
+        // Smaller iPads get the compact header: no wordmark, and Export as an
+        // icon. (Chosen by width rather than ViewThatFits, which picked a row
+        // that then squeezed TAP down to "…".)
+        row(compact: compactWidth)
         .padding(.horizontal, 24)
         .padding(.vertical, 12)
         .background(Theme.bg)
@@ -87,8 +86,10 @@ struct SongHeader: View {
 
             songMenu
                 .tutorialAnchor("songMenu")
+                .layoutPriority(-1) // a long name truncates before anything else gives way
             Spacer(minLength: 12)
             tempo
+                .fixedSize()
             Text(store.song.timeSignatureLabel)
                 .font(Theme.condensed(20, weight: .bold))
                 .foregroundStyle(Theme.textMuted)
@@ -197,6 +198,7 @@ struct SongHeader: View {
                 if let bpm = tapTempo.tap() { setTempo(bpm) }
             }
             .buttonStyle(ChipButtonStyle())
+            .fixedSize()
             .accessibilityLabel("Tap tempo")
             .accessibilityHint("Tap four or more times in time with the music")
         }
