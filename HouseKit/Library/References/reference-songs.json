@@ -1,0 +1,442 @@
+[
+ {
+  "title": "Back in Black",
+  "artist": "AC/DC",
+  "bpm": 94,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.straight8ths",
+  "feel": "Straight eighths on the hi-hat, kick and snare locked to the riff. Mid-tempo and heavy.",
+  "kit": "Big Rusty"
+ },
+ {
+  "title": "Highway to Hell",
+  "artist": "AC/DC",
+  "bpm": 116,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.straight8ths",
+  "feel": "Straight eighths, big backbeat, crash into each chorus.",
+  "kit": "Big Rusty"
+ },
+ {
+  "title": "Seven Nation Army",
+  "artist": "The White Stripes",
+  "bpm": 124,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.quarterPulse",
+  "feel": "A steady kick-and-snare pulse in quarter notes, opening up to the cymbals in the big parts.",
+  "kit": "Garage Kit"
+ },
+ {
+  "title": "Smells Like Teen Spirit",
+  "artist": "Nirvana",
+  "bpm": 117,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.driving",
+  "feel": "Driving eighths with open hats in the chorus; quiet verses, loud choruses.",
+  "kit": "Big Rusty"
+ },
+ {
+  "title": "Everlong",
+  "artist": "Foo Fighters",
+  "bpm": 158,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.driving",
+  "feel": "Fast, driving eighths with a busy kick and lots of crash.",
+  "kit": "Arena Rock"
+ },
+ {
+  "title": "Mr. Brightside",
+  "artist": "The Killers",
+  "bpm": 148,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.driving",
+  "feel": "Fast straight eighths that keep pushing from start to finish.",
+  "kit": "Studio Rock"
+ },
+ {
+  "title": "Sweet Child O' Mine",
+  "artist": "Guns N' Roses",
+  "bpm": 125,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.straight8ths",
+  "feel": "Straight rock eighths with a big snare, riding the crash in the choruses.",
+  "kit": "Arena Rock"
+ },
+ {
+  "title": "Livin' on a Prayer",
+  "artist": "Bon Jovi",
+  "bpm": 123,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.straight8ths",
+  "feel": "Straight eighths and a huge backbeat; big room, big choruses.",
+  "kit": "Arena Rock"
+ },
+ {
+  "title": "Should I Stay or Should I Go",
+  "artist": "The Clash",
+  "bpm": 113,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.straight8ths",
+  "feel": "Simple straight-ahead eighths; the double-time sections are punk-fast.",
+  "kit": "Garage Kit"
+ },
+ {
+  "title": "Boulevard of Broken Dreams",
+  "artist": "Green Day",
+  "bpm": 83,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.straight8ths",
+  "feel": "Slow straight eighths with a heavy backbeat.",
+  "kit": "Studio Rock"
+ },
+ {
+  "title": "Don't Stop Believin'",
+  "artist": "Journey",
+  "bpm": 119,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.straight8ths",
+  "feel": "Builds from sparse to straight driving eighths.",
+  "kit": "Studio Rock"
+ },
+ {
+  "title": "Rock and Roll",
+  "artist": "Led Zeppelin",
+  "bpm": 169,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.driving",
+  "feel": "Fast, loose, driving eighths with lots of crash.",
+  "kit": "Big Rusty"
+ },
+ {
+  "title": "Paranoid",
+  "artist": "Black Sabbath",
+  "bpm": 164,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.driving",
+  "feel": "Fast, relentless eighths under the riff.",
+  "kit": "Big Rusty"
+ },
+ {
+  "title": "Crazy Train",
+  "artist": "Ozzy Osbourne",
+  "bpm": 138,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.driving",
+  "feel": "Driving eighths with a busy kick.",
+  "kit": "Arena Rock"
+ },
+ {
+  "title": "Every Breath You Take",
+  "artist": "The Police",
+  "bpm": 117,
+  "meter": "fourFour",
+  "style": "Pop",
+  "groove": "rock.straight8ths",
+  "feel": "Light, steady eighths that stay out of the way; a soft, even feel.",
+  "kit": "Vintage 60s"
+ },
+ {
+  "title": "Billie Jean",
+  "artist": "Michael Jackson",
+  "bpm": 117,
+  "meter": "fourFour",
+  "style": "Pop",
+  "groove": "rock.straight8ths",
+  "feel": "A tight, dry straight-eighth groove: kick on 1 and 3, snare on 2 and 4, eighths on the hats.",
+  "kit": "Dry Funk"
+ },
+ {
+  "title": "Africa",
+  "artist": "Toto",
+  "bpm": 92,
+  "meter": "fourFour",
+  "style": "Pop",
+  "groove": "pop.syncopated",
+  "feel": "A light, syncopated pop groove with lots of space.",
+  "kit": "Indie Mix"
+ },
+ {
+  "title": "Dancing Queen",
+  "artist": "ABBA",
+  "bpm": 101,
+  "meter": "fourFour",
+  "style": "Pop",
+  "groove": "pop.fourOnFloor",
+  "feel": "Four on the floor with open hats on the offbeats.",
+  "kit": "Indie Mix"
+ },
+ {
+  "title": "Get Lucky",
+  "artist": "Daft Punk",
+  "bpm": 116,
+  "meter": "fourFour",
+  "style": "Pop",
+  "groove": "pop.fourOnFloor",
+  "feel": "Four on the floor, open hats between, a light disco feel.",
+  "kit": "Dry Funk"
+ },
+ {
+  "title": "Everybody Wants to Rule the World",
+  "artist": "Tears for Fears",
+  "bpm": 112,
+  "meter": "fourFour",
+  "style": "Pop",
+  "groove": "pop.shuffle",
+  "feel": "A light shuffle with a steady backbeat.",
+  "kit": "Indie Mix"
+ },
+ {
+  "title": "Superstition",
+  "artist": "Stevie Wonder",
+  "bpm": 100,
+  "meter": "fourFour",
+  "style": "Funk",
+  "groove": "funk.tight",
+  "feel": "Tight sixteenth-note funk on the hats with ghost notes on the snare.",
+  "kit": "Dry Funk"
+ },
+ {
+  "title": "Uptown Funk",
+  "artist": "Mark Ronson ft. Bruno Mars",
+  "bpm": 115,
+  "meter": "fourFour",
+  "style": "Funk",
+  "groove": "funk.tight",
+  "feel": "Tight, punchy funk with sixteenths and accents.",
+  "kit": "Dry Funk"
+ },
+ {
+  "title": "Pride and Joy",
+  "artist": "Stevie Ray Vaughan",
+  "bpm": 118,
+  "meter": "fourFour",
+  "style": "Blues & Shuffle",
+  "groove": "blues.shuffle",
+  "feel": "A Texas shuffle: swung eighths on the hats, strong backbeat.",
+  "kit": "Swirly Vintage"
+ },
+ {
+  "title": "La Grange",
+  "artist": "ZZ Top",
+  "bpm": 161,
+  "meter": "fourFour",
+  "style": "Blues & Shuffle",
+  "groove": "blues.boogie",
+  "feel": "A fast boogie shuffle.",
+  "kit": "Big Rusty"
+ },
+ {
+  "title": "Rosanna",
+  "artist": "Toto",
+  "bpm": 86,
+  "meter": "fourFour",
+  "style": "Blues & Shuffle",
+  "groove": "blues.halfTimeShuffle",
+  "feel": "The half-time shuffle: swung ghost notes on the snare between a big backbeat on 3.",
+  "kit": "Studio Rock"
+ },
+ {
+  "title": "Three Little Birds",
+  "artist": "Bob Marley & The Wailers",
+  "bpm": 75,
+  "meter": "fourFour",
+  "style": "Reggae",
+  "groove": "reggae.oneDrop",
+  "feel": "One drop: kick and rimshot together on 3, a relaxed swung hat.",
+  "kit": "Vintage 60s"
+ },
+ {
+  "title": "The Girl from Ipanema",
+  "artist": "Stan Getz & João Gilberto",
+  "bpm": 130,
+  "meter": "fourFour",
+  "style": "Latin",
+  "groove": "latin.bossaFeel",
+  "feel": "Bossa nova: soft cross-stick pattern over a light kick.",
+  "kit": "Jazz Brushes"
+ },
+ {
+  "title": "Oye Como Va",
+  "artist": "Santana",
+  "bpm": 125,
+  "meter": "fourFour",
+  "style": "Latin",
+  "groove": "latin.chaCha",
+  "feel": "A cha-cha groove under the organ.",
+  "kit": "Vintage 60s"
+ },
+ {
+  "title": "Smooth",
+  "artist": "Santana ft. Rob Thomas",
+  "bpm": 116,
+  "meter": "fourFour",
+  "style": "Latin",
+  "groove": "latin.rock",
+  "feel": "Latin rock: syncopated, on the ride, pushing forward.",
+  "kit": "Studio Rock"
+ },
+ {
+  "title": "Take the \"A\" Train",
+  "artist": "Duke Ellington",
+  "bpm": 165,
+  "meter": "fourFour",
+  "style": "Jazz & Swing",
+  "groove": "jazz.mediumSwing",
+  "feel": "Medium-up swing on the ride, feathered kick, hats on 2 and 4.",
+  "kit": "Jazz Brushes"
+ },
+ {
+  "title": "Fly Me to the Moon",
+  "artist": "Frank Sinatra",
+  "bpm": 119,
+  "meter": "fourFour",
+  "style": "Jazz & Swing",
+  "groove": "jazz.mediumSwing",
+  "feel": "Medium swing on the ride with hats on 2 and 4.",
+  "kit": "Jazz Brushes"
+ },
+ {
+  "title": "Still D.R.E.",
+  "artist": "Dr. Dre ft. Snoop Dogg",
+  "bpm": 93,
+  "meter": "fourFour",
+  "style": "Hip-hop",
+  "groove": "hiphop.boomBap",
+  "feel": "Laid-back hip-hop beat: kick and snare with plenty of space.",
+  "kit": "Lo-fi"
+ },
+ {
+  "title": "Juicy",
+  "artist": "The Notorious B.I.G.",
+  "bpm": 96,
+  "meter": "fourFour",
+  "style": "Hip-hop",
+  "groove": "hiphop.boomBap",
+  "feel": "Boom bap: a relaxed kick-snare beat.",
+  "kit": "Lo-fi"
+ },
+ {
+  "title": "Lose Yourself",
+  "artist": "Eminem",
+  "bpm": 86,
+  "meter": "fourFour",
+  "style": "Hip-hop",
+  "groove": "hiphop.boomBap",
+  "feel": "A heavy, steady hip-hop beat.",
+  "kit": "Lo-fi"
+ },
+ {
+  "title": "Basket Case",
+  "artist": "Green Day",
+  "bpm": 175,
+  "meter": "fourFour",
+  "style": "Punk",
+  "groove": "punk.drive",
+  "feel": "Fast punk eighths, loud and driving.",
+  "kit": "Big Rusty"
+ },
+ {
+  "title": "All the Small Things",
+  "artist": "blink-182",
+  "bpm": 148,
+  "meter": "fourFour",
+  "style": "Punk",
+  "groove": "punk.popPunk",
+  "feel": "Pop-punk drive with a bouncy chorus.",
+  "kit": "Big Rusty"
+ },
+ {
+  "title": "Blitzkrieg Bop",
+  "artist": "Ramones",
+  "bpm": 177,
+  "meter": "fourFour",
+  "style": "Punk",
+  "groove": "punk.drive",
+  "feel": "Fast, relentless downstroke eighths.",
+  "kit": "Garage Kit"
+ },
+ {
+  "title": "Enter Sandman",
+  "artist": "Metallica",
+  "bpm": 123,
+  "meter": "fourFour",
+  "style": "Metal",
+  "groove": "metal.grooveMetal",
+  "feel": "Mid-tempo heavy groove, big and simple.",
+  "kit": "Metal"
+ },
+ {
+  "title": "Master of Puppets",
+  "artist": "Metallica",
+  "bpm": 212,
+  "meter": "fourFour",
+  "style": "Metal",
+  "groove": "metal.thrash",
+  "feel": "Fast thrash with a driving kick.",
+  "kit": "Metal"
+ },
+ {
+  "title": "Nothing Else Matters",
+  "artist": "Metallica",
+  "bpm": 46,
+  "meter": "sixEight",
+  "style": "Ballad",
+  "groove": "ballad.sixEight",
+  "feel": "A slow 6/8 ballad that builds to big choruses.",
+  "kit": "Studio Rock"
+ },
+ {
+  "title": "Tennessee Whiskey",
+  "artist": "Chris Stapleton",
+  "bpm": 48,
+  "meter": "twelveEight",
+  "style": "Country",
+  "groove": "country.twelveEight",
+  "feel": "A slow, soulful 12/8 sway.",
+  "kit": "Swirly Vintage"
+ },
+ {
+  "title": "Gravity",
+  "artist": "John Mayer",
+  "bpm": 62,
+  "meter": "twelveEight",
+  "style": "Blues & Shuffle",
+  "groove": "blues.twelveEight",
+  "feel": "A slow 12/8 blues groove with plenty of space.",
+  "kit": "Vintage 60s"
+ },
+ {
+  "title": "Piano Man",
+  "artist": "Billy Joel",
+  "bpm": 178,
+  "meter": "threeFour",
+  "style": "Pop",
+  "groove": "pop.waltz",
+  "feel": "A waltz: boom-chick-chick in three.",
+  "kit": "Vintage 60s"
+ },
+ {
+  "title": "Ring of Fire",
+  "artist": "Johnny Cash",
+  "bpm": 105,
+  "meter": "fourFour",
+  "style": "Country",
+  "groove": "country.twoStep",
+  "feel": "A boom-chick country two-step.",
+  "kit": "Swirly Vintage"
+ }
+]

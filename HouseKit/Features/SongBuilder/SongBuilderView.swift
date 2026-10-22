@@ -7,6 +7,7 @@ struct SongBuilderView: View {
     @Environment(SongStore.self) private var store
     @Environment(EngineController.self) private var engine
     @Environment(GrooveLibrary.self) private var library
+    @Environment(Assistant.self) private var assistant
     @State private var selectedID: UUID?
     @State private var dismissedError: String?
     @Environment(Tutorial.self) private var tutorial
@@ -83,6 +84,17 @@ struct SongBuilderView: View {
         }
         .pedalConfirmations()
         .tutorialHost(.builder)
+        // Tell HouseKit: "something that sounds like Superstition".
+        .fullScreenCover(isPresented: Binding(get: { assistant.soundsLike != nil },
+                                              set: { if !$0 { assistant.soundsLike = nil } })) {
+            SoundsLikeView(query: assistant.soundsLike ?? "") { store.newSong($0) }
+                .environment(library)
+                .environment(kits)
+                .environment(engine)
+                .environment(store)
+                .environment(assistant)
+                .environment(tutorial)
+        }
         .fullScreenCover(isPresented: $building) {
             // Fills the empty song in place, keeping its name.
             BuildItView { built in

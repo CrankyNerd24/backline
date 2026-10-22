@@ -341,6 +341,27 @@ bool bl_wav_write(BLWavWriter *writer, const float *left, const float *right, ui
 // failed along the way. Frees the writer either way.
 bool bl_wav_close(BLWavWriter *writer);
 
+// MARK: Analysis
+
+// What a recording's drums are doing, measured from its audio ("Sounds
+// like…"): the tempo and time, whether the beat divides in two or three, and
+// one bar of kick, snare and hi-hat, averaged over the whole recording.
+#define BL_ANALYSIS_MAX_STEPS 16
+typedef struct {
+    double bpm;           // beats per minute, the beat being a quarter (a dotted quarter when `triplets` is slow)
+    uint8_t beatsPerBar;  // 3 or 4
+    bool triplets;        // the beat divides in three: a shuffle, or 12/8
+    float confidence;     // 0…1: how clearly the beat stood out
+    uint8_t steps;        // steps in the bar below: beatsPerBar × 4, or × 3 with triplets
+    uint8_t kick[BL_ANALYSIS_MAX_STEPS];  // per step, 0 off … 3 loud
+    uint8_t snare[BL_ANALYSIS_MAX_STEPS];
+    uint8_t hat[BL_ANALYSIS_MAX_STEPS];
+} BLAnalysis;
+
+// Analyzes mono audio (at least 8 seconds of it). False when there's no
+// steady beat to find. Allocates; call it off the audio thread.
+bool bl_analyze(const float *mono, uint32_t frames, double sampleRate, BLAnalysis *out);
+
 // Offline testing only: records every scheduled hit into `buffer`. Not
 // thread-safe; set it before rendering and read it after.
 typedef struct {

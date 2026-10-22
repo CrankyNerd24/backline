@@ -125,8 +125,12 @@ final class EngineController {
     /// The tempo the engine plays at: the song tempo times the practice speed.
     var playbackBPM: Double {
         let factor = min(max(speed, Self.speedRange.lowerBound), Self.speedRange.upperBound)
-        return min(max((song?.bpm ?? 120) * factor, BL_MIN_BPM), BL_MAX_BPM)
+        return min(max((previewBPM ?? song?.bpm ?? 120) * factor, BL_MIN_BPM), BL_MAX_BPM)
     }
+
+    /// A preview's own tempo (Sounds like… plays a reference at its tempo,
+    /// not the song's); nil for the song's.
+    @ObservationIgnored private var previewBPM: Double?
 
     @ObservationIgnored private let library: GrooveLibrary
     @ObservationIgnored private let kits: KitLibrary
@@ -220,8 +224,9 @@ final class EngineController {
     /// Loops `section` (two bars, no fill) at the song tempo. Calling it again
     /// while previewing swaps the new settings in at the next bar line, so
     /// flicking between grooves or variations never breaks the beat.
-    func preview(_ section: Section) {
+    func preview(_ section: Section, bpm: Double? = nil) {
         guard let core, let song else { return }
+        previewBPM = bpm
         startEngineIfNeeded()
         var looped = section
         looped.id = Self.previewSectionID
@@ -255,6 +260,7 @@ final class EngineController {
         guard previewing, let core else { return }
         bl_engine_stop(core)
         previewing = false
+        previewBPM = nil
         previewingGrooveID = nil
         isPlaying = false
         playRequestedAt = nil

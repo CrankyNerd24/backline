@@ -6,6 +6,18 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 
 ## Status: milestone 10 (polish): all v1 milestones built
 
+**Sounds like…** (New Song ▸ Sounds Like…, or tell HouseKit "something that sounds like Superstition"): builds drums after a real song.
+- **HouseKit's song list** (`Library/References/reference-songs.json`, 44 well-known songs) gives each song's approximate tempo, time and style, the closest built-in groove and a fitting kit. It works offline. Only songs whose feel is well known are listed, rather than guesses.
+- **Describe the feel:** for a song not on the list, the words still count: "a slow 6/8 blues" or "fast country shuffle at 140" picks a style, groove, time and tempo.
+- **Analyze a recording:** pick an audio file you own (MP3, M4A, WAV, AIFF). The engine (`Engine/DSP/Analysis.cpp`, `bl_analyze`) listens to up to two minutes and measures:
+  - the tempo, from the autocorrelation of onsets, refined by a comb;
+  - straight or shuffle/12/8, from onsets two-thirds of the way through each beat against halfway;
+  - 3 or 4 beats, from where the kick and snare fall;
+  - a bar of kick, snare and hats.
+
+  HouseKit then picks its own groove closest to that bar, so the result always sounds clean. Tests render grooves with the engine at known tempos (straight, shuffle, waltz, and with a sustained "band" plus hiss on top) and check what comes back.
+- **Results:** each result shows its tempo, time, style and kit, a preview of the groove, and how sure HouseKit is. You can hear it at its own tempo, nudge the tempo, then **Build the song** (a new song: intro, verses, choruses, bridge, outro, with energy rising into the choruses) or **Save the groove** to My grooves.
+
 **Undo** (header, left of the tempo): takes the song back one change at a time, up to 50 changes. Changes less than a second apart, like a slider drag or a knob turn, undo together. It covers everything that changes the song, including the Kit Editor and Tell HouseKit. **Redo**, beside it, puts back what Undo took away until you make a new change. The history starts fresh when you switch songs. On smaller iPads it shows as an icon.
 
 **Build it for me** (`Model/Arranger.swift`, `Features/BuildIt/`): **New Song ▸ Build It for Me…**, or the button on an empty song, asks four plain questions: style, count (4/4, waltz, 6/8, slow 12/8), vibe (Laid back, Driving, Epic), tempo (suggested for the style, or tap along) and length (Short, Normal, Long). It then arranges the whole song:
@@ -23,11 +35,12 @@ Blues verses and solos are 12 bars long. Three-beat songs get twice the bars.
 
 **Next-up countdown** (Play-along): over the last two bars of a section, and during the count-in, a banner shows what's next and how many bars are left. On the final bar it fills with the next section's colour and counts the beats, 4-3-2-1. It doesn't show for looping sections, which wait for a step.
 
-**Guided tour** (`Features/Tutorial/`): the first launch runs a 23-step walkthrough on the real screens, in place of the old three-card welcome. It covers four chapters:
-- **Your first song:** the song row, Play, the feel sliders, changing a groove in the Groove Picker, Stop, and adding sections.
-- **Tell HouseKit:** typing or tapping a suggestion, the reply and Undo, and the mic.
-- **Play along:** the play-along screen, queued actions, foot pedals, and voice.
-- **Kits & export:** the Kit Editor and Export.
+**Guided tour** (`Features/Tutorial/`): the first launch runs a 28-step walkthrough on the real screens, in place of the old three-card welcome. It covers five chapters:
+- **Your first song:** the song row (and double-tap to play from a section), Play, Energy, changing a groove in the Groove Picker, Stop, adding sections, and Undo/Redo.
+- **Tell HouseKit:** typing or tapping a suggestion (including "add 4 bars to chorus 2"), the reply and its Undo, and the mic.
+- **Start from a song:** New Song › Build It for Me… and Sounds Like…, then hands-on in Sounds like…: search for a song or a feel, the result (Hear it, Build the song, Save the groove), and analyzing a recording.
+- **Play along:** the play-along screen and its next-section countdown, queued actions and when they land, foot pedals, and voice or typing.
+- **Kits & export:** the twelve kits, mixing sounds, the knobs and Advanced controls, and Export.
 
 Each step dims the screen around one control and explains it. Hands-on steps wait until you've actually done the thing ("Press Play", "Drag any slider", "Tap a groove"); you can also skip a step, go back, or skip the whole tour. The tour always ends on the song screen: it stops playback and closes any screen it opened (it also closes them if you skip or step past them), then shows a **Tour complete** note that points at the song menu, where **Take the Tour** replays it. Controls opt in with `.tutorialAnchor("id")`, and each screen hosts the steps that belong to it with `.tutorialHost(.screen)`.
 

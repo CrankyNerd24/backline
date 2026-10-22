@@ -15,6 +15,7 @@ struct SongHeader: View {
     @State private var editingKit = false
     @State private var exporting = false
     @State private var building = false
+    @State private var soundsLike = false
     @State private var renaming = false
     @State private var newName = ""
     @State private var confirmingDelete = false
@@ -52,6 +53,15 @@ struct SongHeader: View {
                 .environment(library)
                 .environment(kits)
         }
+        .fullScreenCover(isPresented: $soundsLike) {
+            SoundsLikeView { store.newSong($0) }
+                .environment(library)
+                .environment(kits)
+                .environment(engine)
+                .environment(store)
+                .environment(assistant)
+                .environment(tutorial)
+        }
         .sheet(isPresented: $exporting) {
             ExportView()
                 .environment(store)
@@ -88,6 +98,7 @@ struct SongHeader: View {
                 .tutorialAnchor("songMenu")
                 .layoutPriority(-1) // a long name truncates before anything else gives way
             Spacer(minLength: 12)
+            HStack(spacing: compact ? 10 : 16) {
             Button { store.undo() } label: {
                 Label("Undo", systemImage: "arrow.uturn.backward")
                     .labelStyle(CompactLabelStyle(iconOnly: compact))
@@ -106,6 +117,8 @@ struct SongHeader: View {
             .disabled(!store.canRedo)
             .accessibilityLabel("Redo")
             .accessibilityHint("Puts back the change you just undid")
+            }
+            .tutorialAnchor("undo")
             tempo
                 .fixedSize()
             Text(store.song.timeSignatureLabel)
@@ -159,6 +172,7 @@ struct SongHeader: View {
             Divider()
             Menu("New Song", systemImage: "plus") {
                 Button("Build It for Me…", systemImage: "wand.and.stars") { building = true }
+                Button("Sounds Like…", systemImage: "waveform.badge.magnifyingglass") { soundsLike = true }
                 Button("Empty Song", systemImage: "doc") { store.newSong(from: nil, library: library) }
                 SwiftUI.Section("From a template") { // `Section` alone is the song's section type
                     ForEach(SongTemplate.all) { template in
