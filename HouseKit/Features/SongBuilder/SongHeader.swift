@@ -15,6 +15,7 @@ struct SongHeader: View {
     @State private var editingKit = false
     @State private var exporting = false
     @State private var building = false
+    @State private var soundsLike = false
     @State private var renaming = false
     @State private var newName = ""
     @State private var confirmingDelete = false
@@ -51,6 +52,12 @@ struct SongHeader: View {
             BuildItView { store.newSong($0) }
                 .environment(library)
                 .environment(kits)
+        }
+        .fullScreenCover(isPresented: $soundsLike) {
+            SoundsLikeView { store.newSong($0) }
+                .environment(library)
+                .environment(kits)
+                .environment(engine)
         }
         .sheet(isPresented: $exporting) {
             ExportView()
@@ -159,6 +166,7 @@ struct SongHeader: View {
             Divider()
             Menu("New Song", systemImage: "plus") {
                 Button("Build It for Me…", systemImage: "wand.and.stars") { building = true }
+                Button("Sounds Like…", systemImage: "waveform.badge.magnifyingglass") { soundsLike = true }
                 Button("Empty Song", systemImage: "doc") { store.newSong(from: nil, library: library) }
                 SwiftUI.Section("From a template") { // `Section` alone is the song's section type
                     ForEach(SongTemplate.all) { template in

@@ -15,7 +15,7 @@ final class GrooveLibrary {
     private(set) var grooves: [Groove]
     private(set) var userGrooves: [Groove]
     @ObservationIgnored private var byID: [String: Groove]
-    @ObservationIgnored private let builtIn: [Groove]
+    @ObservationIgnored let builtIn: [Groove] // read by Sounds like… to match recordings
     @ObservationIgnored private let userFile: URL
 
     /// Built-in styles, then "My grooves" once there are any.

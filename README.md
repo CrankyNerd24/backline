@@ -6,6 +6,18 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 
 ## Status: milestone 10 (polish): all v1 milestones built
 
+**Sounds like…** (New Song ▸ Sounds Like…, or tell HouseKit "something that sounds like Superstition"): builds drums after a real song.
+- **HouseKit's song list** (`Library/References/reference-songs.json`, 44 well-known songs) gives each song's approximate tempo, time and style, the closest built-in groove and a fitting kit. It works offline. Only songs whose feel is well known are listed, rather than guesses.
+- **Describe the feel:** for a song not on the list, the words still count: "a slow 6/8 blues" or "fast country shuffle at 140" picks a style, groove, time and tempo.
+- **Analyze a recording:** pick an audio file you own (MP3, M4A, WAV, AIFF). The engine (`Engine/DSP/Analysis.cpp`, `bl_analyze`) listens to up to two minutes and measures:
+  - the tempo, from the autocorrelation of onsets, refined by a comb;
+  - straight or shuffle/12/8, from onsets two-thirds of the way through each beat against halfway;
+  - 3 or 4 beats, from where the kick and snare fall;
+  - a bar of kick, snare and hats.
+
+  HouseKit then picks its own groove closest to that bar, so the result always sounds clean. Tests render grooves with the engine at known tempos (straight, shuffle, waltz, and with a sustained "band" plus hiss on top) and check what comes back.
+- **Results:** each result shows its tempo, time, style and kit, a preview of the groove, and how sure HouseKit is. You can hear it at its own tempo, nudge the tempo, then **Build the song** (a new song: intro, verses, choruses, bridge, outro, with energy rising into the choruses) or **Save the groove** to My grooves.
+
 **Undo** (header, left of the tempo): takes the song back one change at a time, up to 50 changes. Changes less than a second apart, like a slider drag or a knob turn, undo together. It covers everything that changes the song, including the Kit Editor and Tell HouseKit. **Redo**, beside it, puts back what Undo took away until you make a new change. The history starts fresh when you switch songs. On smaller iPads it shows as an icon.
 
 **Build it for me** (`Model/Arranger.swift`, `Features/BuildIt/`): **New Song ▸ Build It for Me…**, or the button on an empty song, asks four plain questions: style, count (4/4, waltz, 6/8, slow 12/8), vibe (Laid back, Driving, Epic), tempo (suggested for the style, or tap along) and length (Short, Normal, Long). It then arranges the whole song:

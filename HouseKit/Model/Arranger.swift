@@ -139,7 +139,7 @@ struct Arrangement {
     }
 
     /// A kit that suits the style.
-    private func kit(in kits: KitLibrary) -> UUID {
+    func kit(in kits: KitLibrary) -> UUID {
         let name: String = switch style {
         case "Metal": "Metal"
         case "Jazz & Swing": "Jazz Brushes"

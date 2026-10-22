@@ -21,6 +21,8 @@ final class Assistant {
 
     private(set) var phase: Phase = .idle
     private(set) var reply: Reply?
+    /// A "sounds like" request waiting for the Sounds like… screen to take it.
+    var soundsLike: String?
     let speech = SpeechInput()
 
     /// Things to try, for players who don't know what to ask.
@@ -47,6 +49,13 @@ final class Assistant {
     func submit(_ text: String, currentSectionID: UUID?) {
         let request = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !request.isEmpty, phase != .thinking else { return }
+        // "Something that sounds like Superstition" is for Sounds like…, which
+        // knows songs; the song isn't changed here.
+        if Self.isSoundsLike(request) {
+            soundsLike = request
+            reply = Reply(request: request, done: ["Opening Sounds like…"], problems: [], canUndo: false)
+            return
+        }
         phase = .thinking
         Task {
             let steps = await interpret(request, currentSectionID: currentSectionID)
@@ -63,6 +72,14 @@ final class Assistant {
     }
 
     func dismissReply() { reply = nil }
+
+    /// "Sounds like X", "similar to X", "in the style of X", "something like X".
+    /// ("Make it sound like a stadium" is a room request, so not "sound like".)
+    static func isSoundsLike(_ text: String) -> Bool {
+        PhraseInterpreter.has(PhraseInterpreter.normalize(text),
+                              ["sounds like", "similar to", "in the style of", "like the drums in", "something like",
+                               "a groove like", "a beat like", "a pattern like", "drums like"])
+    }
 
     /// Fades this reply away, unless a newer one has replaced it.
     func dismissReply(_ id: UUID) {

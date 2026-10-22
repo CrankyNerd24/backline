@@ -11,7 +11,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(DSP_DIR ${CMAKE_SOURCE_DIR}/HouseKit/Engine/DSP)
-add_library(housekit_dsp STATIC ${DSP_DIR}/Engine.cpp ${DSP_DIR}/Effects.cpp ${DSP_DIR}/Export.cpp ${DSP_DIR}/KitModels.cpp ${DSP_DIR}/Samples.cpp ${DSP_DIR}/Timeline.cpp
+add_library(housekit_dsp STATIC ${DSP_DIR}/Analysis.cpp ${DSP_DIR}/Engine.cpp ${DSP_DIR}/Effects.cpp ${DSP_DIR}/Export.cpp ${DSP_DIR}/KitModels.cpp ${DSP_DIR}/Samples.cpp ${DSP_DIR}/Timeline.cpp
             ${DSP_DIR}/Voices.cpp)
 target_include_directories(housekit_dsp PUBLIC ${DSP_DIR})
 target_compile_options(housekit_dsp PRIVATE -Wall -Wextra -Wpedantic -Werror)

@@ -1835,6 +1835,88 @@ static void testBundledSamples() {
     CHECK(bl_samples_keep_warm() == 0, "pages without a bank");
 }
 
+// "Sounds like…" analysis: grooves rendered by the engine itself, at known
+// tempos, come back with their tempo, feel, time and kick/snare placement.
+static BLAnalysis analyzeRendered(const BLPattern &p, uint8_t meter, double bpm, uint16_t bars, bool noise = false) {
+    BLSectionDesc d = section(1, bars, p);
+    d.meter = meter;
+    d.fillIntoNext = BL_FILL_NONE;
+    d.human = 0.2f;
+    const Offline o = renderOffline({d}, 0, false, bpm, nullptr, 4800, 90);
+    std::vector<float> mono(o.left.size());
+    std::mt19937 rng(7);
+    std::normal_distribution<float> hiss(0.0f, 0.02f);
+    for (size_t i = 0; i < mono.size(); ++i) {
+        mono[i] = 0.5f * (o.left[i] + o.right[i]);
+        // A sustained "band" under the drums: two chord tones and some hiss.
+        if (noise) mono[i] += 0.15f * std::sin(i * 2 * 3.14159265 * 220.0 / 48000.0)
+                              + 0.1f * std::sin(i * 2 * 3.14159265 * 330.0 / 48000.0) + hiss(rng);
+    }
+    BLAnalysis a{};
+    CHECK(bl_analyze(mono.data(), static_cast<uint32_t>(mono.size()), 48000.0, &a), "no beat found at %.0f BPM", bpm);
+    return a;
+}
+
+static bool on(const uint8_t *lane, int step) { return lane[step] > 0; }
+
+static void testAnalysis() {
+    // Rock straight eighths at 120: kick on 1 (and the "and" of 3), snare on 2 and 4.
+    for (bool noise : {false, true}) {
+        const BLAnalysis a = analyzeRendered(rockStraight8ths(), BL_METER_4_4, 120.0, 24, noise);
+        CHECK(std::fabs(a.bpm - 120.0) < 1.5, "rock tempo %.2f (noise %d)", a.bpm, noise);
+        CHECK(a.beatsPerBar == 4 && !a.triplets && a.steps == 16, "rock: %d beats, triplets %d", a.beatsPerBar, a.triplets);
+        // Kick on 1 and 3 look alike, so the bar may start on either: both read as kick on 1.
+        CHECK(on(a.kick, 0) && on(a.snare, 4) && on(a.snare, 12) && !on(a.snare, 0) && !on(a.kick, 4),
+              "rock bar: kick 0 %d, snare 4 %d 12 %d (noise %d)", a.kick[0], a.snare[4], a.snare[12], noise);
+        // Hats come out roughly (kick and snare tails mask some), but on the eighths.
+        int evenHats = 0, oddHats = 0;
+        for (int st = 0; st < 16; ++st) (st % 2 ? oddHats : evenHats) += on(a.hat, st);
+        CHECK(evenHats >= 3 && oddHats == 0, "rock hats: %d on eighths, %d between", evenHats, oddHats);
+        CHECK(a.confidence > 0.2f, "rock confidence %.2f", a.confidence);
+    }
+    // Other tempos land too (not at half or double speed).
+    for (double bpm : {84.0, 100.0, 140.0}) {
+        const BLAnalysis a = analyzeRendered(rockStraight8ths(), BL_METER_4_4, bpm, 24);
+        CHECK(std::fabs(a.bpm - bpm) < bpm * 0.015, "tempo %.1f heard as %.2f", bpm, a.bpm);
+    }
+
+    // A shuffle at 100: hats on the beat and the last triplet.
+    BLPattern shuffle;
+    bl_pattern_init(&shuffle, 12);
+    for (uint8_t b = 0; b < 4; ++b) {
+        bl_pattern_set(&shuffle, BL_PIECE_HI_HAT, b * 3, 3);
+        bl_pattern_set(&shuffle, BL_PIECE_HI_HAT, b * 3 + 2, 2);
+    }
+    bl_pattern_set(&shuffle, BL_PIECE_KICK, 0, 3);
+    bl_pattern_set(&shuffle, BL_PIECE_KICK, 6, 3);
+    bl_pattern_set(&shuffle, BL_PIECE_SNARE, 3, 3);
+    bl_pattern_set(&shuffle, BL_PIECE_SNARE, 9, 3);
+    const BLAnalysis s = analyzeRendered(shuffle, BL_METER_4_4, 100.0, 24);
+    CHECK(std::fabs(s.bpm - 100.0) < 1.5, "shuffle tempo %.2f", s.bpm);
+    CHECK(s.triplets && s.beatsPerBar == 4 && s.steps == 12, "shuffle: triplets %d, %d beats", s.triplets, s.beatsPerBar);
+    CHECK(on(s.kick, 0) && on(s.snare, 3) && on(s.snare, 9) && on(s.hat, 2), "shuffle bar: kick %d snare %d %d hat %d",
+          s.kick[0], s.snare[3], s.snare[9], s.hat[2]);
+
+    // A waltz at 150: kick on 1, snare on 2 and 3.
+    BLPattern waltz;
+    bl_pattern_init(&waltz, 12);
+    for (uint8_t st = 0; st < 12; st += 2) bl_pattern_set(&waltz, BL_PIECE_HI_HAT, st, st % 4 ? 2 : 3);
+    bl_pattern_set(&waltz, BL_PIECE_KICK, 0, 3);
+    bl_pattern_set(&waltz, BL_PIECE_SNARE, 4, 3);
+    bl_pattern_set(&waltz, BL_PIECE_SNARE, 8, 3);
+    const BLAnalysis w = analyzeRendered(waltz, BL_METER_3_4, 150.0, 32);
+    CHECK(std::fabs(w.bpm - 150.0) < 2.0, "waltz tempo %.2f", w.bpm);
+    CHECK(w.beatsPerBar == 3 && !w.triplets && w.steps == 12, "waltz: %d beats, triplets %d", w.beatsPerBar, w.triplets);
+    CHECK(on(w.kick, 0) && on(w.snare, 4) && on(w.snare, 8), "waltz bar: kick %d snare %d %d", w.kick[0], w.snare[4],
+          w.snare[8]);
+
+    // Too short, or silence: no answer.
+    std::vector<float> silence(48000 * 10, 0.0f);
+    BLAnalysis none{};
+    CHECK(!bl_analyze(silence.data(), static_cast<uint32_t>(silence.size()), 48000.0, &none), "found a beat in silence");
+    CHECK(!bl_analyze(silence.data(), 48000, 48000.0, &none), "analyzed one second");
+}
+
 // How much faster than real time the engine renders (headroom for 5 ms buffers).
 static void reportSpeed() {
     const auto start = std::chrono::steady_clock::now();
@@ -1909,6 +1991,7 @@ int main() {
         {"count-in meters", testCountInMeters},
         {"feel in other meters", testMeterFeel},
         {"export meters", testExportMeters},
+        {"analysis: tempo, feel, time and the bar", testAnalysis},
         {"attack", testAttack},
         {"recorded sounds", testRecordedSounds},
         {"bundled samples", testBundledSamples},
