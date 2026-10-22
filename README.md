@@ -32,7 +32,7 @@ Each step dims the screen around one control and explains it. Hands-on steps wai
 **Tell HouseKit** (for players who aren't drummers): a bar under the header, and a big mic in Play-along, takes requests in plain words. Type, or hold the mic and speak.
 - **Feel and sound:** "more swing", "make the chorus hit harder", "simpler verses", "tighter", "punchier", "bigger room", "darker cymbals", "louder kick", "half time in the bridge", "put the solo on the ride", "big fill into the chorus", "use the metal kit".
 - **Tempo and grooves:** "faster", "slow it down a bit", "90 BPM", "make it funky", "a shuffle", "different groove".
-- **Structure:** "add a bridge after the second chorus", "remove the solo", "make the verses 16 bars", "count in two bars", "repeat the solo until I step".
+- **Structure:** "add a bridge after the second chorus", "remove the solo", "make the verses 16 bars", "add 4 bars to chorus 2", "make the intro 2 bars shorter", "count in two bars", "repeat the solo until I step".
 - **Play-along:** "play from the chorus", "next section", "go back", "give me a fill", "loop this", "end it", "stop".
 - Every request shows what changed, and one **Undo** takes all of it back.
 - `Assistant/PhraseInterpreter.swift` handles everyday phrasings on every iPad, instantly. When some part of a request isn't covered, Apple's on-device model takes over on iPads with Apple Intelligence (iPadOS 26), via `Assistant/OnDeviceInterpreter.swift`. It returns structured steps in the same vocabulary. Both run privately and offline.

@@ -22,8 +22,9 @@ nonisolated struct AssistantStep: Equatable, Sendable {
         case groove
         // Structure. addSection value = kind ("bridge"); target = the section it goes after.
         case addSection, removeSection
-        // setBars amount = bars; repeatUntilStep amount 1 = on, 0 = off; countIn amount = 0…2.
-        case setBars, repeatUntilStep, countIn
+        // setBars amount = bars; changeBars amount = bars to add (negative = fewer);
+        // repeatUntilStep amount 1 = on, 0 = off; countIn amount = 0…2.
+        case setBars, changeBars, repeatUntilStep, countIn
         // Playback. play/loop take an optional target; loop amount 0 = stop looping.
         case play, stop, nextSection, previousSection, restartSection, fillNow, bigEnding, loop
     }

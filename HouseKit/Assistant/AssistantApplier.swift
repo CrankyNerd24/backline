@@ -179,6 +179,20 @@ struct AssistantApplier {
             for i in targets { song.sections[i].bars = clamped }
             outcome.done.append("\(describe(targets, in: song).capitalizedFirst): \(clamped) bars")
 
+        case .changeBars:
+            let change = Int((step.amount ?? 0).rounded())
+            let targets = indices(step.target ?? "this", in: song)
+            guard !targets.isEmpty else { return outcome.skipped.append(noSection(step.target)) }
+            guard change != 0 else { return outcome.skipped.append("How many bars? Try “add 4 bars to the chorus”.") }
+            for i in targets {
+                song.sections[i].bars = min(max(song.sections[i].bars + change, Section.barRange.lowerBound),
+                                            Section.barRange.upperBound)
+            }
+            let lengths = Set(targets.map { song.sections[$0].bars })
+            let now = lengths.count == 1 ? " (now \(lengths.first!) bars)" : ""
+            outcome.done.append("\(describe(targets, in: song).capitalizedFirst): \(change > 0 ? "+" : "−")\(abs(change)) "
+                                + "\(abs(change) == 1 ? "bar" : "bars")\(now)")
+
         case .repeatUntilStep:
             let on = (step.amount ?? 1) >= 0.5
             let targets = indices(step.target ?? "this", in: song)
