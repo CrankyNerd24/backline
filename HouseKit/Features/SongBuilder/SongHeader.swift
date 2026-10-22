@@ -58,6 +58,9 @@ struct SongHeader: View {
                 .environment(library)
                 .environment(kits)
                 .environment(engine)
+                .environment(store)
+                .environment(assistant)
+                .environment(tutorial)
         }
         .sheet(isPresented: $exporting) {
             ExportView()
@@ -95,6 +98,7 @@ struct SongHeader: View {
                 .tutorialAnchor("songMenu")
                 .layoutPriority(-1) // a long name truncates before anything else gives way
             Spacer(minLength: 12)
+            HStack(spacing: compact ? 10 : 16) {
             Button { store.undo() } label: {
                 Label("Undo", systemImage: "arrow.uturn.backward")
                     .labelStyle(CompactLabelStyle(iconOnly: compact))
@@ -113,6 +117,8 @@ struct SongHeader: View {
             .disabled(!store.canRedo)
             .accessibilityLabel("Redo")
             .accessibilityHint("Puts back the change you just undid")
+            }
+            .tutorialAnchor("undo")
             tempo
                 .fixedSize()
             Text(store.song.timeSignatureLabel)

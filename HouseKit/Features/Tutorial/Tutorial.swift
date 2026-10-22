@@ -9,7 +9,7 @@ import UIKit
 @Observable
 final class Tutorial {
     /// Where a step's control lives. Each screen hosts its own overlay.
-    enum Screen { case builder, groovePicker, playAlong, kitEditor }
+    enum Screen { case builder, groovePicker, playAlong, kitEditor, soundsLike }
 
     /// What moves a step on, besides its Next button.
     enum Wait: Equatable {
@@ -19,6 +19,7 @@ final class Tutorial {
         case opened(Screen), closed(Screen)
         case previewing
         case assistantReplied
+        case referenceFound
     }
 
     struct Step: Identifiable {
@@ -105,10 +106,10 @@ final class Tutorial {
         // First song
         Step(id: "welcome", chapter: "Welcome", screen: .builder, anchor: nil,
              title: "Welcome to HouseKit",
-             text: "A drummer for your practice, built for guitarists. This two-minute tour works on your own song, and anything it changes can be undone. You can skip it, and replay it any time from the song menu."),
+             text: "A drummer for your practice, built for guitarists. This three-minute tour works on your own song, and anything it changes can be undone. You can skip it, and replay it any time from the song menu."),
         Step(id: "songRow", chapter: "Your first song", screen: .builder, anchor: "songRow",
              title: "This row is your song",
-             text: "Each block is a section: intro, verse, chorus and so on. Wider blocks have more bars. Tap a block to select it; its settings appear below."),
+             text: "Each block is a section: intro, verse, chorus and so on. Wider blocks have more bars. Tap a block to select it; its settings appear below. Double-tap one to play from there."),
         Step(id: "play", chapter: "Your first song", screen: .builder, anchor: "play",
              title: "Hear it",
              text: "Play starts from the selected section, with a count-in.",
@@ -139,17 +140,36 @@ final class Tutorial {
         Step(id: "addSection", chapter: "Your first song", screen: .builder, anchor: "addSection",
              title: "Add sections",
              text: "Plus adds a section after the selected one. Drag blocks to reorder them; long-press one to duplicate or delete it."),
+        Step(id: "undo", chapter: "Your first song", screen: .builder, anchor: "undo",
+             title: "Undo and Redo",
+             text: "Take back any change, one step at a time, and Redo puts it back. A slider drag or a knob turn counts as one step, so nothing you try here is risky."),
         // Tell HouseKit
         Step(id: "ask", chapter: "Tell HouseKit", screen: .builder, anchor: "askBar",
              title: "Just say what you want",
-             text: "Not a drummer? You don't need the words. Type “more swing in the chorus”, “punchier”, “slow it down a bit”, or tap a suggestion.",
+             text: "Not a drummer? You don't need the words. Type “more swing in the chorus”, “punchier”, “add 4 bars to chorus 2”, or tap a suggestion.",
              wait: .assistantReplied, tryIt: "Tap a suggestion, or type a request"),
         Step(id: "reply", chapter: "Tell HouseKit", screen: .builder, anchor: "askBar",
              title: "See what changed",
-             text: "HouseKit says exactly what it did. Undo takes the whole request back."),
+             text: "HouseKit says exactly what it did, and Undo on the reply takes the whole request back. The reply fades after a few seconds; the suggestions stay."),
         Step(id: "mic", chapter: "Tell HouseKit", screen: .builder, anchor: "mic",
              title: "Or say it",
              text: "Hold the mic, speak, and let go. The drums duck while you talk. It works best with headphones."),
+        // Start from a song
+        Step(id: "newSong", chapter: "Start from a song", screen: .builder, anchor: "songMenu",
+             title: "Let HouseKit start it",
+             text: "Tap your song's name, then New Song. Build It for Me… makes a whole song from a style, a vibe and a length. Sounds Like… makes drums after a real song.",
+             wait: .opened(.soundsLike), tryIt: "Open New Song › Sounds Like…"),
+        Step(id: "soundsLikeSearch", chapter: "Start from a song", screen: .soundsLike, anchor: "soundsLikeSearch",
+             title: "Name a song, or a feel",
+             text: "Type a song HouseKit knows, like “Superstition”, or describe the feel: “a slow 6/8 blues”, “a fast country shuffle”.",
+             wait: .referenceFound, tryIt: "Search for a song or a feel"),
+        Step(id: "soundsLikeResult", chapter: "Start from a song", screen: .soundsLike, anchor: "soundsLikeResult",
+             title: "Hear it, then keep it",
+             text: "The tempo, time, style and kit, and how sure HouseKit is. Hear it plays the groove at that tempo. Build the song makes a new song from it; Save the groove adds the groove to My grooves."),
+        Step(id: "analyzeRecording", chapter: "Start from a song", screen: .soundsLike, anchor: "analyzeRecording",
+             title: "Or let HouseKit listen",
+             text: "Pick an audio file you own, and HouseKit measures its tempo, its feel and whether it's in 3 or 4, then picks its closest groove.",
+             wait: .closed(.soundsLike), tryIt: "Tap Cancel to go back (or Build the song)"),
         // Play-along
         Step(id: "playAlong", chapter: "Play along", screen: .builder, anchor: "playAlong",
              title: "Play-along mode",
@@ -157,34 +177,34 @@ final class Tutorial {
              wait: .opened(.playAlong), tryIt: "Tap Play-along mode"),
         Step(id: "nowPlaying", chapter: "Play along", screen: .playAlong, anchor: "nowPlaying",
              title: "Where you are",
-             text: "The section, the bar, and the beat. The map underneath shows the whole song."),
+             text: "The section, the bar, and the beat. Near the end of each section a countdown shows what's next, beat by beat on the last bar. The map underneath shows the whole song."),
         Step(id: "transport", chapter: "Play along", screen: .playAlong, anchor: "playAlongTransport",
              title: "Move around the song",
-             text: "Next section, fill, loop and more. Changes wait for the right moment, the end of the bar, so the beat never breaks."),
+             text: "Next section, fill, loop and more. Changes wait for the right moment so the beat never breaks: after this bar, or at the end of the section, as you choose in the side panel."),
         Step(id: "pedal", chapter: "Play along", screen: .playAlong, anchor: "pedalChip",
              title: "Hands on the guitar",
              text: "Any Bluetooth page-turner or MIDI foot controller can step through the song. Tap here to set one up."),
         Step(id: "voicePlay", chapter: "Play along", screen: .playAlong, anchor: "mic",
              title: "Or ask out loud",
-             text: "Hold the mic and say “next section”, “give me a fill” or “end it”.",
+             text: "Hold the mic and say “next section”, “give me a fill” or “end it”. Tap the bar to type instead.",
              wait: .closed(.playAlong), tryIt: "Tap Done to go back"),
         // Kits and export
         Step(id: "kit", chapter: "Kits & export", screen: .builder, anchor: "kitChip",
              title: "Change the sound",
-             text: "Six kits of real recorded drums, plus an electronic one. Each piece can be retuned and reshaped.",
+             text: "Twelve kits: three real recorded drum sets (a jazz club kit, a big rock kit and a dry vintage kit) shaped in different ways, plus an electronic one.",
              wait: .opened(.kitEditor), tryIt: "Tap the kit"),
         Step(id: "sounds", chapter: "Kits & export", screen: .kitEditor, anchor: "startingSounds",
              title: "Choose each drum",
-             text: "Pick a piece on the left, then its sound here. Tap to hear it."),
+             text: "Pick a piece on the left, then its sound here; tap to hear it. Sounds from all three recorded kits can be mixed."),
         Step(id: "knobs", chapter: "Kits & export", screen: .kitEditor, anchor: "shapeIt",
              title: "Shape it",
-             text: "Drag a knob up or down; double-tap to reset it. Your changes stay with this song.",
+             text: "Drag a knob up or down; double-tap to reset it. Turn on Advanced controls for Tune, Attack, Decay and more. Your changes stay with this song.",
              wait: .closed(.kitEditor), tryIt: "Go back when you're done"),
         Step(id: "export", chapter: "Kits & export", screen: .builder, anchor: "export",
              title: "Take it with you",
              text: "Export makes a WAV of the whole song to share or put in your recording app. It's yours to use anywhere, no credit needed."),
         Step(id: "done", chapter: "Tour complete", screen: .builder, anchor: "songMenu",
              title: "You've finished the tour",
-             text: "That's everything you need: build a song, shape it in plain words, and play along. The tour is always here if you want it again: tap your song's name, up here, and choose Take the Tour."),
+             text: "That's everything you need: build a song, or start from one you love, shape it in plain words, and play along. The tour is always here if you want it again: tap your song's name, up here, and choose Take the Tour."),
     ]
 }

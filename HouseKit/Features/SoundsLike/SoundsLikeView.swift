@@ -8,6 +8,7 @@ struct SoundsLikeView: View {
     @Environment(KitLibrary.self) private var kits
     @Environment(EngineController.self) private var engine
     @Environment(\.dismiss) private var dismiss
+    @Environment(Tutorial.self) private var tutorial
     /// Receives the finished song.
     let onBuild: (Song) -> Void
 
@@ -45,7 +46,7 @@ struct SoundsLikeView: View {
                             .foregroundStyle(Theme.textMuted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    if let reference { result(reference) }
+                    if let reference { result(reference).tutorialAnchor("soundsLikeResult") }
                     if browsing { songList }
                 }
                 .padding(24)
@@ -53,6 +54,8 @@ struct SoundsLikeView: View {
         }
         .background(Theme.bg)
         .foregroundStyle(Theme.text)
+        .tutorialHost(.soundsLike)
+        .onChange(of: reference) { _, found in if found != nil { tutorial.notice(.referenceFound, from: .soundsLike) } }
         .onAppear { if !query.isEmpty { find() } else { typing = true } }
         .onDisappear { stopHearing() }
         .fileImporter(isPresented: $choosingFile, allowedContentTypes: [.audio]) { result in
@@ -89,6 +92,7 @@ struct SoundsLikeView: View {
 
     private var search: some View {
         VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 10) {
             Eyebrow("A song, or the feel you want")
             HStack(spacing: 10) {
                 TextField("“Superstition”, “Back in Black by AC/DC”, “a slow 6/8 blues”…", text: $query)
@@ -104,6 +108,8 @@ struct SoundsLikeView: View {
                     .buttonStyle(ChipButtonStyle(prominent: !query.isEmpty))
                     .disabled(query.trimmingCharacters(in: .whitespaces).isEmpty)
             }
+            }
+            .tutorialAnchor("soundsLikeSearch")
             HStack(spacing: 10) {
                 Button {
                     choosingFile = true
@@ -112,6 +118,7 @@ struct SoundsLikeView: View {
                 }
                 .buttonStyle(ChipButtonStyle())
                 .disabled(analyzing)
+                .tutorialAnchor("analyzeRecording")
                 Button {
                     browsing.toggle()
                 } label: {

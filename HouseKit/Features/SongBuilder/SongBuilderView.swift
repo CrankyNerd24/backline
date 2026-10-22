@@ -91,6 +91,9 @@ struct SongBuilderView: View {
                 .environment(library)
                 .environment(kits)
                 .environment(engine)
+                .environment(store)
+                .environment(assistant)
+                .environment(tutorial)
         }
         .fullScreenCover(isPresented: $building) {
             // Fills the empty song in place, keeping its name.
