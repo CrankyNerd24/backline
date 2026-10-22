@@ -10,6 +10,7 @@ import Foundation
 @Observable
 final class Assistant {
     struct Reply: Equatable {
+        var id = UUID() // a fresh reply, even to the same words, fades on its own schedule
         var request: String
         var done: [String]
         var problems: [String]
@@ -62,6 +63,11 @@ final class Assistant {
     }
 
     func dismissReply() { reply = nil }
+
+    /// Fades this reply away, unless a newer one has replaced it.
+    func dismissReply(_ id: UUID) {
+        if reply?.id == id { reply = nil }
+    }
 
     private func interpret(_ request: String, currentSectionID: UUID?) async -> [AssistantStep] {
         let song = store.song

@@ -1,0 +1,586 @@
+{
+ "source": "Swirly Drums by Karoryfer Samples (CC0 1.0)",
+ "repository": "https://github.com/sfzinstruments/karoryfer.swirly-drums",
+ "articulations": {
+  "swirlyKick": {
+   "mics": {
+    "Samples/kick_buzz/buzz_kick_with_snare_buzz_vl{vl}_rr{rr}.wav": 1.0
+   },
+   "rate": 44100,
+   "channels": 1,
+   "samples": [
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 0.6,
+     "peak": 0.0258
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 0.6,
+     "peak": 0.0119
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v01_r3.wav",
+     "layer": 1,
+     "roundRobin": 3,
+     "seconds": 0.6,
+     "peak": 0.0103
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "seconds": 0.6,
+     "peak": 0.0732
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "seconds": 0.597,
+     "peak": 0.0685
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v03_r3.wav",
+     "layer": 3,
+     "roundRobin": 3,
+     "seconds": 0.591,
+     "peak": 0.0914
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v05_r1.wav",
+     "layer": 5,
+     "roundRobin": 1,
+     "seconds": 0.593,
+     "peak": 0.1002
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v05_r2.wav",
+     "layer": 5,
+     "roundRobin": 2,
+     "seconds": 0.6,
+     "peak": 0.1365
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v05_r3.wav",
+     "layer": 5,
+     "roundRobin": 3,
+     "seconds": 0.588,
+     "peak": 0.1368
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v07_r1.wav",
+     "layer": 7,
+     "roundRobin": 1,
+     "seconds": 0.577,
+     "peak": 0.2826
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v07_r2.wav",
+     "layer": 7,
+     "roundRobin": 2,
+     "seconds": 0.594,
+     "peak": 0.2767
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v07_r3.wav",
+     "layer": 7,
+     "roundRobin": 3,
+     "seconds": 0.594,
+     "peak": 0.2767
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v09_r1.wav",
+     "layer": 9,
+     "roundRobin": 1,
+     "seconds": 0.559,
+     "peak": 0.483
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v09_r2.wav",
+     "layer": 9,
+     "roundRobin": 2,
+     "seconds": 0.575,
+     "peak": 0.4468
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v09_r3.wav",
+     "layer": 9,
+     "roundRobin": 3,
+     "seconds": 0.577,
+     "peak": 0.4254
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v11_r1.wav",
+     "layer": 11,
+     "roundRobin": 1,
+     "seconds": 0.582,
+     "peak": 0.8607
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v11_r2.wav",
+     "layer": 11,
+     "roundRobin": 2,
+     "seconds": 0.568,
+     "peak": 0.891
+    },
+    {
+     "file": "swirly/swirlyKick/swirlyKick_v11_r3.wav",
+     "layer": 11,
+     "roundRobin": 3,
+     "seconds": 0.554,
+     "peak": 0.8216
+    }
+   ]
+  },
+  "swirlySnare": {
+   "mics": {
+    "Samples/snare_main/snare_hit_vl{vl}_rr{rr}_top.wav": 1.0,
+    "Samples/snare_main/snare_hit_vl{vl}_rr{rr}_btm.wav": 0.35
+   },
+   "rate": 44100,
+   "channels": 1,
+   "samples": [
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 0.8,
+     "peak": 0.0239
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 0.8,
+     "peak": 0.0306
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v01_r3.wav",
+     "layer": 1,
+     "roundRobin": 3,
+     "seconds": 0.8,
+     "peak": 0.0329
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "seconds": 1.074,
+     "peak": 0.0721
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "seconds": 1.082,
+     "peak": 0.0735
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v03_r3.wav",
+     "layer": 3,
+     "roundRobin": 3,
+     "seconds": 1.073,
+     "peak": 0.0769
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v05_r1.wav",
+     "layer": 5,
+     "roundRobin": 1,
+     "seconds": 1.075,
+     "peak": 0.0804
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v05_r2.wav",
+     "layer": 5,
+     "roundRobin": 2,
+     "seconds": 1.022,
+     "peak": 0.0833
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v05_r3.wav",
+     "layer": 5,
+     "roundRobin": 3,
+     "seconds": 1.055,
+     "peak": 0.0968
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v08_r1.wav",
+     "layer": 8,
+     "roundRobin": 1,
+     "seconds": 1.114,
+     "peak": 0.1678
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v08_r2.wav",
+     "layer": 8,
+     "roundRobin": 2,
+     "seconds": 0.914,
+     "peak": 0.1631
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v08_r3.wav",
+     "layer": 8,
+     "roundRobin": 3,
+     "seconds": 1.047,
+     "peak": 0.1543
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v10_r1.wav",
+     "layer": 10,
+     "roundRobin": 1,
+     "seconds": 0.872,
+     "peak": 0.3234
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v10_r2.wav",
+     "layer": 10,
+     "roundRobin": 2,
+     "seconds": 1.2,
+     "peak": 0.3944
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v10_r3.wav",
+     "layer": 10,
+     "roundRobin": 3,
+     "seconds": 1.2,
+     "peak": 0.3768
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v12_r1.wav",
+     "layer": 12,
+     "roundRobin": 1,
+     "seconds": 1.189,
+     "peak": 0.6579
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v12_r2.wav",
+     "layer": 12,
+     "roundRobin": 2,
+     "seconds": 1.2,
+     "peak": 0.6703
+    },
+    {
+     "file": "swirly/swirlySnare/swirlySnare_v12_r3.wav",
+     "layer": 12,
+     "roundRobin": 3,
+     "seconds": 1.2,
+     "peak": 0.891
+    }
+   ]
+  },
+  "swirlyHhClosed": {
+   "mics": {
+    "Samples/hat_closed/hh_closed_vl{vl}_rr{rr}.wav": 1.0
+   },
+   "rate": 44100,
+   "channels": 1,
+   "samples": [
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 0.8,
+     "peak": 0.0071
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 0.8,
+     "peak": 0.0073
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v01_r3.wav",
+     "layer": 1,
+     "roundRobin": 3,
+     "seconds": 0.8,
+     "peak": 0.01
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "seconds": 0.8,
+     "peak": 0.1062
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v04_r2.wav",
+     "layer": 4,
+     "roundRobin": 2,
+     "seconds": 0.8,
+     "peak": 0.1114
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v04_r3.wav",
+     "layer": 4,
+     "roundRobin": 3,
+     "seconds": 0.8,
+     "peak": 0.118
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v07_r1.wav",
+     "layer": 7,
+     "roundRobin": 1,
+     "seconds": 0.8,
+     "peak": 0.2718
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v07_r2.wav",
+     "layer": 7,
+     "roundRobin": 2,
+     "seconds": 0.8,
+     "peak": 0.302
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v07_r3.wav",
+     "layer": 7,
+     "roundRobin": 3,
+     "seconds": 0.8,
+     "peak": 0.3171
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v09_r1.wav",
+     "layer": 9,
+     "roundRobin": 1,
+     "seconds": 0.8,
+     "peak": 0.4245
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v09_r2.wav",
+     "layer": 9,
+     "roundRobin": 2,
+     "seconds": 0.8,
+     "peak": 0.4408
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v09_r3.wav",
+     "layer": 9,
+     "roundRobin": 3,
+     "seconds": 0.8,
+     "peak": 0.4448
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v12_r1.wav",
+     "layer": 12,
+     "roundRobin": 1,
+     "seconds": 0.8,
+     "peak": 0.7863
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v12_r2.wav",
+     "layer": 12,
+     "roundRobin": 2,
+     "seconds": 0.8,
+     "peak": 0.8601
+    },
+    {
+     "file": "swirly/swirlyHhClosed/swirlyHhClosed_v12_r3.wav",
+     "layer": 12,
+     "roundRobin": 3,
+     "seconds": 0.8,
+     "peak": 0.891
+    }
+   ]
+  },
+  "swirlyHhOpen": {
+   "mics": {
+    "Samples/hat_open/hh_open_vl{vl}_rr{rr}.wav": 1.0
+   },
+   "rate": 44100,
+   "channels": 1,
+   "samples": [
+    {
+     "file": "swirly/swirlyHhOpen/swirlyHhOpen_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 2.2,
+     "peak": 0.0333
+    },
+    {
+     "file": "swirly/swirlyHhOpen/swirlyHhOpen_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 2.2,
+     "peak": 0.0397
+    },
+    {
+     "file": "swirly/swirlyHhOpen/swirlyHhOpen_v05_r1.wav",
+     "layer": 5,
+     "roundRobin": 1,
+     "seconds": 2.2,
+     "peak": 0.1324
+    },
+    {
+     "file": "swirly/swirlyHhOpen/swirlyHhOpen_v05_r2.wav",
+     "layer": 5,
+     "roundRobin": 2,
+     "seconds": 2.2,
+     "peak": 0.1392
+    },
+    {
+     "file": "swirly/swirlyHhOpen/swirlyHhOpen_v10_r1.wav",
+     "layer": 10,
+     "roundRobin": 1,
+     "seconds": 2.2,
+     "peak": 0.3718
+    },
+    {
+     "file": "swirly/swirlyHhOpen/swirlyHhOpen_v10_r2.wav",
+     "layer": 10,
+     "roundRobin": 2,
+     "seconds": 2.2,
+     "peak": 0.3801
+    },
+    {
+     "file": "swirly/swirlyHhOpen/swirlyHhOpen_v14_r1.wav",
+     "layer": 14,
+     "roundRobin": 1,
+     "seconds": 2.2,
+     "peak": 0.8507
+    },
+    {
+     "file": "swirly/swirlyHhOpen/swirlyHhOpen_v14_r2.wav",
+     "layer": 14,
+     "roundRobin": 2,
+     "seconds": 2.2,
+     "peak": 0.891
+    }
+   ]
+  },
+  "swirlyRide": {
+   "mics": {
+    "Samples/ride/ride_vl{vl}_rr{rr}.wav": 1.0
+   },
+   "rate": 44100,
+   "channels": 1,
+   "samples": [
+    {
+     "file": "swirly/swirlyRide/swirlyRide_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 4.5,
+     "peak": 0.0712
+    },
+    {
+     "file": "swirly/swirlyRide/swirlyRide_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 4.5,
+     "peak": 0.0711
+    },
+    {
+     "file": "swirly/swirlyRide/swirlyRide_v06_r1.wav",
+     "layer": 6,
+     "roundRobin": 1,
+     "seconds": 4.5,
+     "peak": 0.18
+    },
+    {
+     "file": "swirly/swirlyRide/swirlyRide_v06_r2.wav",
+     "layer": 6,
+     "roundRobin": 2,
+     "seconds": 4.5,
+     "peak": 0.2118
+    },
+    {
+     "file": "swirly/swirlyRide/swirlyRide_v10_r1.wav",
+     "layer": 10,
+     "roundRobin": 1,
+     "seconds": 4.5,
+     "peak": 0.333
+    },
+    {
+     "file": "swirly/swirlyRide/swirlyRide_v10_r2.wav",
+     "layer": 10,
+     "roundRobin": 2,
+     "seconds": 4.5,
+     "peak": 0.3642
+    },
+    {
+     "file": "swirly/swirlyRide/swirlyRide_v15_r1.wav",
+     "layer": 15,
+     "roundRobin": 1,
+     "seconds": 4.5,
+     "peak": 0.8742
+    },
+    {
+     "file": "swirly/swirlyRide/swirlyRide_v15_r2.wav",
+     "layer": 15,
+     "roundRobin": 2,
+     "seconds": 4.5,
+     "peak": 0.891
+    }
+   ]
+  },
+  "swirlyCrash": {
+   "mics": {
+    "Samples/crash/crash_vl{vl}_rr{rr}.wav": 1.0
+   },
+   "rate": 44100,
+   "channels": 1,
+   "samples": [
+    {
+     "file": "swirly/swirlyCrash/swirlyCrash_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 3.0,
+     "peak": 0.095
+    },
+    {
+     "file": "swirly/swirlyCrash/swirlyCrash_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 3.0,
+     "peak": 0.0963
+    },
+    {
+     "file": "swirly/swirlyCrash/swirlyCrash_v05_r1.wav",
+     "layer": 5,
+     "roundRobin": 1,
+     "seconds": 3.778,
+     "peak": 0.3129
+    },
+    {
+     "file": "swirly/swirlyCrash/swirlyCrash_v05_r2.wav",
+     "layer": 5,
+     "roundRobin": 2,
+     "seconds": 3.734,
+     "peak": 0.3522
+    },
+    {
+     "file": "swirly/swirlyCrash/swirlyCrash_v08_r1.wav",
+     "layer": 8,
+     "roundRobin": 1,
+     "seconds": 4.095,
+     "peak": 0.5957
+    },
+    {
+     "file": "swirly/swirlyCrash/swirlyCrash_v08_r2.wav",
+     "layer": 8,
+     "roundRobin": 2,
+     "seconds": 4.106,
+     "peak": 0.5968
+    },
+    {
+     "file": "swirly/swirlyCrash/swirlyCrash_v12_r1.wav",
+     "layer": 12,
+     "roundRobin": 1,
+     "seconds": 4.5,
+     "peak": 0.866
+    },
+    {
+     "file": "swirly/swirlyCrash/swirlyCrash_v12_r2.wav",
+     "layer": 12,
+     "roundRobin": 2,
+     "seconds": 4.5,
+     "peak": 0.891
+    }
+   ]
+  }
+ }
+}

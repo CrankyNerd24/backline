@@ -17,6 +17,7 @@ struct SectionSettings: View {
     /// Simple mode (the default) hides the drummer's controls: the pattern
     /// editor, time signatures, the four feel sliders, time feel and cymbals.
     @AppStorage("showAdvanced") private var showAdvanced = false
+    @Environment(\.compactWidth) private var compactWidth
 
     var body: some View {
         if let index = store.song.index(of: sectionID) {
@@ -102,12 +103,29 @@ struct SectionSettings: View {
 
             Spacer(minLength: 0)
 
-            Button { duplicate() } label: { Label("Duplicate", systemImage: "plus.square.on.square") }
-                .buttonStyle(ChipButtonStyle())
-            Button(role: .destructive) { confirmingDelete = true } label: { Label("Delete", systemImage: "trash") }
-                .buttonStyle(ChipButtonStyle())
+            // Icons only on smaller iPads, where the row is short of room.
+            actions(compact: compactWidth)
+                .fixedSize()
+        }
+    }
+
+    private func actions(compact: Bool) -> some View {
+        HStack(spacing: compact ? 8 : 14) {
+            Button { duplicate() } label: {
+                Label("Duplicate", systemImage: "plus.square.on.square")
+                    .labelStyle(CompactLabelStyle(iconOnly: compact))
+            }
+            .buttonStyle(ChipButtonStyle())
+            .accessibilityLabel("Duplicate section")
+            Button(role: .destructive) { confirmingDelete = true } label: {
+                Label("Delete", systemImage: "trash")
+                    .labelStyle(CompactLabelStyle(iconOnly: compact))
+            }
+            .buttonStyle(ChipButtonStyle())
+            .accessibilityLabel("Delete section")
             Button(role: .destructive) { confirmingDeleteAll = true } label: {
                 Label("Delete All", systemImage: "trash.slash")
+                    .labelStyle(CompactLabelStyle(iconOnly: compact))
             }
             .buttonStyle(ChipButtonStyle())
             .accessibilityLabel("Delete all sections")

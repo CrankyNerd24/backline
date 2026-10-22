@@ -1,0 +1,961 @@
+{
+ "source": "Big Rusty Drums by Karoryfer Samples (CC0 1.0)",
+ "repository": "https://github.com/sfzinstruments/karoryfer.big-rusty-drums",
+ "articulations": {
+  "rustyKick": {
+   "mics": {
+    "Samples/kick_24/kick/kick/k_vl{vl}_rr{rr}.flac": 1.0,
+    "Samples/kick_24/kick/oh/k_vl{vl}_rr{rr}.flac": 0.6
+   },
+   "rate": 44100,
+   "channels": 2,
+   "samples": [
+    {
+     "file": "rusty/rustyKick/rustyKick_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 1.4,
+     "peak": 0.0466
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 1.4,
+     "peak": 0.0488
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v01_r3.wav",
+     "layer": 1,
+     "roundRobin": 3,
+     "seconds": 1.4,
+     "peak": 0.0561
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "seconds": 1.4,
+     "peak": 0.1033
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v04_r2.wav",
+     "layer": 4,
+     "roundRobin": 2,
+     "seconds": 1.4,
+     "peak": 0.105
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v04_r3.wav",
+     "layer": 4,
+     "roundRobin": 3,
+     "seconds": 1.4,
+     "peak": 0.0949
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v06_r1.wav",
+     "layer": 6,
+     "roundRobin": 1,
+     "seconds": 1.4,
+     "peak": 0.1697
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v06_r2.wav",
+     "layer": 6,
+     "roundRobin": 2,
+     "seconds": 1.216,
+     "peak": 0.1761
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v06_r3.wav",
+     "layer": 6,
+     "roundRobin": 3,
+     "seconds": 1.182,
+     "peak": 0.1764
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v09_r1.wav",
+     "layer": 9,
+     "roundRobin": 1,
+     "seconds": 1.181,
+     "peak": 0.3088
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v09_r2.wav",
+     "layer": 9,
+     "roundRobin": 2,
+     "seconds": 1.065,
+     "peak": 0.3189
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v09_r3.wav",
+     "layer": 9,
+     "roundRobin": 3,
+     "seconds": 1.181,
+     "peak": 0.3225
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v11_r1.wav",
+     "layer": 11,
+     "roundRobin": 1,
+     "seconds": 1.044,
+     "peak": 0.5356
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v11_r2.wav",
+     "layer": 11,
+     "roundRobin": 2,
+     "seconds": 0.978,
+     "peak": 0.4872
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v11_r3.wav",
+     "layer": 11,
+     "roundRobin": 3,
+     "seconds": 0.983,
+     "peak": 0.4521
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v14_r1.wav",
+     "layer": 14,
+     "roundRobin": 1,
+     "seconds": 0.978,
+     "peak": 0.8653
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v14_r2.wav",
+     "layer": 14,
+     "roundRobin": 2,
+     "seconds": 0.952,
+     "peak": 0.891
+    },
+    {
+     "file": "rusty/rustyKick/rustyKick_v14_r3.wav",
+     "layer": 14,
+     "roundRobin": 3,
+     "seconds": 0.978,
+     "peak": 0.8761
+    }
+   ]
+  },
+  "rustySnare": {
+   "mics": {
+    "Samples/snare_14/center/top/sn_center_vl{vl}_rr{rr}.flac": 1.0,
+    "Samples/snare_14/center/btm/sn_center_vl{vl}_rr{rr}.flac": 0.3,
+    "Samples/snare_14/center/oh/sn_center_vl{vl}_rr{rr}.flac": 0.7
+   },
+   "rate": 44100,
+   "channels": 2,
+   "samples": [
+    {
+     "file": "rusty/rustySnare/rustySnare_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 1.4,
+     "peak": 0.0666
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 1.4,
+     "peak": 0.0546
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v01_r3.wav",
+     "layer": 1,
+     "roundRobin": 3,
+     "seconds": 1.4,
+     "peak": 0.0702
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "seconds": 1.4,
+     "peak": 0.131
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "seconds": 1.4,
+     "peak": 0.1342
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v03_r3.wav",
+     "layer": 3,
+     "roundRobin": 3,
+     "seconds": 1.4,
+     "peak": 0.1517
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v05_r1.wav",
+     "layer": 5,
+     "roundRobin": 1,
+     "seconds": 1.4,
+     "peak": 0.2367
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v05_r2.wav",
+     "layer": 5,
+     "roundRobin": 2,
+     "seconds": 1.4,
+     "peak": 0.2098
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v05_r3.wav",
+     "layer": 5,
+     "roundRobin": 3,
+     "seconds": 1.4,
+     "peak": 0.2174
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v06_r1.wav",
+     "layer": 6,
+     "roundRobin": 1,
+     "seconds": 1.4,
+     "peak": 0.2768
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v06_r2.wav",
+     "layer": 6,
+     "roundRobin": 2,
+     "seconds": 1.336,
+     "peak": 0.3185
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v06_r3.wav",
+     "layer": 6,
+     "roundRobin": 3,
+     "seconds": 1.349,
+     "peak": 0.335
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v08_r1.wav",
+     "layer": 8,
+     "roundRobin": 1,
+     "seconds": 1.187,
+     "peak": 0.4467
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v08_r2.wav",
+     "layer": 8,
+     "roundRobin": 2,
+     "seconds": 1.177,
+     "peak": 0.4081
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v08_r3.wav",
+     "layer": 8,
+     "roundRobin": 3,
+     "seconds": 1.158,
+     "peak": 0.5043
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v10_r1.wav",
+     "layer": 10,
+     "roundRobin": 1,
+     "seconds": 1.026,
+     "peak": 0.7056
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v10_r2.wav",
+     "layer": 10,
+     "roundRobin": 2,
+     "seconds": 0.982,
+     "peak": 0.891
+    },
+    {
+     "file": "rusty/rustySnare/rustySnare_v10_r3.wav",
+     "layer": 10,
+     "roundRobin": 3,
+     "seconds": 1.042,
+     "peak": 0.7661
+    }
+   ]
+  },
+  "rustyRim": {
+   "mics": {
+    "Samples/snare_14/rimshot/top/sn_rims_vl{vl}_rr{rr}.flac": 1.0,
+    "Samples/snare_14/rimshot/btm/sn_rims_vl{vl}_rr{rr}.flac": 0.3,
+    "Samples/snare_14/rimshot/oh/sn_rims_vl{vl}_rr{rr}.flac": 0.7
+   },
+   "rate": 44100,
+   "channels": 2,
+   "samples": [
+    {
+     "file": "rusty/rustyRim/rustyRim_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 1.5,
+     "peak": 0.1093
+    },
+    {
+     "file": "rusty/rustyRim/rustyRim_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 1.5,
+     "peak": 0.0822
+    },
+    {
+     "file": "rusty/rustyRim/rustyRim_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "seconds": 0.914,
+     "peak": 0.4927
+    },
+    {
+     "file": "rusty/rustyRim/rustyRim_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "seconds": 0.923,
+     "peak": 0.565
+    },
+    {
+     "file": "rusty/rustyRim/rustyRim_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "seconds": 0.989,
+     "peak": 0.4311
+    },
+    {
+     "file": "rusty/rustyRim/rustyRim_v04_r2.wav",
+     "layer": 4,
+     "roundRobin": 2,
+     "seconds": 0.989,
+     "peak": 0.4214
+    },
+    {
+     "file": "rusty/rustyRim/rustyRim_v06_r1.wav",
+     "layer": 6,
+     "roundRobin": 1,
+     "seconds": 0.83,
+     "peak": 0.891
+    },
+    {
+     "file": "rusty/rustyRim/rustyRim_v06_r2.wav",
+     "layer": 6,
+     "roundRobin": 2,
+     "seconds": 0.814,
+     "peak": 0.8106
+    }
+   ]
+  },
+  "rustyCrossStick": {
+   "mics": {
+    "Samples/snare_14/sidestick/top/sn_ss_vl{vl}_rr{rr}.flac": 0.7,
+    "Samples/snare_14/sidestick/oh/sn_ss_vl{vl}_rr{rr}.flac": 1.0
+   },
+   "rate": 44100,
+   "channels": 2,
+   "samples": [
+    {
+     "file": "rusty/rustyCrossStick/rustyCrossStick_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 0.6,
+     "peak": 0.0726
+    },
+    {
+     "file": "rusty/rustyCrossStick/rustyCrossStick_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 0.6,
+     "peak": 0.0849
+    },
+    {
+     "file": "rusty/rustyCrossStick/rustyCrossStick_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "seconds": 0.6,
+     "peak": 0.6313
+    },
+    {
+     "file": "rusty/rustyCrossStick/rustyCrossStick_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "seconds": 0.6,
+     "peak": 0.7838
+    },
+    {
+     "file": "rusty/rustyCrossStick/rustyCrossStick_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "seconds": 0.6,
+     "peak": 0.891
+    },
+    {
+     "file": "rusty/rustyCrossStick/rustyCrossStick_v04_r2.wav",
+     "layer": 4,
+     "roundRobin": 2,
+     "seconds": 0.6,
+     "peak": 0.8586
+    }
+   ]
+  },
+  "rustyHhClosed": {
+   "mics": {
+    "Samples/hihat_14/cl/oh/ht_cl_vl{vl}_rr{rr}.flac": 1.0,
+    "Samples/hihat_14/cl/cl/ht_cl_vl{vl}_rr{rr}.flac": 0.5
+   },
+   "rate": 44100,
+   "channels": 2,
+   "samples": [
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 0.8,
+     "peak": 0.1653
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 0.8,
+     "peak": 0.1281
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v01_r3.wav",
+     "layer": 1,
+     "roundRobin": 3,
+     "seconds": 0.8,
+     "peak": 0.1202
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v02_r1.wav",
+     "layer": 2,
+     "roundRobin": 1,
+     "seconds": 0.8,
+     "peak": 0.266
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v02_r2.wav",
+     "layer": 2,
+     "roundRobin": 2,
+     "seconds": 0.789,
+     "peak": 0.4649
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v02_r3.wav",
+     "layer": 2,
+     "roundRobin": 3,
+     "seconds": 0.8,
+     "peak": 0.3036
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "seconds": 0.8,
+     "peak": 0.4082
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "seconds": 0.8,
+     "peak": 0.2683
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v03_r3.wav",
+     "layer": 3,
+     "roundRobin": 3,
+     "seconds": 0.8,
+     "peak": 0.2814
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v05_r1.wav",
+     "layer": 5,
+     "roundRobin": 1,
+     "seconds": 0.685,
+     "peak": 0.8841
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v05_r2.wav",
+     "layer": 5,
+     "roundRobin": 2,
+     "seconds": 0.74,
+     "peak": 0.6092
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v05_r3.wav",
+     "layer": 5,
+     "roundRobin": 3,
+     "seconds": 0.683,
+     "peak": 0.8604
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v06_r1.wav",
+     "layer": 6,
+     "roundRobin": 1,
+     "seconds": 0.676,
+     "peak": 0.8602
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v06_r2.wav",
+     "layer": 6,
+     "roundRobin": 2,
+     "seconds": 0.698,
+     "peak": 0.891
+    },
+    {
+     "file": "rusty/rustyHhClosed/rustyHhClosed_v06_r3.wav",
+     "layer": 6,
+     "roundRobin": 3,
+     "seconds": 0.691,
+     "peak": 0.8521
+    }
+   ]
+  },
+  "rustyHhOpen": {
+   "mics": {
+    "Samples/hihat_14/open/oh/ht_open_vl{vl}_rr{rr}.flac": 1.0,
+    "Samples/hihat_14/open/cl/ht_open_vl{vl}_rr{rr}.flac": 0.5
+   },
+   "rate": 44100,
+   "channels": 2,
+   "samples": [
+    {
+     "file": "rusty/rustyHhOpen/rustyHhOpen_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 2.2,
+     "peak": 0.1593
+    },
+    {
+     "file": "rusty/rustyHhOpen/rustyHhOpen_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 2.2,
+     "peak": 0.1642
+    },
+    {
+     "file": "rusty/rustyHhOpen/rustyHhOpen_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "seconds": 2.2,
+     "peak": 0.3985
+    },
+    {
+     "file": "rusty/rustyHhOpen/rustyHhOpen_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "seconds": 2.2,
+     "peak": 0.3194
+    },
+    {
+     "file": "rusty/rustyHhOpen/rustyHhOpen_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "seconds": 2.2,
+     "peak": 0.4059
+    },
+    {
+     "file": "rusty/rustyHhOpen/rustyHhOpen_v04_r2.wav",
+     "layer": 4,
+     "roundRobin": 2,
+     "seconds": 2.2,
+     "peak": 0.6951
+    },
+    {
+     "file": "rusty/rustyHhOpen/rustyHhOpen_v06_r1.wav",
+     "layer": 6,
+     "roundRobin": 1,
+     "seconds": 2.2,
+     "peak": 0.891
+    },
+    {
+     "file": "rusty/rustyHhOpen/rustyHhOpen_v06_r2.wav",
+     "layer": 6,
+     "roundRobin": 2,
+     "seconds": 2.2,
+     "peak": 0.8604
+    }
+   ]
+  },
+  "rustyRide": {
+   "mics": {
+    "Samples/ride_22/rd/oh/rd_vl{vl}_rr{rr}.flac": 1.0,
+    "Samples/ride_22/rd/cl/rd_vl{vl}_rr{rr}.flac": 0.5
+   },
+   "rate": 44100,
+   "channels": 2,
+   "samples": [
+    {
+     "file": "rusty/rustyRide/rustyRide_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 4.5,
+     "peak": 0.0431
+    },
+    {
+     "file": "rusty/rustyRide/rustyRide_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 4.5,
+     "peak": 0.0604
+    },
+    {
+     "file": "rusty/rustyRide/rustyRide_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "seconds": 4.5,
+     "peak": 0.2997
+    },
+    {
+     "file": "rusty/rustyRide/rustyRide_v04_r2.wav",
+     "layer": 4,
+     "roundRobin": 2,
+     "seconds": 4.5,
+     "peak": 0.2927
+    },
+    {
+     "file": "rusty/rustyRide/rustyRide_v07_r1.wav",
+     "layer": 7,
+     "roundRobin": 1,
+     "seconds": 4.5,
+     "peak": 0.488
+    },
+    {
+     "file": "rusty/rustyRide/rustyRide_v07_r2.wav",
+     "layer": 7,
+     "roundRobin": 2,
+     "seconds": 4.5,
+     "peak": 0.6157
+    },
+    {
+     "file": "rusty/rustyRide/rustyRide_v10_r1.wav",
+     "layer": 10,
+     "roundRobin": 1,
+     "seconds": 4.5,
+     "peak": 0.891
+    },
+    {
+     "file": "rusty/rustyRide/rustyRide_v10_r2.wav",
+     "layer": 10,
+     "roundRobin": 2,
+     "seconds": 4.5,
+     "peak": 0.8503
+    }
+   ]
+  },
+  "rustyRideBell": {
+   "mics": {
+    "Samples/ride_22/bl/oh/rd_bl_vl{vl}_rr{rr}.flac": 1.0,
+    "Samples/ride_22/bl/cl/rd_bl_vl{vl}_rr{rr}.flac": 0.5
+   },
+   "rate": 44100,
+   "channels": 2,
+   "samples": [
+    {
+     "file": "rusty/rustyRideBell/rustyRideBell_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 4.0,
+     "peak": 0.2271
+    },
+    {
+     "file": "rusty/rustyRideBell/rustyRideBell_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 4.0,
+     "peak": 0.2177
+    },
+    {
+     "file": "rusty/rustyRideBell/rustyRideBell_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "seconds": 4.0,
+     "peak": 0.6958
+    },
+    {
+     "file": "rusty/rustyRideBell/rustyRideBell_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "seconds": 4.0,
+     "peak": 0.762
+    },
+    {
+     "file": "rusty/rustyRideBell/rustyRideBell_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "seconds": 3.83,
+     "peak": 0.891
+    },
+    {
+     "file": "rusty/rustyRideBell/rustyRideBell_v04_r2.wav",
+     "layer": 4,
+     "roundRobin": 2,
+     "seconds": 4.0,
+     "peak": 0.7993
+    }
+   ]
+  },
+  "rustyCrash": {
+   "mics": {
+    "Samples/crash_17/cr/oh/cr_vl{vl}_rr{rr}.flac": 1.0,
+    "Samples/crash_17/cr/cl/cr_vl{vl}_rr{rr}.flac": 0.4
+   },
+   "rate": 44100,
+   "channels": 2,
+   "samples": [
+    {
+     "file": "rusty/rustyCrash/rustyCrash_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 4.5,
+     "peak": 0.14
+    },
+    {
+     "file": "rusty/rustyCrash/rustyCrash_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 4.5,
+     "peak": 0.1414
+    },
+    {
+     "file": "rusty/rustyCrash/rustyCrash_v02_r1.wav",
+     "layer": 2,
+     "roundRobin": 1,
+     "seconds": 4.5,
+     "peak": 0.2277
+    },
+    {
+     "file": "rusty/rustyCrash/rustyCrash_v02_r2.wav",
+     "layer": 2,
+     "roundRobin": 2,
+     "seconds": 4.5,
+     "peak": 0.1738
+    },
+    {
+     "file": "rusty/rustyCrash/rustyCrash_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "seconds": 4.5,
+     "peak": 0.6586
+    },
+    {
+     "file": "rusty/rustyCrash/rustyCrash_v04_r2.wav",
+     "layer": 4,
+     "roundRobin": 2,
+     "seconds": 4.5,
+     "peak": 0.5874
+    },
+    {
+     "file": "rusty/rustyCrash/rustyCrash_v05_r1.wav",
+     "layer": 5,
+     "roundRobin": 1,
+     "seconds": 4.5,
+     "peak": 0.891
+    },
+    {
+     "file": "rusty/rustyCrash/rustyCrash_v05_r2.wav",
+     "layer": 5,
+     "roundRobin": 2,
+     "seconds": 4.5,
+     "peak": 0.8231
+    }
+   ]
+  },
+  "rustyHighTom": {
+   "mics": {
+    "Samples/tom_14/center/cl/t14_vl{vl}_rr{rr}.flac": 1.0,
+    "Samples/tom_14/center/oh/t14_vl{vl}_rr{rr}.flac": 0.8
+   },
+   "rate": 44100,
+   "channels": 2,
+   "samples": [
+    {
+     "file": "rusty/rustyHighTom/rustyHighTom_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 2.2,
+     "peak": 0.0968
+    },
+    {
+     "file": "rusty/rustyHighTom/rustyHighTom_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 2.2,
+     "peak": 0.0613
+    },
+    {
+     "file": "rusty/rustyHighTom/rustyHighTom_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "seconds": 1.779,
+     "peak": 0.3
+    },
+    {
+     "file": "rusty/rustyHighTom/rustyHighTom_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "seconds": 1.884,
+     "peak": 0.2579
+    },
+    {
+     "file": "rusty/rustyHighTom/rustyHighTom_v04_r1.wav",
+     "layer": 4,
+     "roundRobin": 1,
+     "seconds": 1.849,
+     "peak": 0.3413
+    },
+    {
+     "file": "rusty/rustyHighTom/rustyHighTom_v04_r2.wav",
+     "layer": 4,
+     "roundRobin": 2,
+     "seconds": 1.849,
+     "peak": 0.3289
+    },
+    {
+     "file": "rusty/rustyHighTom/rustyHighTom_v06_r1.wav",
+     "layer": 6,
+     "roundRobin": 1,
+     "seconds": 1.607,
+     "peak": 0.891
+    },
+    {
+     "file": "rusty/rustyHighTom/rustyHighTom_v06_r2.wav",
+     "layer": 6,
+     "roundRobin": 2,
+     "seconds": 1.655,
+     "peak": 0.7305
+    }
+   ]
+  },
+  "rustyLowTom": {
+   "mics": {
+    "Samples/tom_18/center/cl/t18_vl{vl}_rr{rr}.flac": 1.0,
+    "Samples/tom_18/center/oh/t18_vl{vl}_rr{rr}.flac": 0.8
+   },
+   "rate": 44100,
+   "channels": 2,
+   "samples": [
+    {
+     "file": "rusty/rustyLowTom/rustyLowTom_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 2.27,
+     "peak": 0.1192
+    },
+    {
+     "file": "rusty/rustyLowTom/rustyLowTom_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 2.27,
+     "peak": 0.0992
+    },
+    {
+     "file": "rusty/rustyLowTom/rustyLowTom_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "seconds": 1.845,
+     "peak": 0.2072
+    },
+    {
+     "file": "rusty/rustyLowTom/rustyLowTom_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "seconds": 1.994,
+     "peak": 0.2232
+    },
+    {
+     "file": "rusty/rustyLowTom/rustyLowTom_v06_r1.wav",
+     "layer": 6,
+     "roundRobin": 1,
+     "seconds": 1.686,
+     "peak": 0.5037
+    },
+    {
+     "file": "rusty/rustyLowTom/rustyLowTom_v06_r2.wav",
+     "layer": 6,
+     "roundRobin": 2,
+     "seconds": 1.617,
+     "peak": 0.4921
+    },
+    {
+     "file": "rusty/rustyLowTom/rustyLowTom_v08_r1.wav",
+     "layer": 8,
+     "roundRobin": 1,
+     "seconds": 1.865,
+     "peak": 0.8704
+    },
+    {
+     "file": "rusty/rustyLowTom/rustyLowTom_v08_r2.wav",
+     "layer": 8,
+     "roundRobin": 2,
+     "seconds": 1.748,
+     "peak": 0.891
+    }
+   ]
+  },
+  "rustyFloorTom": {
+   "mics": {
+    "Samples/tom_22/center/cl/t22_vl{vl}_rr{rr}.flac": 1.0,
+    "Samples/tom_22/center/oh/t22_vl{vl}_rr{rr}.flac": 0.8
+   },
+   "rate": 44100,
+   "channels": 2,
+   "samples": [
+    {
+     "file": "rusty/rustyFloorTom/rustyFloorTom_v01_r1.wav",
+     "layer": 1,
+     "roundRobin": 1,
+     "seconds": 2.981,
+     "peak": 0.0913
+    },
+    {
+     "file": "rusty/rustyFloorTom/rustyFloorTom_v01_r2.wav",
+     "layer": 1,
+     "roundRobin": 2,
+     "seconds": 2.981,
+     "peak": 0.1119
+    },
+    {
+     "file": "rusty/rustyFloorTom/rustyFloorTom_v03_r1.wav",
+     "layer": 3,
+     "roundRobin": 1,
+     "seconds": 2.674,
+     "peak": 0.2316
+    },
+    {
+     "file": "rusty/rustyFloorTom/rustyFloorTom_v03_r2.wav",
+     "layer": 3,
+     "roundRobin": 2,
+     "seconds": 2.743,
+     "peak": 0.2455
+    },
+    {
+     "file": "rusty/rustyFloorTom/rustyFloorTom_v05_r1.wav",
+     "layer": 5,
+     "roundRobin": 1,
+     "seconds": 2.511,
+     "peak": 0.4533
+    },
+    {
+     "file": "rusty/rustyFloorTom/rustyFloorTom_v05_r2.wav",
+     "layer": 5,
+     "roundRobin": 2,
+     "seconds": 2.608,
+     "peak": 0.4549
+    },
+    {
+     "file": "rusty/rustyFloorTom/rustyFloorTom_v07_r1.wav",
+     "layer": 7,
+     "roundRobin": 1,
+     "seconds": 2.546,
+     "peak": 0.891
+    },
+    {
+     "file": "rusty/rustyFloorTom/rustyFloorTom_v07_r2.wav",
+     "layer": 7,
+     "roundRobin": 2,
+     "seconds": 2.532,
+     "peak": 0.7906
+    }
+   ]
+  }
+ }
+}

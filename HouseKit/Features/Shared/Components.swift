@@ -32,6 +32,7 @@ struct ChipButtonStyle: ButtonStyle {
         var body: some View {
             configuration.label
                 .font(Theme.body(15, weight: .semibold))
+                .lineLimit(1) // a chip never wraps ("T A P"); rows switch to icons instead
                 .padding(.horizontal, 14)
                 .frame(minWidth: 44, minHeight: 44)
                 .background(background, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
@@ -185,4 +186,11 @@ extension TimeInterval {
         let total = Int(self.rounded())
         return String(format: "%d:%02d", total / 60, total % 60)
     }
+}
+
+extension EnvironmentValues {
+    /// True on narrower iPads (under 1180 points across, such as a 10.2" or
+    /// 9.7" iPad in landscape): rows switch to shorter labels and icons. Set
+    /// by the Song Builder from its own width.
+    @Entry var compactWidth = false
 }

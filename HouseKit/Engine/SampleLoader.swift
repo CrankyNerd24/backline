@@ -23,7 +23,23 @@ nonisolated enum SampleLoader {
             guard sound >= 0 else { continue }
             if bl_sample_bank_add_wav(bank, UInt8(sound), layer, url.path(percentEncoded: false)) { loaded += 1 }
         }
-        if loaded > 0 { bl_samples_install(bank) }
+        if loaded > 0 {
+            bl_samples_install(bank)
+            keepWarm()
+        }
         return loaded
+    }
+
+    /// Every few seconds, touches every page of the recordings at low
+    /// priority. On iPads with little memory the system otherwise compresses
+    /// sounds that haven't played for a while, and the next hit of one waited
+    /// on the audio thread: a scratch at a random moment.
+    private static func keepWarm() {
+        Task.detached(priority: .utility) {
+            while true {
+                _ = bl_samples_keep_warm()
+                try? await Task.sleep(for: .seconds(3))
+            }
+        }
     }
 }

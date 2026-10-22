@@ -109,13 +109,33 @@ enum {
     BL_SOUND_LOW_TOM,
     BL_SOUND_FLAT_RIDE,
     BL_SOUND_CRASH_SIZZLE,
+    // Big Rusty Drums (Karoryfer): a big vintage rock kit.
+    BL_SOUND_RUSTY_KICK,
+    BL_SOUND_RUSTY_SNARE,
+    BL_SOUND_RUSTY_RIM,
+    BL_SOUND_RUSTY_CROSS_STICK,
+    BL_SOUND_RUSTY_HH_CLOSED,
+    BL_SOUND_RUSTY_HH_OPEN,
+    BL_SOUND_RUSTY_RIDE,
+    BL_SOUND_RUSTY_RIDE_BELL,
+    BL_SOUND_RUSTY_CRASH,
+    BL_SOUND_RUSTY_HIGH_TOM,
+    BL_SOUND_RUSTY_LOW_TOM,
+    BL_SOUND_RUSTY_FLOOR_TOM,
+    // Swirly Drums (Karoryfer): a dry, woody vintage kit.
+    BL_SOUND_SWIRLY_KICK,
+    BL_SOUND_SWIRLY_SNARE,
+    BL_SOUND_SWIRLY_HH_CLOSED,
+    BL_SOUND_SWIRLY_HH_OPEN,
+    BL_SOUND_SWIRLY_RIDE,
+    BL_SOUND_SWIRLY_CRASH,
     BL_SOUND_COUNT
 };
 
 typedef struct BLSampleBank BLSampleBank;
 
-// The articulation for a folder name in the bundled kit ("kick", "hhOpen"…),
-// or -1.
+// The articulation for a sample file's name in the bundled kits ("kick",
+// "hhOpen", "rustySnare"…), or -1.
 int32_t bl_sound_index(const char *name);
 
 // Control thread. Build a bank, add samples, then install it.
@@ -133,6 +153,11 @@ uint32_t bl_sample_bank_count(const BLSampleBank *bank, uint8_t sound);
 // bank is never freed and must not be changed afterwards; installing another
 // replaces it for hits that start later. NULL removes it (tests).
 void bl_samples_install(BLSampleBank *bank);
+// Reads one value from every memory page of the installed bank and returns
+// how many pages it read. Call it every few seconds off the audio thread:
+// pages iOS hasn't seen used get compressed or paged out under memory
+// pressure, and bringing one back on the audio thread is a dropout.
+uint32_t bl_samples_keep_warm(void);
 
 // MARK: Timeline
 //

@@ -1,5 +1,6 @@
 import AVFoundation
 import Observation
+import UIKit
 
 /// Swift façade over the C++ DSP core. The UI talks only to this; it never
 /// touches the render thread. Commands go to the core through its lock-free
@@ -38,7 +39,16 @@ final class EngineController {
     enum NextSectionTiming: String, CaseIterable {
         case endOfBar, endOfLoop
 
-        var label: String { self == .endOfBar ? "End of bar" : "End of loop" }
+        var label: String { self == .endOfBar ? "After this bar" : "End of section" }
+
+        /// Shown under the choice, so it's clear what each one waits for.
+        var hint: String {
+            switch self {
+            case .endOfBar: "The drums finish the bar they're in, then move on. Quickest."
+            case .endOfLoop: "The drums play to the end of the section (or of this pass, for a section that repeats "
+                + "until you step), so phrases stay whole."
+            }
+        }
     }
 
     /// What's waiting to happen, for the Play-Along banner.
@@ -182,14 +192,14 @@ final class EngineController {
     // MARK: Transport
 
     /// Plays from the start of a section (or the top of the song), after the
-    /// song's count-in.
-    func play(from sectionID: UUID? = nil) {
+    /// song's count-in unless `countIn` is false.
+    func play(from sectionID: UUID? = nil, countIn: Bool = true) {
         guard let core, let song, !song.sections.isEmpty else { return }
         stopPreview()
         startEngineIfNeeded()
         pushPendingChanges() // the engine must have the current timeline first
         let bar = sectionID.map { song.startBar(of: $0) } ?? 0
-        bl_engine_play_from(core, UInt32(bar), true)
+        bl_engine_play_from(core, UInt32(bar), countIn)
         isPlaying = true
         playRequestedAt = .now
     }
@@ -291,6 +301,7 @@ final class EngineController {
     func audition(_ piece: Piece, velocity: Velocity = .normal) {
         guard let core else { return }
         startEngineIfNeeded()
+        pushKit() // a sound just picked plays now, not on the next poll
         bl_engine_audition(core, piece.engineIndex, velocity.rawValue)
     }
 
@@ -340,10 +351,17 @@ final class EngineController {
             } else {
                 try session.setCategory(.playback, mode: .default)
             }
-            try session.setPreferredIOBufferDuration(0.005)
+            // About 10 ms (512 frames at 48 kHz). At 5 ms, older iPads broke
+            // up when the system got busy, e.g. bringing up the keyboard. The
+            // song's hits are scheduled to the sample, so only taps and
+            // auditions hear the extra latency.
+            try session.setPreferredIOBufferDuration(0.0107)
             try session.setActive(true)
         } catch {
-            lastError = "Audio session: \(error.localizedDescription)"
+            // In the background this is expected; resume() tries again.
+            if UIApplication.shared.applicationState != .background {
+                lastError = "Audio session: \(error.localizedDescription)"
+            }
         }
     }
 
@@ -387,8 +405,23 @@ final class EngineController {
         }
     }
 
+    /// The app is in front again: take the audio session back (another app
+    /// or a call may have had it) and restart the engine if it stopped.
+    func resume() {
+        configureSession()
+        startEngineIfNeeded()
+        // An audio problem from while the app was away is over once it runs.
+        if avEngine.isRunning, let error = lastError,
+           error.hasPrefix("Couldn't start audio") || error.hasPrefix("Audio session") {
+            lastError = nil
+        }
+    }
+
     private func startEngineIfNeeded() {
         guard !avEngine.isRunning else { return }
+        // In the background iOS refuses to start audio that doesn't mix with
+        // other apps; resume() starts it when the app comes back.
+        guard UIApplication.shared.applicationState != .background else { return }
         do {
             try avEngine.start()
             lastError = nil
@@ -438,7 +471,9 @@ final class EngineController {
         if began {
             stop()
         } else {
-            // Bring audio back, but never resume playback by surprise.
+            // Bring audio back, but never resume playback by surprise. The
+            // session has to be made active again first.
+            configureSession()
             startEngineIfNeeded()
         }
     }

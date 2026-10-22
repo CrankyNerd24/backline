@@ -1,6 +1,7 @@
 #include "Samples.hpp"
 
 #include <algorithm>
+#include <sys/mman.h>
 #include <cstdio>
 #include <cstring>
 
@@ -10,9 +11,12 @@ namespace {
 
 std::atomic<const BLSampleBank *> gBank{nullptr};
 
-constexpr const char *kSoundNames[BL_SOUND_COUNT] = {"kick",     "snare", "snareRim",  "crossStick", "hhClosed", "hhOpen",
-                                                     "ride",     "rideBell", "crash", "highTom",    "lowTom",
-                                                     "flatRide", "crashSizzle"};
+constexpr const char *kSoundNames[BL_SOUND_COUNT] = {
+    "kick", "snare", "snareRim", "crossStick", "hhClosed", "hhOpen", "ride", "rideBell", "crash", "highTom", "lowTom",
+    "flatRide", "crashSizzle",
+    "rustyKick", "rustySnare", "rustyRim", "rustyCrossStick", "rustyHhClosed", "rustyHhOpen", "rustyRide",
+    "rustyRideBell", "rustyCrash", "rustyHighTom", "rustyLowTom", "rustyFloorTom",
+    "swirlyKick", "swirlySnare", "swirlyHhClosed", "swirlyHhOpen", "swirlyRide", "swirlyCrash"};
 
 float semitones(float tune) { return std::exp2(std::clamp(tune, -24.0f, 24.0f) / 12.0f); }
 
@@ -44,6 +48,7 @@ const BLSampleBank *installedBank() { return gBank.load(std::memory_order_acquir
 
 void SampleVoice::configure(const RecordedModel *model, const BLVoiceSettings &s, bool openHat) {
     model_ = model;
+    attack_.configure(s.attack, sr_);
     if (!model) return;
     sound_ = openHat ? model->altSound : model->sound;
     rate_ = semitones(s.tune + model->tune);
@@ -56,7 +61,8 @@ void SampleVoice::configure(const RecordedModel *model, const BLVoiceSettings &s
     lowCoeff_ = onePoleCoeff(180.0f, sr_);
     highCoeff_ = onePoleCoeff(tone_ < 0.0f ? 1800.0f : 3500.0f, sr_);
     // The ride's Bell control: turned up past 75%, hits land on the bell.
-    if (model->sound == BL_SOUND_RIDE && !openHat && s.character > 0.75f) sound_ = model->altSound;
+    const bool bellRide = model->sound == BL_SOUND_RIDE || model->sound == BL_SOUND_RUSTY_RIDE;
+    if (bellRide && !openHat && s.character > 0.75f) sound_ = model->altSound;
 }
 
 bool SampleVoice::trigger(const Hit &hit) {
@@ -80,8 +86,31 @@ bool SampleVoice::trigger(const Hit &hit) {
     const float gain = std::clamp(target / std::max(best->level, 1e-4f), 0.5f, 2.0f);
     const SampleData &take = set.takes[best->first + hit.seed % best->count];
 
-    Play &p = play_[next_];
-    next_ = (next_ + 1) % kVoices;
+    // Past four ringing hits, the oldest fades out over a few milliseconds;
+    // cutting it dead would click. The new hit takes a free slot (or, if
+    // every slot is still fading, the oldest).
+    Play *oldest = nullptr, *slot = nullptr;
+    int sounding = 0;
+    for (Play &q : play_) {
+        if (!q.sample) {
+            if (!slot) slot = &q;
+            continue;
+        }
+        if (q.choked) continue;
+        ++sounding;
+        if (!oldest || q.order < oldest->order) oldest = &q;
+    }
+    if (sounding >= kSounding && oldest) {
+        oldest->choked = true;
+        oldest->chokeEnv.start(1.0f, 0.005f, sr_);
+    }
+    if (!slot) {
+        slot = &play_[0];
+        for (Play &q : play_)
+            if (q.order < slot->order) slot = &q;
+    }
+    Play &p = *slot;
+    p.order = ++started_;
     p.sample = &take;
     p.pos = 0.0;
     p.step = static_cast<double>(take.sampleRate) / sr_ * rate_;
@@ -89,6 +118,8 @@ bool SampleVoice::trigger(const Hit &hit) {
     p.fading = fadeTau_ > 0.0f;
     if (p.fading) p.env.start(1.0f, fadeTau_, sr_);
     p.choked = false;
+    p.attack = attack_;
+    p.attack.start();
     return true;
 }
 
@@ -112,7 +143,7 @@ float SampleVoice::process() {
             continue;
         }
         const float frac = static_cast<float>(p.pos - i);
-        float g = p.gain * (1.0f / 32768.0f);
+        float g = p.gain * (1.0f / 32768.0f) * p.attack.next();
         if (p.fading) g *= p.env.next();
         if (p.choked) {
             g *= p.chokeEnv.next();
@@ -228,8 +259,33 @@ uint32_t bl_sample_bank_count(const BLSampleBank *bank, uint8_t sound) {
 
 void bl_samples_install(BLSampleBank *bank) {
     if (bank)
-        for (auto &set : bank->sounds) set.finish();
+        for (auto &set : bank->sounds) {
+            set.finish();
+            // Pin the recordings in memory where the system allows it, so
+            // the audio thread never waits for one to be paged back in.
+            // Where it doesn't, bl_samples_keep_warm() keeps them in use.
+            for (const auto &take : set.takes)
+                if (!take.pcm.empty()) mlock(take.pcm.data(), take.pcm.size() * sizeof(int16_t));
+        }
     housekit::gBank.store(bank, std::memory_order_release);
+}
+
+static std::atomic<int32_t> gWarmSink{0};
+
+uint32_t bl_samples_keep_warm(void) {
+    const BLSampleBank *bank = housekit::installedBank();
+    if (!bank) return 0;
+    constexpr size_t kStep = 4096 / sizeof(int16_t); // one value per 4 KB page
+    uint32_t pages = 0;
+    int32_t sum = 0;
+    for (const auto &set : bank->sounds)
+        for (const auto &take : set.takes)
+            for (size_t i = 0; i < take.pcm.size(); i += kStep) {
+                sum += take.pcm[i];
+                ++pages;
+            }
+    gWarmSink.store(sum, std::memory_order_relaxed); // so the reads aren't optimised away
+    return pages;
 }
 
 } // extern "C"

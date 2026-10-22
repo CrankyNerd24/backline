@@ -9,8 +9,13 @@ struct AskBar: View {
     let currentSectionID: UUID?
     /// Play-along: no suggestion chips, so the screen stays readable.
     var compact = false
+    /// Told when typing starts and stops, so the screen can keep still under
+    /// the keyboard.
+    var onTyping: ((Bool) -> Void)? = nil
     @State private var text = ""
     @FocusState private var typing: Bool
+    /// Play-along types in a pop-up, so the keyboard doesn't squash the screen.
+    @State private var typingInPopup = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -18,17 +23,30 @@ struct AskBar: View {
                 MicButton(currentSectionID: currentSectionID, size: compact ? 56 : 48)
                     .tutorialAnchor("mic")
                 field
-                Button {
-                    send(text)
-                } label: {
-                    Text("Do it").frame(minWidth: 60)
+                if !compact {
+                    Button {
+                        send(text)
+                    } label: {
+                        Text("Do it").frame(minWidth: 60)
+                    }
+                    .buttonStyle(ChipButtonStyle(prominent: !text.isEmpty))
+                    .disabled(text.trimmingCharacters(in: .whitespaces).isEmpty || assistant.phase != .idle)
                 }
-                .buttonStyle(ChipButtonStyle(prominent: !text.isEmpty))
-                .disabled(text.trimmingCharacters(in: .whitespaces).isEmpty || assistant.phase != .idle)
             }
             if let reply = assistant.reply {
                 ReplyCard(reply: reply)
-            } else if !compact, assistant.phase == .idle, text.isEmpty {
+                    .transition(.opacity)
+                    // Fades after a few seconds (longer when something didn't
+                    // work, to leave time to read why); X still closes it now.
+                    .task(id: reply.id) {
+                        try? await Task.sleep(for: .seconds(reply.problems.isEmpty ? 6 : 10))
+                        guard !Task.isCancelled else { return }
+                        withAnimation(.easeOut(duration: 0.4)) { assistant.dismissReply(reply.id) }
+                    }
+            }
+            // The suggestions stay under the last reply, so the next request
+            // is a tap away without closing it first.
+            if !compact, assistant.phase == .idle, text.isEmpty {
                 suggestions
             }
         }
@@ -47,10 +65,23 @@ struct AskBar: View {
                     ProgressView().tint(Theme.accent)
                     Text("Working on it…").foregroundStyle(Theme.textMuted)
                 }
+            } else if compact {
+                Button {
+                    typingInPopup = true
+                } label: {
+                    Text("Hold the mic and speak, or tap here to type")
+                        .foregroundStyle(Theme.textMuted)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Type a request")
             } else {
                 TextField("Tell HouseKit what you want: “more swing in the chorus”, “punchier”, “add a bridge”…",
                           text: $text)
                     .focused($typing)
+                    .onChange(of: typing) { _, now in onTyping?(now) }
                     .submitLabel(.go)
                     .onSubmit { send(text) }
                     .autocorrectionDisabled()
@@ -60,6 +91,12 @@ struct AskBar: View {
         .padding(.horizontal, 14)
         .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+        .alert("Tell HouseKit", isPresented: $typingInPopup) {
+            TextField("“next section”, “more swing”, “loop this”…", text: $text)
+                .autocorrectionDisabled()
+            Button("Cancel", role: .cancel) { text = "" }
+            Button("Do it") { send(text) }
+        }
     }
 
     private var suggestions: some View {

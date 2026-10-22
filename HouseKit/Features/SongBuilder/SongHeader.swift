@@ -20,54 +20,13 @@ struct SongHeader: View {
     @State private var confirmingDelete = false
     @State private var tapTempo = TapTempo()
     @AppStorage("showAdvanced") private var showAdvanced = false
+    @Environment(\.compactWidth) private var compactWidth
 
     var body: some View {
-        HStack(spacing: 16) {
-            HStack(spacing: 8) {
-                Image(systemName: "waveform")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(Theme.accent)
-                Text("HouseKit")
-                    .font(Theme.condensed(22, weight: .bold))
-                    .foregroundStyle(Theme.textMuted)
-            }
-            .accessibilityHidden(true)
-
-            songMenu
-                .tutorialAnchor("songMenu")
-            Spacer(minLength: 12)
-            tempo
-            Text(store.song.timeSignatureLabel)
-                .font(Theme.condensed(20, weight: .bold))
-                .foregroundStyle(Theme.textMuted)
-                .accessibilityLabel(store.song.timeSignatureLabel == "Mixed" ? "Mixed time signatures"
-                                    : "\(store.song.timeSignatureLabel) time")
-            Button {
-                settingUpPedals = true
-            } label: {
-                PedalStatusChip()
-            }
-            .buttonStyle(.plain)
-            .accessibilityHint("Opens foot pedal setup")
-            Button {
-                editingKit = true
-            } label: {
-                Label(kitLabel, systemImage: "circle.grid.2x2")
-                    .lineLimit(1)
-            }
-            .buttonStyle(ChipButtonStyle())
-            .tutorialAnchor("kitChip")
-            .accessibilityHint("Opens the Kit Editor")
-            Button {
-                exporting = true
-            } label: {
-                Label("Export", systemImage: "square.and.arrow.up")
-            }
-            .buttonStyle(ChipButtonStyle())
-            .tutorialAnchor("export")
-            .disabled(store.song.sections.isEmpty)
-            .accessibilityHint("Saves the song as a WAV file to share")
-        }
+        // Smaller iPads get the compact header: no wordmark, and Export as an
+        // icon. (Chosen by width rather than ViewThatFits, which picked a row
+        // that then squeezed TAP down to "…".)
+        row(compact: compactWidth)
         .padding(.horizontal, 24)
         .padding(.vertical, 12)
         .background(Theme.bg)
@@ -108,6 +67,79 @@ struct SongHeader: View {
             Button("Delete Song", role: .destructive) { store.deleteSong() }
         } message: {
             Text("This can't be undone.")
+        }
+    }
+
+    private func row(compact: Bool) -> some View {
+        HStack(spacing: compact ? 10 : 16) {
+            HStack(spacing: 8) {
+                Image(systemName: "waveform")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(Theme.accent)
+                if !compact {
+                    Text("HouseKit")
+                        .font(Theme.condensed(22, weight: .bold))
+                        .foregroundStyle(Theme.textMuted)
+                }
+            }
+            .accessibilityHidden(true)
+
+            songMenu
+                .tutorialAnchor("songMenu")
+                .layoutPriority(-1) // a long name truncates before anything else gives way
+            Spacer(minLength: 12)
+            Button { store.undo() } label: {
+                Label("Undo", systemImage: "arrow.uturn.backward")
+                    .labelStyle(CompactLabelStyle(iconOnly: compact))
+            }
+            .buttonStyle(ChipButtonStyle())
+            .fixedSize()
+            .disabled(!store.canUndo)
+            .accessibilityLabel("Undo")
+            .accessibilityHint("Undoes the most recent change to the song")
+            Button { store.redo() } label: {
+                Label("Redo", systemImage: "arrow.uturn.forward")
+                    .labelStyle(CompactLabelStyle(iconOnly: compact))
+            }
+            .buttonStyle(ChipButtonStyle())
+            .fixedSize()
+            .disabled(!store.canRedo)
+            .accessibilityLabel("Redo")
+            .accessibilityHint("Puts back the change you just undid")
+            tempo
+                .fixedSize()
+            Text(store.song.timeSignatureLabel)
+                .font(Theme.condensed(20, weight: .bold))
+                .foregroundStyle(Theme.textMuted)
+                .accessibilityLabel(store.song.timeSignatureLabel == "Mixed" ? "Mixed time signatures"
+                                    : "\(store.song.timeSignatureLabel) time")
+            Button {
+                settingUpPedals = true
+            } label: {
+                PedalStatusChip()
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Opens foot pedal setup")
+            Button {
+                editingKit = true
+            } label: {
+                Label(kitLabel, systemImage: "circle.grid.2x2")
+                    .lineLimit(1)
+            }
+            .buttonStyle(ChipButtonStyle())
+            .tutorialAnchor("kitChip")
+            .accessibilityHint("Opens the Kit Editor")
+            Button {
+                exporting = true
+            } label: {
+                Label("Export", systemImage: "square.and.arrow.up")
+                    .labelStyle(CompactLabelStyle(iconOnly: compact))
+            }
+            .buttonStyle(ChipButtonStyle())
+            .tutorialAnchor("export")
+            .disabled(store.song.sections.isEmpty)
+            .accessibilityLabel("Export")
+            .accessibilityHint("Saves the song as a WAV file to share")
         }
     }
 
@@ -184,6 +216,7 @@ struct SongHeader: View {
                 if let bpm = tapTempo.tap() { setTempo(bpm) }
             }
             .buttonStyle(ChipButtonStyle())
+            .fixedSize()
             .accessibilityLabel("Tap tempo")
             .accessibilityHint("Tap four or more times in time with the music")
         }
@@ -212,5 +245,18 @@ struct TapTempo {
         let intervals = zip(taps.dropFirst(), taps).map { $0.timeIntervalSince($1) }.sorted()
         let median = intervals[intervals.count / 2]
         return median > 0 ? 60 / median : nil
+    }
+}
+
+/// A label that's just its icon when space is short.
+struct CompactLabelStyle: LabelStyle {
+    var iconOnly: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        if iconOnly {
+            configuration.icon
+        } else {
+            Label(configuration)
+        }
     }
 }

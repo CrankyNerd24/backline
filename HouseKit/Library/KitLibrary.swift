@@ -59,7 +59,10 @@ final class KitLibrary {
 
     /// Stable ids for the built-ins; index 0 is the Garage Kit.
     static func builtInID(_ index: Int) -> UUID {
-        UUID(uuidString: String(format: "6A1E0C5B-2B4E-4F0E-9C1D-0000000000A%X", index + 1))!
+        // The first fifteen keep the ids they shipped with (A1…AF); past
+        // that, one more hex digit wouldn't fit the UUID.
+        index < 15 ? UUID(uuidString: String(format: "6A1E0C5B-2B4E-4F0E-9C1D-0000000000A%X", index + 1))!
+            : UUID(uuidString: String(format: "6A1E0C5B-2B4E-4F0E-9C1D-0000000001%02X", index))!
     }
 
     /// The starting sounds a piece can use (spec §4.1).

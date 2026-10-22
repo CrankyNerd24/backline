@@ -6,6 +6,8 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 
 ## Status: milestone 10 (polish): all v1 milestones built
 
+**Undo** (header, left of the tempo): takes the song back one change at a time, up to 50 changes. Changes less than a second apart, like a slider drag or a knob turn, undo together. It covers everything that changes the song, including the Kit Editor and Tell HouseKit. **Redo**, beside it, puts back what Undo took away until you make a new change. The history starts fresh when you switch songs. On smaller iPads it shows as an icon.
+
 **Build it for me** (`Model/Arranger.swift`, `Features/BuildIt/`): **New Song ▸ Build It for Me…**, or the button on an empty song, asks four plain questions: style, count (4/4, waltz, 6/8, slow 12/8), vibe (Laid back, Driving, Epic), tempo (suggested for the style, or tap along) and length (Short, Normal, Long). It then arranges the whole song:
 - a calmer groove for verses and a bigger one for choruses, chosen by tags and tempo fit;
 - energy that lifts into each chorus and peaks at the last one;
@@ -32,11 +34,17 @@ Each step dims the screen around one control and explains it. Hands-on steps wai
 **Tell HouseKit** (for players who aren't drummers): a bar under the header, and a big mic in Play-along, takes requests in plain words. Type, or hold the mic and speak.
 - **Feel and sound:** "more swing", "make the chorus hit harder", "simpler verses", "tighter", "punchier", "bigger room", "darker cymbals", "louder kick", "half time in the bridge", "put the solo on the ride", "big fill into the chorus", "use the metal kit".
 - **Tempo and grooves:** "faster", "slow it down a bit", "90 BPM", "make it funky", "a shuffle", "different groove".
-- **Structure:** "add a bridge after the second chorus", "remove the solo", "make the verses 16 bars", "count in two bars", "repeat the solo until I step".
+- **Structure:** "add a bridge after the second chorus", "remove the solo", "make the verses 16 bars", "add 4 bars to chorus 2", "make the intro 2 bars shorter", "count in two bars", "repeat the solo until I step".
 - **Play-along:** "play from the chorus", "next section", "go back", "give me a fill", "loop this", "end it", "stop".
 - Every request shows what changed, and one **Undo** takes all of it back.
 - `Assistant/PhraseInterpreter.swift` handles everyday phrasings on every iPad, instantly. When some part of a request isn't covered, Apple's on-device model takes over on iPads with Apple Intelligence (iPadOS 26), via `Assistant/OnDeviceInterpreter.swift`. It returns structured steps in the same vocabulary. Both run privately and offline.
 - **Voice:** hold to talk, using Apple's on-device speech recognition. The words appear as you speak, and the drums duck while the mic is held. The first use switches the audio session to play-and-record, which stops playback once. Headphones help.
+
+**More recorded kits:** two more real kits from [Karoryfer Samples](https://www.karoryfer.com/), both released under CC0 like Virtuosity Drums. Each comes as five new built-in kits and as "(recorded)" sounds that can be mixed into any kit in the Kit Editor.
+- **[Big Rusty Drums](https://github.com/sfzinstruments/karoryfer.big-rusty-drums):** a big vintage rock kit with a 24" kick, a 14" snare (centre, rimshot and cross-stick), 14" hats, a 22" ride with a bell, a 17" crash, and 14", 18" and 22" toms. Close mics and overheads, stereo, about 40 MB.
+- **[Swirly Drums](https://github.com/sfzinstruments/karoryfer.swirly-drums):** a dry, woody vintage kit: kick, snare, hats, ride and crash, from the close mics only (the library's room mic runs about 15 ms late), mono, about 11 MB. Its toms sounded boxy and buzzy, so they're left out; the Swirly kits use the club kit's toms.
+- **New kits:** Big Rusty, Arena Rock (rimshots, a big room, more punch), Swirly Vintage, Dry Funk (tight and tuned up) and Indie Mix (Swirly kick and hats, the Rusty snare and toms, club cymbals). Build it for me picks them for rock, punk, funk, ballad, country, blues and pop songs.
+- `python3 tools/fetch_karoryfer.py` rebuilds them. It lists each library with a blobless git clone, downloads only the chosen takes, mixes the mics and keeps the library's 44.1 kHz rate. Each recorded model's level is matched to the club kit's.
 
 **Recorded kit:** every built-in kit now plays real recordings by default. They come from [Virtuosity Drums](https://github.com/sfzinstruments/virtuosity_drums), a club jazz kit by Versilian Studios released under CC0, so exports remain the player's own with no credit needed.
 - 98 takes across 13 articulations: kick, snare, rimshot, cross-stick, closed and open hats, ride, ride bell, flat ride, crash, sizzle crash, and high and low tom. Each has three to eight hit strengths and up to three alternate takes. Kick and snare are mixed from the close mics and overheads, hats from the overheads, and toms and cymbals from the overheads plus the mid and room mics. They're stored as 48 kHz 16-bit stereo, about 57 MB, in `HouseKit/Library/Samples/`.

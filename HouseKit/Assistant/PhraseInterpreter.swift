@@ -111,20 +111,32 @@ nonisolated enum PhraseInterpreter {
             return [AssistantStep(.countIn, amount: Double(bars))]
         }
 
-        // Structure.
+        // Structure. "Add 4 bars to chorus 2" makes a section longer; it's
+        // checked first because it names a section kind, like "add a chorus".
+        if let bars = barCount(in: c) {
+            // ("another" isn't here: "add another 8 bar verse" is a new section.)
+            let grow = has(c, ["longer", "extend", "lengthen", "more", "extra", "additional"])
+                || (has(c, ["add", "put", "stick", "tack"]) && has(c, ["to", "onto", "on"]))
+            let shrink = has(c, ["shorter", "shorten", "fewer", "less", "trim"])
+                || (has(c, ["take", "remove", "cut", "drop", "lose", "chop"]) && has(c, ["from", "off", "out of"]))
+                || (has(c, ["cut", "trim", "chop"]) && has(c, ["by", "down"]))
+            if grow != shrink {
+                return [AssistantStep(.changeBars, target: target ?? "this", amount: Double(grow ? bars : -bars))]
+            }
+        }
         if has(c, ["add", "insert", "put in", "throw in", "include", "need a", "want a", "another"]),
            let kind = words.first(where: { AssistantApplier.kind(in: $0) != nil }), !has(c, ["fill", "swing"]) {
             var after: String?
             if let at = words.firstIndex(of: "after"), at + 1 < words.count {
                 after = Self.target(in: words[(at + 1)...].joined(separator: " "), sectionNames: sectionNames)
             }
-            let bars = has(c, ["bar", "bars"]) ? number(in: c).map(Double.init) : nil
+            let bars = has(c, ["bar", "bars"]) ? (barCount(in: c) ?? number(in: c)).map(Double.init) : nil
             return [AssistantStep(.addSection, target: after, amount: bars, value: kind)]
         }
         if has(c, ["remove", "delete", "drop", "cut", "get rid of", "lose", "take out"]), let target {
             return [AssistantStep(.removeSection, target: target)]
         }
-        if has(c, ["bar", "bars"]), let bars = number(in: c) {
+        if has(c, ["bar", "bars"]), let bars = barCount(in: c) ?? number(in: c) {
             return [AssistantStep(.setBars, target: target ?? "this", amount: Double(bars))]
         }
         if has(c, ["repeat until", "keep looping", "vamp", "until i say", "until i step", "jam on", "keep repeating",
@@ -265,6 +277,21 @@ nonisolated enum PhraseInterpreter {
             if let n = Int(w.replacingOccurrences(of: "%", with: "")) { return n }
             if i + 1 < words.count, let n = AssistantApplier.number("\(w) \(words[i + 1])") { return n }
             if !["first", "second", "third", "fourth"].contains(w), let n = AssistantApplier.number(w) { return n }
+        }
+        return nil
+    }
+
+    /// The number right before "bar" or "bars" ("add 4 bars", "two more bars",
+    /// "4 extra bars"), so "make chorus 2 4 bars longer" reads 4, not 2.
+    static func barCount(in c: String) -> Int? {
+        let words = c.split(separator: " ").map(String.init)
+        for (i, w) in words.enumerated() where w == "bar" || w == "bars" {
+            var j = i - 1
+            while j >= 0, ["more", "extra", "additional", "whole"].contains(words[j]) { j -= 1 }
+            guard j >= 0 else { continue }
+            if j >= 1, let n = AssistantApplier.number("\(words[j - 1]) \(words[j])") { return n } // "twenty four"
+            if let n = Int(words[j]) ?? AssistantApplier.number(words[j]) { return n }
+            if ["a", "an"].contains(words[j]) { return 1 } // "add a bar to the intro"
         }
         return nil
     }

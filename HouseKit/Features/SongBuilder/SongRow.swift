@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// The song as a row of section blocks, each as wide as its bar count.
-/// Tap to select, drag to reorder, long-press for Duplicate and Delete.
+/// Tap to select, double-tap to play from there, drag to reorder,
+/// long-press for Duplicate and Delete.
 struct SongRow: View {
     @Environment(SongStore.self) private var store
     @Environment(EngineController.self) private var engine
@@ -56,7 +57,12 @@ struct SongRow: View {
         )
         .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.card))
         .onTapGesture { selectedID = section.id }
+        // Alongside the single tap rather than ahead of it, so selecting
+        // doesn't wait to rule out a double tap. The first tap selects; the
+        // second plays (or jumps there if already playing).
+        .simultaneousGesture(TapGesture(count: 2).onEnded { playFrom(section) })
         .accessibilityAction { selectedID = section.id }
+        .accessibilityAction(named: "Play from here") { playFrom(section) }
         .draggable(section.id.uuidString) {
             SectionBlock(section: section, grooveName: "", isSelected: false, showsFill: false, progress: nil)
                 .frame(width: 120, height: Self.height)
@@ -70,7 +76,13 @@ struct SongRow: View {
         }
     }
 
-    private var addMenu: some View {
+    private func playFrom(_ section: Section) {
+        selectedID = section.id
+        // Already playing: jump straight there, without counting in again.
+        engine.play(from: section.id, countIn: !engine.isPlaying)
+    }
+
+        private var addMenu: some View {
         Menu {
             ForEach(SectionKind.allCases) { kind in
                 Button(kind.displayName) { add(kind) }

@@ -70,6 +70,8 @@ struct PlayAlongView: View {
             footer
         }
         .background(Theme.bgDeep)
+        // The screen keeps its layout under the keyboard (typing happens in a pop-up).
+        .ignoresSafeArea(.keyboard)
         .tutorialHost(.playAlong)
         .foregroundStyle(Theme.text)
         // VoiceOver's two-finger double tap plays and stops, like any player.
@@ -201,7 +203,7 @@ struct PlayAlongView: View {
         let when = switch pending.when {
         case .thisBar: "AT END OF THIS BAR"
         case .nextBar: "AT END OF NEXT BAR"
-        case .endOfLoop: "AT END OF THE LOOP"
+        case .endOfLoop: section.repeatUntilStep ? "AT END OF THIS PASS" : "AT END OF \(section.name.uppercased())"
         }
         var tags: [String] = []
         if pending.fillComing { tags.append("Fill next bar") }
@@ -283,17 +285,20 @@ struct PlayAlongView: View {
                     Eyebrow("When I ask for the next section")
                     SegmentedPicker(options: EngineController.NextSectionTiming.allCases,
                                     selection: $engine.nextSectionTiming) { $0.label }
+                    Text(engine.nextSectionTiming.hint)
+                        .font(Theme.body(12))
+                        .foregroundStyle(Theme.textMuted)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
                     Eyebrow("Actions")
-                    HStack(spacing: 8) {
-                        Button("Fill now") { engine.queue(.fillNow) }
-                            .buttonStyle(ChipButtonStyle())
-                        Button("Big ending") { engine.queue(.bigEnding) }
-                            .buttonStyle(ChipButtonStyle())
-                        Button("Tap tempo") { tap() }
-                            .buttonStyle(ChipButtonStyle())
+                    // Two to a row: three across didn't fit the panel, and the
+                    // labels were cut to "Big endi…" and "Tap te…".
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 2), spacing: 8) {
+                        actionButton("Fill now", systemImage: "music.note") { engine.queue(.fillNow) }
+                        actionButton("Big ending", systemImage: "flag.checkered") { engine.queue(.bigEnding) }
+                        actionButton("Tap tempo", systemImage: "hand.tap") { tap() }
                     }
                     .disabled(!engine.isPlaying)
                     Text("Tap an action again before it lands to cancel it.")
@@ -305,7 +310,15 @@ struct PlayAlongView: View {
         }
     }
 
-    private func levelRow(_ title: String, value: Binding<Double>) -> some View {
+    private func actionButton(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(ChipButtonStyle())
+    }
+
+        private func levelRow(_ title: String, value: Binding<Double>) -> some View {
         HStack(spacing: 12) {
             Text(title)
                 .font(Theme.body(15, weight: .medium))

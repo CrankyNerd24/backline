@@ -15,10 +15,24 @@ final class SongStore {
     var song: Song {
         didSet {
             guard song != oldValue else { return }
+            recordUndo(from: oldValue)
             scheduleSave()
             if song.name != oldValue.name { refreshSummary() }
         }
     }
+
+    /// Earlier versions of this song, newest last, for the header's Undo.
+    private(set) var undoHistory: [Song] = []
+    /// Versions undone, newest last, for Redo. Any new change clears them.
+    private(set) var redoHistory: [Song] = []
+    var canUndo: Bool { !undoHistory.isEmpty }
+    var canRedo: Bool { !redoHistory.isEmpty }
+    @ObservationIgnored private var lastChange: Date = .distantPast
+    @ObservationIgnored private var undoing = false
+    private static let undoLimit = 50
+    /// Changes closer together than this are one step, so a slider drag or a
+    /// knob turn undoes in one go rather than a frame at a time.
+    private static let undoGrouping: TimeInterval = 0.8
 
     /// Every saved song, most recently edited first.
     private(set) var summaries: [Summary] = []
@@ -46,6 +60,46 @@ final class SongStore {
         summaries = saved.map { Summary(id: $0.song.id, name: $0.song.name, modified: $0.modified) }
         if saved.isEmpty { saveNow() }
         defaults.set(song.id.uuidString, forKey: Self.lastSongKey)
+    }
+
+    // MARK: Undo
+
+    /// Puts the song back as it was before the most recent change.
+    func undo() {
+        guard let previous = undoHistory.popLast() else { return }
+        redoHistory.append(song)
+        undoing = true
+        song = previous
+        undoing = false
+        lastChange = .distantPast // the next change is a step of its own
+    }
+
+    /// Puts back the change Undo just took away.
+    func redo() {
+        guard let next = redoHistory.popLast() else { return }
+        undoHistory.append(song)
+        undoing = true
+        song = next
+        undoing = false
+        lastChange = .distantPast
+    }
+
+    private func recordUndo(from old: Song) {
+        guard !undoing else { return }
+        // Another song: its history isn't this one's.
+        guard old.id == song.id else {
+            undoHistory.removeAll()
+            redoHistory.removeAll()
+            lastChange = .distantPast
+            return
+        }
+        redoHistory.removeAll() // a new change: what was undone can't come back
+        let now = Date()
+        if now.timeIntervalSince(lastChange) > Self.undoGrouping || undoHistory.isEmpty {
+            undoHistory.append(old)
+            if undoHistory.count > Self.undoLimit { undoHistory.removeFirst() }
+        }
+        lastChange = now
     }
 
     // MARK: Song management

@@ -275,7 +275,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "HouseKit uses Bluetooth to connect MIDI foot pedals.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "HouseKit listens while you hold the mic button, so you can tell it what to change.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "HouseKit turns what you say into changes to your drum track, on this iPad.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "HouseKit turns what you say into changes to your drum track.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -317,7 +317,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "HouseKit uses Bluetooth to connect MIDI foot pedals.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "HouseKit listens while you hold the mic button, so you can tell it what to change.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "HouseKit turns what you say into changes to your drum track, on this iPad.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "HouseKit turns what you say into changes to your drum track.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

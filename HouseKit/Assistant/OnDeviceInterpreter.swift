@@ -55,7 +55,8 @@ enum OnDeviceInterpreter {
     the same style.
     - addSection: value is the kind (intro, verse, chorus, bridge, solo, outro); target is the section it goes after, \
     or empty to let the app choose; amount is its bars, or 0.
-    - removeSection: target is required. setBars: amount is the bar count. repeatUntilStep: amount 1 on, 0 off. \
+    - removeSection: target is required. setBars: amount is the bar count. changeBars: amount is bars to add, \
+    negative to take away. repeatUntilStep: amount 1 on, 0 off. \
     countIn: amount 0, 1 or 2 bars.
     - Playback: play (target to start from), stop, nextSection, previousSection, restartSection, fillNow, \
     bigEnding, loop (amount 1 to loop the target, 0 to stop looping).
@@ -66,6 +67,7 @@ enum OnDeviceInterpreter {
     "make the chorus punchier and a bit faster" → punch 0.25; changeTempo 4.
     "keep the verses chill" → intensity -0.25 and busy -0.25, target verses.
     "add a bridge after the second chorus" → addSection value bridge, target second chorus.
+    "add 4 bars to chorus 2" → changeBars 4, target Chorus 2 (the section gets longer; no new section).
     "play it on the ride in the solo" → onRide, target solo.
     "next part" → nextSection.
     """
@@ -114,7 +116,7 @@ nonisolated enum ModelAction {
     case setTempo, changeTempo
     case groove
     case addSection, removeSection
-    case setBars, repeatUntilStep, countIn
+    case setBars, changeBars, repeatUntilStep, countIn
     case play, stop, nextSection, previousSection, restartSection, fillNow, bigEnding, loop
 }
 #endif

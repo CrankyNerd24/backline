@@ -138,6 +138,10 @@ private:
     float gainLeft_[BL_PIECE_COUNT] = {};
     float gainRight_[BL_PIECE_COUNT] = {};
     float send_[BL_PIECE_COUNT] = {};
+    // What the mix is using now: each glides toward the gains above over a
+    // few milliseconds, so turning Volume or Room while it plays doesn't crackle.
+    float mixLeft_[BL_PIECE_COUNT] = {}, mixRight_[BL_PIECE_COUNT] = {}, mixSend_[BL_PIECE_COUNT] = {};
+    float glide_ = 1.0f;
 
     BLTriggerRecord *log_ = nullptr;
     uint32_t logCapacity_ = 0;

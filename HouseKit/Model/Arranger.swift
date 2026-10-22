@@ -144,8 +144,16 @@ struct Arrangement {
         case "Metal": "Metal"
         case "Jazz & Swing": "Jazz Brushes"
         case "Hip-hop": "Lo-fi"
-        case "Ballad", "Funk": "Vintage 60s"
-        case "Rock", "Punk": vibe == .laidBack ? "Garage Kit" : "Studio Rock"
+        case "Funk": "Dry Funk"
+        case "Ballad", "Country", "Blues & Shuffle": "Swirly Vintage"
+        case "Pop", "Reggae", "Latin": "Indie Mix"
+        case "Punk": "Big Rusty"
+        case "Rock":
+            switch vibe {
+            case .laidBack: "Garage Kit"
+            case .driving: "Big Rusty"
+            case .epic: "Arena Rock"
+            }
         default: "Garage Kit"
         }
         return (kits.all.first { $0.name == name } ?? kits.kit(Kit.garageKitID)).id
