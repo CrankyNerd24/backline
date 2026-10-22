@@ -120,6 +120,10 @@ struct PedalSetupView: View {
                     SegmentedPicker(options: EngineController.NextSectionTiming.allCases,
                                     selection: $engine.nextSectionTiming) { $0.label }
                         .frame(maxWidth: 420)
+                    Text(engine.nextSectionTiming.hint)
+                        .font(Theme.body(13))
+                        .foregroundStyle(Theme.textMuted)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 VStack(alignment: .leading, spacing: 10) {

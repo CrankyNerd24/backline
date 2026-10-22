@@ -39,7 +39,16 @@ final class EngineController {
     enum NextSectionTiming: String, CaseIterable {
         case endOfBar, endOfLoop
 
-        var label: String { self == .endOfBar ? "End of bar" : "End of loop" }
+        var label: String { self == .endOfBar ? "After this bar" : "End of section" }
+
+        /// Shown under the choice, so it's clear what each one waits for.
+        var hint: String {
+            switch self {
+            case .endOfBar: "The drums finish the bar they're in, then move on. Quickest."
+            case .endOfLoop: "The drums play to the end of the section (or of this pass, for a section that repeats "
+                + "until you step), so phrases stay whole."
+            }
+        }
     }
 
     /// What's waiting to happen, for the Play-Along banner.

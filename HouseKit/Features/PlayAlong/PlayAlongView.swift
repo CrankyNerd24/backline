@@ -203,7 +203,7 @@ struct PlayAlongView: View {
         let when = switch pending.when {
         case .thisBar: "AT END OF THIS BAR"
         case .nextBar: "AT END OF NEXT BAR"
-        case .endOfLoop: "AT END OF THE LOOP"
+        case .endOfLoop: section.repeatUntilStep ? "AT END OF THIS PASS" : "AT END OF \(section.name.uppercased())"
         }
         var tags: [String] = []
         if pending.fillComing { tags.append("Fill next bar") }
@@ -285,6 +285,10 @@ struct PlayAlongView: View {
                     Eyebrow("When I ask for the next section")
                     SegmentedPicker(options: EngineController.NextSectionTiming.allCases,
                                     selection: $engine.nextSectionTiming) { $0.label }
+                    Text(engine.nextSectionTiming.hint)
+                        .font(Theme.body(12))
+                        .foregroundStyle(Theme.textMuted)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
