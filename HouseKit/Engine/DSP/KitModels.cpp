@@ -100,9 +100,6 @@ constexpr ModelInfo kTomInfo[] = {
     {"tom.rustyHigh", "Rusty Rack Tom (recorded)", "A 14\" rack tom with a long, open ring"},
     {"tom.rustyLow", "Rusty Floor Tom (recorded)", "An 18\" floor tom"},
     {"tom.rustyFloor", "Rusty 22\" Floor (recorded)", "A massive 22\" floor tom: thunder"},
-    {"tom.swirlyHigh", "Swirly High Tom (recorded)", "A short, dry, high tom"},
-    {"tom.swirlyLow", "Swirly Low Tom (recorded)", "A woody mid tom"},
-    {"tom.swirlyFloor", "Swirly Floor Tom (recorded)", "A dry, punchy floor tom"},
 };
 constexpr TomModel kToms[] = {
     {185.0f, 1.45f, 0.050f, 0.24f, 0.35f},
@@ -154,11 +151,12 @@ constexpr BuiltIn kBuiltIns[] = {
     // Big Rusty Drums: crash 9, ride 8, hats 4, snare 9 / 10 (rimshot), toms 6 / 7 / 8, kick 5.
     {"Big Rusty", {9, 8, 4, 4, 9, 6, 7, 8, 5}, 0.0f, 0.5f, 0.5f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.30f, 0.35f},
     {"Arena Rock", {9, 8, 4, 4, 10, 6, 7, 8, 5}, 0.0f, 0.55f, 0.65f, 0.0f, 0.55f, 0.6f, 0.5f, 0.55f, 0.60f, 0.60f},
-    // Swirly Drums: crash 11, ride 10, hats 5, snare 12, toms 9 / 10 / 11, kick 6.
-    {"Swirly Vintage", {11, 10, 5, 5, 12, 9, 10, 11, 6}, 0.0f, 0.5f, 0.5f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.20f, 0.10f},
-    {"Dry Funk", {11, 10, 5, 5, 12, 9, 10, 11, 6}, 1.0f, 0.35f, 0.6f, 1.0f, 0.35f, 0.65f, 0.55f, 0.6f, 0.05f, 0.50f},
-    // Swirly kick, hats and toms with the Rusty snare and the club cymbals.
-    {"Indie Mix", {5, 4, 5, 5, 9, 9, 10, 11, 6}, 0.0f, 0.45f, 0.5f, 0.0f, 0.5f, 0.55f, 0.5f, 0.5f, 0.30f, 0.30f},
+    // Swirly Drums: crash 11, ride 10, hats 5, snare 12, kick 6. Its toms sounded
+    // boxy and buzzy, so these kits take the club kit's (3 / 4 / 5).
+    {"Swirly Vintage", {11, 10, 5, 5, 12, 3, 4, 5, 6}, 0.0f, 0.5f, 0.5f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.20f, 0.10f},
+    {"Dry Funk", {11, 10, 5, 5, 12, 3, 4, 5, 6}, 1.0f, 0.35f, 0.6f, 1.0f, 0.35f, 0.65f, 0.55f, 0.6f, 0.05f, 0.50f},
+    // Swirly kick and hats with the Rusty snare and toms and the club cymbals.
+    {"Indie Mix", {5, 4, 5, 5, 9, 6, 7, 8, 6}, 0.0f, 0.45f, 0.5f, 0.0f, 0.5f, 0.55f, 0.5f, 0.5f, 0.30f, 0.30f},
 };
 
 BLVoiceSettings neutral(uint8_t model) { return {model, 0.0f, 0.5f, 0.5f, 0.5f, 0.3f, 0.0f, 0.5f}; }
@@ -210,27 +208,24 @@ constexpr RecordedModel kRecordedSnares[] = {{BL_SOUND_SNARE, BL_SOUND_SNARE, 0.
                                              {BL_SOUND_RUSTY_SNARE, BL_SOUND_RUSTY_SNARE, 0.0f, 1, 1.73f},
                                              {BL_SOUND_RUSTY_RIM, BL_SOUND_RUSTY_RIM, 0.0f, 2, 2.1f},
                                              {BL_SOUND_RUSTY_CROSS_STICK, BL_SOUND_RUSTY_CROSS_STICK, 0.0f, 5, 1.43f},
-                                             {BL_SOUND_SWIRLY_SNARE, BL_SOUND_SWIRLY_SNARE, 0.0f, 0, 1.73f}};
+                                             {BL_SOUND_SWIRLY_SNARE, BL_SOUND_SWIRLY_SNARE, 0.0f, 0, 2.13f}};
 constexpr RecordedModel kRecordedHats[] = {{BL_SOUND_HH_CLOSED, BL_SOUND_HH_OPEN, 0.0f, 1, 2.2f},
                                            {BL_SOUND_RUSTY_HH_CLOSED, BL_SOUND_RUSTY_HH_OPEN, 0.0f, 1, 1.24f},
-                                           {BL_SOUND_SWIRLY_HH_CLOSED, BL_SOUND_SWIRLY_HH_OPEN, 0.0f, 0, 0.88f}};
+                                           {BL_SOUND_SWIRLY_HH_CLOSED, BL_SOUND_SWIRLY_HH_OPEN, 0.0f, 0, 0.66f}};
 constexpr RecordedModel kRecordedCymbals[] = {{BL_SOUND_RIDE, BL_SOUND_RIDE_BELL, 0.0f, 0, 2.2f},
                                               {BL_SOUND_CRASH, BL_SOUND_CRASH, 0.0f, 3, 1.6f},
                                               {BL_SOUND_FLAT_RIDE, BL_SOUND_FLAT_RIDE, 0.0f, 0, 3.2f},
                                               {BL_SOUND_CRASH_SIZZLE, BL_SOUND_CRASH_SIZZLE, 0.0f, 3, 1.6f},
                                               {BL_SOUND_RUSTY_RIDE, BL_SOUND_RUSTY_RIDE_BELL, 0.0f, 0, 2.2f},
                                               {BL_SOUND_RUSTY_CRASH, BL_SOUND_RUSTY_CRASH, 0.0f, 2, 2.1f},
-                                              {BL_SOUND_SWIRLY_RIDE, BL_SOUND_SWIRLY_RIDE, 0.0f, 0, 1.31f},
-                                              {BL_SOUND_SWIRLY_CRASH, BL_SOUND_SWIRLY_CRASH, 0.0f, 3, 2.0f}};
+                                              {BL_SOUND_SWIRLY_RIDE, BL_SOUND_SWIRLY_RIDE, 0.0f, 0, 1.5f},
+                                              {BL_SOUND_SWIRLY_CRASH, BL_SOUND_SWIRLY_CRASH, 0.0f, 3, 2.25f}};
 constexpr RecordedModel kRecordedToms[] = {{BL_SOUND_HIGH_TOM, BL_SOUND_HIGH_TOM, 0.0f, 0, 1.6f},
                                            {BL_SOUND_LOW_TOM, BL_SOUND_LOW_TOM, 0.0f, 1, 1.6f},
                                            {BL_SOUND_LOW_TOM, BL_SOUND_LOW_TOM, -4.0f, 2, 1.6f},
                                            {BL_SOUND_RUSTY_HIGH_TOM, BL_SOUND_RUSTY_HIGH_TOM, 0.0f, 0, 2.5f},
                                            {BL_SOUND_RUSTY_LOW_TOM, BL_SOUND_RUSTY_LOW_TOM, 0.0f, 1, 1.87f},
-                                           {BL_SOUND_RUSTY_FLOOR_TOM, BL_SOUND_RUSTY_FLOOR_TOM, 0.0f, 2, 2.26f},
-                                           {BL_SOUND_SWIRLY_HIGH_TOM, BL_SOUND_SWIRLY_HIGH_TOM, 0.0f, 0, 2.0f},
-                                           {BL_SOUND_SWIRLY_LOW_TOM, BL_SOUND_SWIRLY_LOW_TOM, 0.0f, 1, 2.5f},
-                                           {BL_SOUND_SWIRLY_FLOOR_TOM, BL_SOUND_SWIRLY_FLOOR_TOM, 0.0f, 2, 2.13f}};
+                                           {BL_SOUND_RUSTY_FLOOR_TOM, BL_SOUND_RUSTY_FLOOR_TOM, 0.0f, 2, 2.26f}};
 
 uint8_t synthCount(Family family) {
     switch (family) {

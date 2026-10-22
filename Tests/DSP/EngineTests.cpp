@@ -1132,7 +1132,7 @@ static double crossingsPerSecond(const std::vector<float> &x, size_t from, size_
 
 static void testModelCatalogue() {
     // Synthesized models, then recorded ones.
-    const uint8_t expected[BL_PIECE_COUNT] = {12, 12, 6, 6, 13, 12, 12, 12, 7};
+    const uint8_t expected[BL_PIECE_COUNT] = {12, 12, 6, 6, 13, 9, 9, 9, 7};
     for (uint8_t piece = 0; piece < BL_PIECE_COUNT; ++piece) {
         CHECK(bl_kit_model_count(piece) == expected[piece], "piece %d has %d models", piece, bl_kit_model_count(piece));
         for (uint8_t m = 0; m < bl_kit_model_count(piece); ++m) {

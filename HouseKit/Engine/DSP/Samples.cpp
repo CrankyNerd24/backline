@@ -16,8 +16,7 @@ constexpr const char *kSoundNames[BL_SOUND_COUNT] = {
     "flatRide", "crashSizzle",
     "rustyKick", "rustySnare", "rustyRim", "rustyCrossStick", "rustyHhClosed", "rustyHhOpen", "rustyRide",
     "rustyRideBell", "rustyCrash", "rustyHighTom", "rustyLowTom", "rustyFloorTom",
-    "swirlyKick", "swirlySnare", "swirlyHhClosed", "swirlyHhOpen", "swirlyRide", "swirlyCrash", "swirlyHighTom",
-    "swirlyLowTom", "swirlyFloorTom"};
+    "swirlyKick", "swirlySnare", "swirlyHhClosed", "swirlyHhOpen", "swirlyRide", "swirlyCrash"};
 
 float semitones(float tune) { return std::exp2(std::clamp(tune, -24.0f, 24.0f) / 12.0f); }
 
