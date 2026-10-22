@@ -35,7 +35,10 @@ struct AskBar: View {
             }
             if let reply = assistant.reply {
                 ReplyCard(reply: reply)
-            } else if !compact, assistant.phase == .idle, text.isEmpty {
+            }
+            // The suggestions stay under the last reply, so the next request
+            // is a tap away without closing it first.
+            if !compact, assistant.phase == .idle, text.isEmpty {
                 suggestions
             }
         }
