@@ -6,7 +6,7 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 
 ## Status: milestone 10 (polish): all v1 milestones built
 
-**Undo** (header, left of the tempo): takes the song back one change at a time, up to 50 changes. Changes less than a second apart, like a slider drag or a knob turn, undo together. It covers everything that changes the song, including the Kit Editor and Tell HouseKit. The history starts fresh when you switch songs. On smaller iPads it shows as an icon.
+**Undo** (header, left of the tempo): takes the song back one change at a time, up to 50 changes. Changes less than a second apart, like a slider drag or a knob turn, undo together. It covers everything that changes the song, including the Kit Editor and Tell HouseKit. **Redo**, beside it, puts back what Undo took away until you make a new change. The history starts fresh when you switch songs. On smaller iPads it shows as an icon.
 
 **Build it for me** (`Model/Arranger.swift`, `Features/BuildIt/`): **New Song ▸ Build It for Me…**, or the button on an empty song, asks four plain questions: style, count (4/4, waltz, 6/8, slow 12/8), vibe (Laid back, Driving, Epic), tempo (suggested for the style, or tap along) and length (Short, Normal, Long). It then arranges the whole song:
 - a calmer groove for verses and a bigger one for choruses, chosen by tags and tempo fit;

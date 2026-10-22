@@ -23,7 +23,10 @@ final class SongStore {
 
     /// Earlier versions of this song, newest last, for the header's Undo.
     private(set) var undoHistory: [Song] = []
+    /// Versions undone, newest last, for Redo. Any new change clears them.
+    private(set) var redoHistory: [Song] = []
     var canUndo: Bool { !undoHistory.isEmpty }
+    var canRedo: Bool { !redoHistory.isEmpty }
     @ObservationIgnored private var lastChange: Date = .distantPast
     @ObservationIgnored private var undoing = false
     private static let undoLimit = 50
@@ -64,10 +67,21 @@ final class SongStore {
     /// Puts the song back as it was before the most recent change.
     func undo() {
         guard let previous = undoHistory.popLast() else { return }
+        redoHistory.append(song)
         undoing = true
         song = previous
         undoing = false
         lastChange = .distantPast // the next change is a step of its own
+    }
+
+    /// Puts back the change Undo just took away.
+    func redo() {
+        guard let next = redoHistory.popLast() else { return }
+        undoHistory.append(song)
+        undoing = true
+        song = next
+        undoing = false
+        lastChange = .distantPast
     }
 
     private func recordUndo(from old: Song) {
@@ -75,9 +89,11 @@ final class SongStore {
         // Another song: its history isn't this one's.
         guard old.id == song.id else {
             undoHistory.removeAll()
+            redoHistory.removeAll()
             lastChange = .distantPast
             return
         }
+        redoHistory.removeAll() // a new change: what was undone can't come back
         let now = Date()
         if now.timeIntervalSince(lastChange) > Self.undoGrouping || undoHistory.isEmpty {
             undoHistory.append(old)

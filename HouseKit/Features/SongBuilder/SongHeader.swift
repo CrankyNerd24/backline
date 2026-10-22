@@ -97,6 +97,15 @@ struct SongHeader: View {
             .disabled(!store.canUndo)
             .accessibilityLabel("Undo")
             .accessibilityHint("Undoes the most recent change to the song")
+            Button { store.redo() } label: {
+                Label("Redo", systemImage: "arrow.uturn.forward")
+                    .labelStyle(CompactLabelStyle(iconOnly: compact))
+            }
+            .buttonStyle(ChipButtonStyle())
+            .fixedSize()
+            .disabled(!store.canRedo)
+            .accessibilityLabel("Redo")
+            .accessibilityHint("Puts back the change you just undid")
             tempo
                 .fixedSize()
             Text(store.song.timeSignatureLabel)
