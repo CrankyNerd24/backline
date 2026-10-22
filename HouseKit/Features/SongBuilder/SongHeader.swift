@@ -88,6 +88,15 @@ struct SongHeader: View {
                 .tutorialAnchor("songMenu")
                 .layoutPriority(-1) // a long name truncates before anything else gives way
             Spacer(minLength: 12)
+            Button { store.undo() } label: {
+                Label("Undo", systemImage: "arrow.uturn.backward")
+                    .labelStyle(CompactLabelStyle(iconOnly: compact))
+            }
+            .buttonStyle(ChipButtonStyle())
+            .fixedSize()
+            .disabled(!store.canUndo)
+            .accessibilityLabel("Undo")
+            .accessibilityHint("Undoes the most recent change to the song")
             tempo
                 .fixedSize()
             Text(store.song.timeSignatureLabel)
