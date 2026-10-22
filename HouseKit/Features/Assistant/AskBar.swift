@@ -35,6 +35,14 @@ struct AskBar: View {
             }
             if let reply = assistant.reply {
                 ReplyCard(reply: reply)
+                    .transition(.opacity)
+                    // Fades after a few seconds (longer when something didn't
+                    // work, to leave time to read why); X still closes it now.
+                    .task(id: reply.id) {
+                        try? await Task.sleep(for: .seconds(reply.problems.isEmpty ? 6 : 10))
+                        guard !Task.isCancelled else { return }
+                        withAnimation(.easeOut(duration: 0.4)) { assistant.dismissReply(reply.id) }
+                    }
             }
             // The suggestions stay under the last reply, so the next request
             // is a tap away without closing it first.
