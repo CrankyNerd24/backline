@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Export (spec §8): the whole song as a WAV, then the share sheet for Files,
 /// AirDrop and the rest.
@@ -9,6 +10,7 @@ struct ExportView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var export = SongExport()
     @State private var includeCountIn = true
+    @State private var shareButtonFrame = CGRect.zero
 
     private var song: Song { store.song }
 
@@ -112,11 +114,16 @@ struct ExportView: View {
                     .font(Theme.body(15, weight: .semibold))
                     .foregroundStyle(Theme.ok)
                 HStack(spacing: 12) {
-                    ShareLink(item: url) {
+                    // The system share sheet, presented directly: ShareLink did
+                    // nothing when tapped inside this sheet on iPad.
+                    Button {
+                        ShareSheet.present(url, from: shareButtonFrame)
+                    } label: {
                         Label("Share or Save to Files", systemImage: "square.and.arrow.up")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(ChipButtonStyle(prominent: true))
+                    .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { shareButtonFrame = $0 }
                     Button("Export again") { startExport() }
                         .buttonStyle(ChipButtonStyle())
                 }
@@ -148,5 +155,24 @@ struct ExportView: View {
     private func startExport() {
         let job = ExportJob(song: song, kit: engine.currentKit, library: library, countIn: includeCountIn)
         export.start(job, named: song.name)
+    }
+}
+
+/// The system share sheet (Files, AirDrop, Mail…) for a file, shown over
+/// whatever is on screen and, on iPad, pointing at the button that asked.
+enum ShareSheet {
+    static func present(_ url: URL, from frame: CGRect) {
+        guard let window = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene }).flatMap(\.windows).first(where: \.isKeyWindow),
+              var top = window.rootViewController else { return }
+        while let presented = top.presentedViewController, !presented.isBeingDismissed { top = presented }
+        let sheet = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        if let popover = sheet.popoverPresentationController {
+            popover.sourceView = window
+            popover.sourceRect = frame == .zero ? CGRect(x: window.bounds.midX, y: window.bounds.midY, width: 1, height: 1)
+                : frame
+            popover.permittedArrowDirections = [.up, .down]
+        }
+        top.present(sheet, animated: true)
     }
 }
