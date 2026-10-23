@@ -4,6 +4,8 @@ An easy drum-track creator for iPad, for guitarists and other non-drummers. Buil
 
 The full product spec is in [`docs/spec.md`](docs/spec.md).
 
+Version 1.0. What changed in each version is in [`CHANGELOG.md`](CHANGELOG.md).
+
 ## Status: milestone 10 (polish): all v1 milestones built
 
 **Sounds like…** (New Song ▸ Sounds Like…, or tell HouseKit "something that sounds like Superstition"): builds drums after a real song.
