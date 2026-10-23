@@ -1,4 +1,6 @@
+import LinkPresentation
 import SwiftUI
+import UIKit
 
 /// Export (spec §8): the whole song as a WAV, then the share sheet for Files,
 /// AirDrop and the rest.
@@ -9,6 +11,7 @@ struct ExportView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var export = SongExport()
     @State private var includeCountIn = true
+    @State private var shareButtonFrame = CGRect.zero
 
     private var song: Song { store.song }
 
@@ -112,11 +115,24 @@ struct ExportView: View {
                     .font(Theme.body(15, weight: .semibold))
                     .foregroundStyle(Theme.ok)
                 HStack(spacing: 12) {
-                    ShareLink(item: url) {
-                        Label("Share or Save to Files", systemImage: "square.and.arrow.up")
+                    // Straight to the Files picker: quicker than finding it in
+                    // the share sheet.
+                    Button {
+                        ShareSheet.saveToFiles(url)
+                    } label: {
+                        Label("Save to Files", systemImage: "folder")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(ChipButtonStyle(prominent: true))
+                    // The system share sheet, presented directly: ShareLink did
+                    // nothing when tapped inside this sheet on iPad.
+                    Button {
+                        ShareSheet.present(url, from: shareButtonFrame)
+                    } label: {
+                        Label("Share…", systemImage: "square.and.arrow.up")
+                    }
+                    .buttonStyle(ChipButtonStyle())
+                    .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { shareButtonFrame = $0 }
                     Button("Export again") { startExport() }
                         .buttonStyle(ChipButtonStyle())
                 }
@@ -148,5 +164,58 @@ struct ExportView: View {
     private func startExport() {
         let job = ExportJob(song: song, kit: engine.currentKit, library: library, countIn: includeCountIn)
         export.start(job, named: song.name)
+    }
+}
+
+/// The system share sheet (Files, AirDrop, Mail…) for a file, shown over
+/// whatever is on screen and, on iPad, pointing at the button that asked.
+enum ShareSheet {
+    /// The Files picker, saving a copy wherever the player chooses.
+    static func saveToFiles(_ url: URL) {
+        guard let found = topController() else { return }
+        found.top.present(UIDocumentPickerViewController(forExporting: [url], asCopy: true), animated: true)
+    }
+
+    static func present(_ url: URL, from frame: CGRect) {
+        guard let found = topController() else { return }
+        let window = found.window, top = found.top
+        // A ready-made title and icon, so the sheet doesn't open a 25 MB WAV
+        // to build a preview first (slow on older iPads).
+        let sheet = UIActivityViewController(activityItems: [ExportItem(url: url)], applicationActivities: nil)
+        if let popover = sheet.popoverPresentationController {
+            popover.sourceView = window
+            popover.sourceRect = frame == .zero ? CGRect(x: window.bounds.midX, y: window.bounds.midY, width: 1, height: 1)
+                : frame
+            popover.permittedArrowDirections = [.up, .down]
+        }
+        top.present(sheet, animated: true)
+    }
+
+    private static func topController() -> (window: UIWindow, top: UIViewController)? {
+        guard let window = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene }).flatMap(\.windows).first(where: \.isKeyWindow),
+              var top = window.rootViewController else { return nil }
+        while let presented = top.presentedViewController, !presented.isBeingDismissed { top = presented }
+        return (window, top)
+    }
+}
+
+/// The exported file for the share sheet, with its preview supplied.
+private final class ExportItem: NSObject, UIActivityItemSource {
+    let url: URL
+
+    init(url: URL) { self.url = url }
+
+    func activityViewControllerPlaceholderItem(_ controller: UIActivityViewController) -> Any { url }
+
+    func activityViewController(_ controller: UIActivityViewController,
+                                itemForActivityType activityType: UIActivity.ActivityType?) -> Any? { url }
+
+    func activityViewControllerLinkMetadata(_ controller: UIActivityViewController) -> LPLinkMetadata? {
+        let metadata = LPLinkMetadata()
+        metadata.title = url.lastPathComponent
+        metadata.originalURL = url
+        metadata.iconProvider = NSItemProvider(object: UIImage(systemName: "waveform") ?? UIImage())
+        return metadata
     }
 }
