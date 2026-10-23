@@ -7,7 +7,7 @@ The full product spec is in [`docs/spec.md`](docs/spec.md).
 ## Status: milestone 10 (polish): all v1 milestones built
 
 **Sounds like…** (New Song ▸ Sounds Like…, or tell HouseKit "something that sounds like Superstition"): builds drums after a real song.
-- **HouseKit's song list** (`Library/References/reference-songs.json`, 44 well-known songs) gives each song's approximate tempo, time and style, the closest built-in groove and a fitting kit. It works offline. Only songs whose feel is well known are listed, rather than guesses.
+- **HouseKit's song list** (`Library/References/reference-songs.json`, 70 well-known songs) gives each song's approximate tempo, time and style, the closest built-in groove and a fitting kit. It works offline. Only songs whose feel is well known are listed, rather than guesses.
 - **Describe the feel:** for a song not on the list, the words still count: "a slow 6/8 blues" or "fast country shuffle at 140" picks a style, groove, time and tempo.
 - **Analyze a recording:** pick an audio file you own (MP3, M4A, WAV, AIFF). The engine (`Engine/DSP/Analysis.cpp`, `bl_analyze`) listens to up to two minutes and measures:
   - the tempo, from the autocorrelation of onsets, refined by a comb;

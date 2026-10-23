@@ -122,7 +122,7 @@ extension DrumReference {
         let steps = resolution.steps(in: meter)
         var out: [Piece: [Velocity]] = [:]
         for (piece, text) in lanes {
-            var lane = text.filter { !$0.isWhitespace && $0 != "|" }.map(velocity)
+            var lane = text.filter { !$0.isWhitespace && $0 != "|" }.map { velocity($0) }
             if lane.count < steps { lane += Array(repeating: .off, count: steps - lane.count) }
             lane = Array(lane.prefix(steps))
             if lane.contains(where: { $0 != .off }) { out[piece] = lane }
