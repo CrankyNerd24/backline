@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HouseKit Privacy Policy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column on HouseKit's dark stage, amber for links and
+   the one thing to act on; section heads in the app's condensed face. */
+:root {
+  color-scheme: dark;
+  --stage: #141417;
+  --riser: #1D1D22;
+  --line: #34343C;
+  --text: #F3EFE6;
+  --muted: #A9A6A0;
+  --amber: #F5A524;
+  --on-amber: #1A1406;
+  --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+body { background: var(--stage); color: var(--text); font: 400 17px/1.65 var(--body); }
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 56px;
+  display: grid;
+  gap: 36px;
+}
+a { color: var(--amber); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 4px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.08; }
+p, ul { margin: 0; }
+ul { padding-left: 1.2em; display: grid; gap: 6px; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.brand span { font: 700 22px/1 var(--display); color: var(--muted); letter-spacing: 0.02em; }
+nav { display: flex; gap: 18px; font: 600 15px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+nav a { color: var(--muted); text-decoration: none; }
+nav a[aria-current="page"] { color: var(--text); }
+header.page { display: grid; gap: 12px; }
+header.page h1 { font-size: clamp(40px, 7vw, 64px); font-weight: 700; }
+.lede { font-size: 19px; color: var(--muted); max-width: 60ch; }
+.lede strong { color: var(--text); font-weight: 600; }
+.stamp { font: 500 13px/1.4 var(--mono); color: var(--muted); }
+section { display: grid; gap: 12px; }
+section h2 { font-size: 30px; font-weight: 700; }
+section h3 { font-size: 21px; font-weight: 600; }
+section p, section li { color: var(--text); max-width: 65ch; }
+.muted { color: var(--muted); }
+.panel { background: var(--riser); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 12px; }
+.panel.contact { border-color: var(--amber); }
+.email { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.email a { font: 600 22px/1.2 var(--body); overflow-wrap: anywhere; }
+.copy {
+  font: 600 15px/1 var(--body); color: var(--on-amber); background: var(--amber);
+  border: 0; border-radius: 10px; padding: 10px 14px; cursor: pointer;
+}
+details { border-top: 1px solid var(--line); padding-block: 14px; }
+details:last-child { border-bottom: 1px solid var(--line); }
+summary { cursor: pointer; font: 600 21px/1.25 var(--display); list-style-position: outside; }
+details > div { display: grid; gap: 10px; padding-top: 10px; color: var(--text); max-width: 65ch; }
+table { border-collapse: collapse; width: 100%; font-size: 16px; }
+th, td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 13px/1.2 var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.scroll { overflow-x: auto; }
+footer { border-top: 1px solid var(--line); padding-top: 20px; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
+</style>
+<style>body { margin: 0; }</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="brand" href="housekit.html"><svg width="24" height="24" viewBox="0 0 28 28" aria-hidden="true"><g fill="#F5A524"><rect x="1" y="10" width="3" height="8" rx="1.5"/><rect x="6.5" y="5" width="3" height="18" rx="1.5"/><rect x="12.5" y="1" width="3" height="26" rx="1.5"/><rect x="18.5" y="6" width="3" height="16" rx="1.5"/><rect x="24" y="11" width="3" height="6" rx="1.5"/></g></svg><span>HouseKit</span></a>
+    <nav aria-label="HouseKit pages"><a href="housekit.html">About</a><a href="support.html">Support</a><a href="privacy.html" aria-current="page">Privacy</a></nav>
+  </div>
+
+  <header class="page">
+    <h1>HouseKit Privacy Policy</h1>
+    <p class="lede"><strong>HouseKit collects no data.</strong> There's no account, no analytics, no advertising and no tracking. Your songs and settings stay on your iPad.</p>
+    <p class="stamp">Effective 23 October 2026 · applies to HouseKit for iPad, version 1.0 and later</p>
+  </header>
+
+  <section aria-labelledby="collect">
+    <h2 id="collect">What we collect</h2>
+    <p>Nothing. HouseKit has no servers of its own, so it doesn't send your songs, recordings, requests, usage or device details to us or to anyone else. It doesn't use third-party analytics, advertising or tracking code, and it doesn't share data with data brokers.</p>
+  </section>
+
+  <section aria-labelledby="stored">
+    <h2 id="stored">What stays on your iPad</h2>
+    <p>HouseKit saves what you make so it's there next time. All of it is stored on your iPad, inside HouseKit:</p>
+    <ul>
+      <li>your songs, your own grooves and your own kits;</li>
+      <li>settings such as Show Advanced Controls, your foot-pedal setup and whether you've seen the tour;</li>
+      <li>audio you export, until you save or share it somewhere else.</li>
+    </ul>
+    <p>Like other apps' files, these can be included in your iPad's own iCloud or computer backups, which Apple's terms cover. Deleting HouseKit deletes everything it stored, so save any exports you want to keep first.</p>
+  </section>
+
+  <section aria-labelledby="features">
+    <h2 id="features">Features that use your iPad's hardware</h2>
+    <p>HouseKit asks for permission before using any of these, and you can turn each one off any time in Settings › HouseKit.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th scope="col">Feature</th><th scope="col">What it uses</th><th scope="col">What happens to it</th></tr></thead>
+        <tbody>
+          <tr><td>Voice requests (hold the mic)</td><td>Microphone and Apple speech recognition</td><td>HouseKit listens only while you hold the mic button and keeps no recordings. Apple turns your words into text: on the iPad where your model supports it, otherwise through Apple's servers under <a href="https://www.apple.com/legal/privacy/" rel="noopener">Apple's Privacy Policy</a>.</td></tr>
+          <tr><td>Understanding requests</td><td>HouseKit's built-in rules; Apple's on-device model on iPads with Apple Intelligence</td><td>The text of your request is processed on your iPad. It isn't sent anywhere.</td></tr>
+          <tr><td>Sounds Like › Analyze a recording</td><td>An audio file you choose</td><td>HouseKit reads the file on your iPad to measure its tempo and feel. It doesn't copy, keep or upload the file. Only the result (tempo, time, feel) is used.</td></tr>
+          <tr><td>Foot pedals</td><td>Bluetooth</td><td>Used to connect MIDI foot controllers and page turners. Only their button presses are read.</td></tr>
+          <tr><td>Export</td><td>Files and the share sheet</td><td>The WAV goes only where you send it.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="apple">
+    <h2 id="apple">Crash reports and TestFlight</h2>
+    <p>If you choose to share analytics with app developers in your iPad's settings, Apple may pass us anonymous crash reports and usage statistics. When you test a beta through TestFlight, Apple shares the feedback and screenshots you send, along with the email address you joined with. We use these only to fix problems in HouseKit.</p>
+  </section>
+
+  <section aria-labelledby="children">
+    <h2 id="children">Children</h2>
+    <p>Because HouseKit collects no personal information, it collects none from children either.</p>
+  </section>
+
+  <section aria-labelledby="changes">
+    <h2 id="changes">Changes to this policy</h2>
+    <p>If HouseKit ever starts handling data differently, we'll update this page and its effective date before that version is released.</p>
+  </section>
+
+  <section class="panel contact" aria-labelledby="ask">
+    <h2 id="ask">Questions</h2>
+    <p>Write to us about privacy or anything else:</p>
+    <div class="email"><a href="mailto:info@crankynerdcustoms.com" id="privacy-email">info@crankynerdcustoms.com</a><button class="copy" type="button" data-copy="info@crankynerdcustoms.com">Copy address</button></div>
+  </section>
+
+  <footer><span>HouseKit by Cranky Nerd Customs</span><span><a href="support.html">Support</a> · <a href="housekit.html">About HouseKit</a></span></footer>
+</div>
+
+<script>
+document.querySelectorAll("button.copy").forEach(function (button) {
+  button.addEventListener("click", function () {
+    var text = button.getAttribute("data-copy");
+    var done = function () { button.textContent = "Copied"; setTimeout(function () { button.textContent = "Copy address"; }, 2000); };
+    var select = function () {
+      var link = button.parentElement.querySelector("a");
+      var range = document.createRange(); range.selectNodeContents(link);
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      button.textContent = "Selected, press Copy";
+    };
+    try { navigator.clipboard.writeText(text).then(done, select); } catch (e) { select(); }
+  });
+});
+</script>
+</body>
+</html>

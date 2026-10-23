@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HouseKit Support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column on HouseKit's dark stage, amber for links and
+   the one thing to act on; section heads in the app's condensed face. */
+:root {
+  color-scheme: dark;
+  --stage: #141417;
+  --riser: #1D1D22;
+  --line: #34343C;
+  --text: #F3EFE6;
+  --muted: #A9A6A0;
+  --amber: #F5A524;
+  --on-amber: #1A1406;
+  --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+body { background: var(--stage); color: var(--text); font: 400 17px/1.65 var(--body); }
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 56px;
+  display: grid;
+  gap: 36px;
+}
+a { color: var(--amber); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 4px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.08; }
+p, ul { margin: 0; }
+ul { padding-left: 1.2em; display: grid; gap: 6px; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.brand span { font: 700 22px/1 var(--display); color: var(--muted); letter-spacing: 0.02em; }
+nav { display: flex; gap: 18px; font: 600 15px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+nav a { color: var(--muted); text-decoration: none; }
+nav a[aria-current="page"] { color: var(--text); }
+header.page { display: grid; gap: 12px; }
+header.page h1 { font-size: clamp(40px, 7vw, 64px); font-weight: 700; }
+.lede { font-size: 19px; color: var(--muted); max-width: 60ch; }
+.lede strong { color: var(--text); font-weight: 600; }
+.stamp { font: 500 13px/1.4 var(--mono); color: var(--muted); }
+section { display: grid; gap: 12px; }
+section h2 { font-size: 30px; font-weight: 700; }
+section h3 { font-size: 21px; font-weight: 600; }
+section p, section li { color: var(--text); max-width: 65ch; }
+.muted { color: var(--muted); }
+.panel { background: var(--riser); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 12px; }
+.panel.contact { border-color: var(--amber); }
+.email { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.email a { font: 600 22px/1.2 var(--body); overflow-wrap: anywhere; }
+.copy {
+  font: 600 15px/1 var(--body); color: var(--on-amber); background: var(--amber);
+  border: 0; border-radius: 10px; padding: 10px 14px; cursor: pointer;
+}
+details { border-top: 1px solid var(--line); padding-block: 14px; }
+details:last-child { border-bottom: 1px solid var(--line); }
+summary { cursor: pointer; font: 600 21px/1.25 var(--display); list-style-position: outside; }
+details > div { display: grid; gap: 10px; padding-top: 10px; color: var(--text); max-width: 65ch; }
+table { border-collapse: collapse; width: 100%; font-size: 16px; }
+th, td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 13px/1.2 var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.scroll { overflow-x: auto; }
+footer { border-top: 1px solid var(--line); padding-top: 20px; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
+</style>
+<style>body { margin: 0; }</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="brand" href="housekit.html"><svg width="24" height="24" viewBox="0 0 28 28" aria-hidden="true"><g fill="#F5A524"><rect x="1" y="10" width="3" height="8" rx="1.5"/><rect x="6.5" y="5" width="3" height="18" rx="1.5"/><rect x="12.5" y="1" width="3" height="26" rx="1.5"/><rect x="18.5" y="6" width="3" height="16" rx="1.5"/><rect x="24" y="11" width="3" height="6" rx="1.5"/></g></svg><span>HouseKit</span></a>
+    <nav aria-label="HouseKit pages"><a href="housekit.html">About</a><a href="support.html" aria-current="page">Support</a><a href="privacy.html">Privacy</a></nav>
+  </div>
+
+  <header class="page">
+    <h1>HouseKit Support</h1>
+    <p class="lede">Help with HouseKit, the drummer for guitarists' practice on iPad. Most answers are below. If yours isn't, email us and we'll get back to you.</p>
+  </header>
+
+  <section class="panel contact" aria-labelledby="contact">
+    <h2 id="contact">Contact us</h2>
+    <div class="email"><a href="mailto:info@crankynerdcustoms.com?subject=HouseKit%20support" id="support-email">info@crankynerdcustoms.com</a><button class="copy" type="button" data-copy="info@crankynerdcustoms.com">Copy address</button></div>
+    <p class="muted">To help us help you quickly, include your iPad model, your iPadOS version (Settings › General › About), HouseKit's version, and what you were doing when the problem happened. A screenshot or screen recording helps a lot.</p>
+  </section>
+
+  <section aria-labelledby="start">
+    <h2 id="start">Getting started</h2>
+    <p>HouseKit runs on iPad with iPadOS 17 or later, in landscape. The guided tour starts the first time you open it and shows every main feature in about three minutes. To see it again, tap your song's name at the top of the screen and choose <strong>Take the Tour</strong>.</p>
+  </section>
+
+  <section aria-labelledby="faq">
+    <h2 id="faq">Common questions</h2>
+    <div>
+      <details>
+        <summary>I can't hear the drums</summary>
+        <div>
+          <p>Check the iPad's volume and that it isn't connected to Bluetooth speakers or headphones you didn't mean to use (Control Center shows where audio is going). In Play-along mode, check the Drums level in the side panel.</p>
+          <p>If HouseKit shows "Couldn't start audio", close it fully (swipe it away in the app switcher) and open it again. Another app holding the audio, such as a call, can cause this.</p>
+        </div>
+      </details>
+      <details>
+        <summary>The drums crackle or stutter</summary>
+        <div>
+          <p>On older iPads, close other apps you aren't using and avoid typing while a song plays. If you're running HouseKit from Xcode or in the Simulator, audio there is less reliable than the installed app.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Voice requests don't work</summary>
+        <div>
+          <p>Go to Settings › HouseKit and turn on Microphone and Speech Recognition. Hold the mic button the whole time you speak, then let go.</p>
+          <p>Some iPads, including older models, can't recognize speech on the device and need an internet connection for voice. You can always type the same request instead.</p>
+        </div>
+      </details>
+      <details>
+        <summary>HouseKit didn't understand my request</summary>
+        <div>
+          <p>Try the shorter form shown in the suggestions, such as "more swing", "punchier", "add a bridge" or "add 4 bars to chorus 2". Email us the exact words that didn't work and we'll teach HouseKit to understand them.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Sounds Like can't find my song</summary>
+        <div>
+          <p>HouseKit knows 70 well-known songs; tap <strong>Songs HouseKit knows</strong> to see them. For any other song, describe the feel ("a slow 6/8 blues", "fast country shuffle at 140"), or choose <strong>Analyze a recording</strong> and pick an audio file of the song.</p>
+        </div>
+      </details>
+      <details>
+        <summary>A recording won't analyze</summary>
+        <div>
+          <p>The file has to be one the Files app can open, such as an MP3, M4A, WAV or AIFF you own, in iCloud Drive or On My iPad. Songs downloaded from Apple Music and other streaming services are copy-protected, so they can't be read. Use at least ten seconds of music with a clear beat.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Connecting a foot pedal</summary>
+        <div>
+          <p>Pair a Bluetooth page turner in the iPad's Settings › Bluetooth, or connect a MIDI foot controller by Bluetooth or USB. Then open <strong>Pedal Setup</strong> from the pedal button at the top of the screen and press each pedal when asked.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Exporting a song</summary>
+        <div>
+          <p>Tap <strong>Export</strong>, wait for the WAV to finish, then tap <strong>Save to Files</strong> and choose a folder, or <strong>Share…</strong> for AirDrop, Mail and other apps. Every sound in HouseKit is synthesized in the app or public domain, so exports are yours to use anywhere, with no license or credit needed.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Backing up or moving my songs</summary>
+        <div>
+          <p>Songs are saved on your iPad and included in its iCloud or computer backup. Restoring that backup to a new iPad brings them back. Deleting HouseKit deletes its songs, so export any you want to keep first.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Undoing a change</summary>
+        <div>
+          <p>Use <strong>Undo</strong> and <strong>Redo</strong>, left of the tempo at the top of the screen. They go back up to 50 changes in the current song.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Refunds</summary>
+        <div>
+          <p>Apple handles purchases, so refunds are requested from Apple at <a href="https://reportaproblem.apple.com" rel="noopener">reportaproblem.apple.com</a>.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section aria-labelledby="beta">
+    <h2 id="beta">Testing a beta?</h2>
+    <p>Thank you. Take a screenshot in HouseKit and tap <strong>Share Beta Feedback</strong>, or open the TestFlight app and tap <strong>Send Beta Feedback</strong>. Tell us your iPad model and what you were doing.</p>
+  </section>
+
+  <footer><span>HouseKit by Cranky Nerd Customs</span><span><a href="privacy.html">Privacy Policy</a> · <a href="housekit.html">About HouseKit</a></span></footer>
+</div>
+
+<script>
+document.querySelectorAll("button.copy").forEach(function (button) {
+  button.addEventListener("click", function () {
+    var text = button.getAttribute("data-copy");
+    var done = function () { button.textContent = "Copied"; setTimeout(function () { button.textContent = "Copy address"; }, 2000); };
+    var select = function () {
+      var link = button.parentElement.querySelector("a");
+      var range = document.createRange(); range.selectNodeContents(link);
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      button.textContent = "Selected, press Copy";
+    };
+    try { navigator.clipboard.writeText(text).then(done, select); } catch (e) { select(); }
+  });
+});
+</script>
+</body>
+</html>
