@@ -11,6 +11,8 @@ struct SongHeader: View {
     @Environment(GrooveLibrary.self) private var library
     @Environment(Assistant.self) private var assistant
     @Environment(Tutorial.self) private var tutorial
+    @Environment(Purchases.self) private var purchases
+    @State private var locked: Purchases.Feature?
     @State private var settingUpPedals = false
     @State private var editingKit = false
     @State private var exporting = false
@@ -47,21 +49,25 @@ struct SongHeader: View {
                 .environment(engine)
                 .environment(assistant)
                 .environment(tutorial)
+                .environment(purchases)
         }
         .fullScreenCover(isPresented: $building) {
-            BuildItView { store.newSong($0) }
+            BuildItView { store.newSong(purchases.fitted($0, kits: kits)) }
                 .environment(library)
                 .environment(kits)
+                .environment(purchases)
         }
         .fullScreenCover(isPresented: $soundsLike) {
-            SoundsLikeView { store.newSong($0) }
+            SoundsLikeView { store.newSong(purchases.fitted($0, kits: kits)) }
                 .environment(library)
                 .environment(kits)
                 .environment(engine)
                 .environment(store)
                 .environment(assistant)
                 .environment(tutorial)
+                .environment(purchases)
         }
+        .unlockSheet($locked)
         .sheet(isPresented: $exporting) {
             ExportView()
                 .environment(store)
@@ -143,7 +149,7 @@ struct SongHeader: View {
             .tutorialAnchor("kitChip")
             .accessibilityHint("Opens the Kit Editor")
             Button {
-                exporting = true
+                if purchases.isUnlocked { exporting = true } else { locked = .export }
             } label: {
                 Label("Export", systemImage: "square.and.arrow.up")
                     .labelStyle(CompactLabelStyle(iconOnly: compact))
@@ -171,12 +177,16 @@ struct SongHeader: View {
             }
             Divider()
             Menu("New Song", systemImage: "plus") {
-                Button("Build It for Me…", systemImage: "wand.and.stars") { building = true }
+                Button("Build It for Me…", systemImage: "wand.and.stars") { addingSong { building = true } }
                 Button("Sounds Like…", systemImage: "waveform.badge.magnifyingglass") { soundsLike = true }
-                Button("Empty Song", systemImage: "doc") { store.newSong(from: nil, library: library) }
+                Button("Empty Song", systemImage: "doc") { addingSong { store.newSong(from: nil, library: library) } }
                 SwiftUI.Section("From a template") { // `Section` alone is the song's section type
                     ForEach(SongTemplate.all) { template in
-                        Button(template.name) { store.newSong(from: template, library: library) }
+                        if purchases.allows(template, library: library) {
+                            Button(template.name) { addingSong { store.newSong(from: template, library: library) } }
+                        } else {
+                            Button(template.name, systemImage: "lock") { locked = .template(template.name) }
+                        }
                     }
                 }
             }
@@ -184,13 +194,21 @@ struct SongHeader: View {
                 newName = store.song.name
                 renaming = true
             }
-            Button("Duplicate", systemImage: "plus.square.on.square") { store.duplicateSong() }
+            Button("Duplicate", systemImage: "plus.square.on.square") { addingSong { store.duplicateSong() } }
             Button("Delete…", systemImage: "trash", role: .destructive) { confirmingDelete = true }
             Divider()
             Toggle(isOn: $showAdvanced) {
                 Label("Show Advanced Controls", systemImage: "slider.horizontal.3")
             }
             Button("Take the Tour", systemImage: "questionmark.circle") { tutorial.start() }
+            if !purchases.isUnlocked {
+                Divider()
+                Button("Unlock HouseKit Full…", systemImage: "lock.open") { locked = .full }
+                Button("Restore Purchases", systemImage: "arrow.clockwise") {
+                    locked = .full // shows how the restore went
+                    Task { await purchases.restore() }
+                }
+            }
         } label: {
             HStack(spacing: 6) {
                 Text(store.song.name)
@@ -239,6 +257,11 @@ struct SongHeader: View {
     private var kitLabel: String {
         let name = kits.kit(store.song.kitID).name
         return store.song.kitOverride == nil ? name : "\(name) · edited"
+    }
+
+    /// New songs past the free version's limit offer HouseKit Full instead.
+    private func addingSong(_ add: () -> Void) {
+        if purchases.canAddSong(to: store) { add() } else { locked = .moreSongs }
     }
 
     private func setTempo(_ bpm: Double) {

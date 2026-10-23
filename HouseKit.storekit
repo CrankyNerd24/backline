@@ -1,0 +1,49 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "6C1F3B7A",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "14.99",
+      "familyShareable" : true,
+      "internalID" : "6754000001",
+      "localizations" : [
+        {
+          "description" : "Every style, kit and Sounds Like song, unlimited songs, WAV export and the editors.",
+          "displayName" : "HouseKit Full",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.crankynerdnew.housekit.full",
+      "referenceName" : "HouseKit Full",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_developerTeamID" : "H47J9P9TQ3",
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

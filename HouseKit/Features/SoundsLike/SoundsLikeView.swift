@@ -9,6 +9,9 @@ struct SoundsLikeView: View {
     @Environment(EngineController.self) private var engine
     @Environment(\.dismiss) private var dismiss
     @Environment(Tutorial.self) private var tutorial
+    @Environment(SongStore.self) private var store
+    @Environment(Purchases.self) private var purchases
+    @State private var locked: Purchases.Feature?
     /// Receives the finished song.
     let onBuild: (Song) -> Void
 
@@ -55,6 +58,7 @@ struct SoundsLikeView: View {
         .background(Theme.bg)
         .foregroundStyle(Theme.text)
         .tutorialHost(.soundsLike)
+        .unlockSheet($locked)
         .onChange(of: reference) { _, found in if found != nil { tutorial.notice(.referenceFound, from: .soundsLike) } }
         .onAppear { if !query.isEmpty { find() } else { typing = true } }
         .onDisappear { stopHearing() }
@@ -74,6 +78,8 @@ struct SoundsLikeView: View {
             Spacer()
             if let reference {
                 Button {
+                    if let feature = lock(for: reference) { return locked = feature }
+                    guard purchases.canAddSong(to: store) else { return locked = .moreSongs }
                     stopHearing()
                     onBuild(reference.song(library: library, kits: kits))
                     dismiss()
@@ -95,7 +101,7 @@ struct SoundsLikeView: View {
             VStack(alignment: .leading, spacing: 10) {
             Eyebrow("A song, or the feel you want")
             HStack(spacing: 10) {
-                TextField("“Superstition”, “Back in Black by AC/DC”, “a slow 6/8 blues”…", text: $query)
+                TextField("“Back in Black”, “Billie Jean by Michael Jackson”, “a slow 6/8 blues”…", text: $query)
                     .focused($typing)
                     .submitLabel(.search)
                     .onSubmit(find)
@@ -112,9 +118,9 @@ struct SoundsLikeView: View {
             .tutorialAnchor("soundsLikeSearch")
             HStack(spacing: 10) {
                 Button {
-                    choosingFile = true
+                    if purchases.isUnlocked { choosingFile = true } else { locked = .analyze }
                 } label: {
-                    Label("Analyze a recording…", systemImage: "waveform.badge.magnifyingglass")
+                    Label("Analyze a recording…", systemImage: purchases.isUnlocked ? "waveform.badge.magnifyingglass" : "lock.fill")
                 }
                 .buttonStyle(ChipButtonStyle())
                 .disabled(analyzing)
@@ -138,16 +144,25 @@ struct SoundsLikeView: View {
     private var songList: some View {
         Card {
             VStack(alignment: .leading, spacing: 0) {
-                ForEach(references.titles, id: \.self) { title in
+                ForEach(references.songs, id: \.label) { song in
                     Button {
-                        query = title
+                        query = song.label
                         browsing = false
                         find()
                     } label: {
-                        Text(title)
-                            .font(Theme.body(15))
-                            .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
-                            .contentShape(Rectangle())
+                        HStack {
+                            Text(song.label)
+                                .font(Theme.body(15))
+                            Spacer()
+                            if !purchases.allows(style: song.style) {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(Theme.textMuted)
+                                    .accessibilityLabel("In HouseKit Full")
+                            }
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
@@ -211,7 +226,7 @@ struct SoundsLikeView: View {
                     }
                     .buttonStyle(ChipButtonStyle())
                     Button {
-                        saveGroove(r)
+                        if purchases.isUnlocked { saveGroove(r) } else { locked = .saveGroove }
                     } label: {
                         Label("Save the groove", systemImage: "square.and.arrow.down")
                     }
@@ -274,6 +289,13 @@ struct SoundsLikeView: View {
             }
             analyzing = false
         }
+    }
+
+    /// What building this needs from HouseKit Full, if anything. Every
+    /// result can be heard.
+    private func lock(for r: DrumReference) -> Purchases.Feature? {
+        guard !purchases.allows(style: r.style) else { return nil }
+        return r.source == .builtIn ? .referenceSong(r.title) : .style(r.style)
     }
 
     private func setTempo(_ bpm: Double) {

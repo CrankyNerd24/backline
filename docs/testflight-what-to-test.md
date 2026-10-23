@@ -27,5 +27,8 @@ KNOWN LIMITS
 - Voice uses Apple's speech recognition. On iPads that can't recognize speech on the device, it needs an internet connection.
 - The share sheet can take a moment to appear for long songs. Save to Files is quicker.
 
+FREE AND FULL
+HouseKit is free with Rock, Blues & Shuffle, Pop and Ballad, two kits and three songs. HouseKit Full unlocks the rest. In TestFlight the purchase is free and nothing is charged, so please try it: tap a locked style or kit, buy HouseKit Full, then try Restore Purchases (song menu). Tell us if anything you expected to be free was locked, or if the offer appeared somewhere it shouldn't.
+
 HOW TO SEND FEEDBACK
 Take a screenshot in HouseKit and tap Share Beta Feedback, or open the TestFlight app and tap Send Beta Feedback. Include your iPad model and what you were doing.

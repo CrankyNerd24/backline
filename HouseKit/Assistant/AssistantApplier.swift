@@ -8,6 +8,7 @@ struct AssistantApplier {
     let library: GrooveLibrary
     let kits: KitLibrary
     let engine: EngineController
+    let purchases: Purchases
     /// The section on screen: selected in the builder, cued or playing in Play-along.
     let currentSectionID: UUID?
 
@@ -147,6 +148,9 @@ struct AssistantApplier {
             else {
                 return outcome.skipped.append("No kit called “\(step.value ?? "")”. Kits: \(kits.all.map(\.name).joined(separator: ", "))")
             }
+            guard purchases.allows(kit, in: kits) else {
+                return outcome.skipped.append("The \(kit.name) is in HouseKit Full. The free kits are the Garage Kit and Big Rusty.")
+            }
             song.kitID = kit.id
             song.kitOverride = nil
             outcome.done.append("Switched to the \(kit.name)")
@@ -217,6 +221,9 @@ struct AssistantApplier {
         let words = (step.value ?? "").lowercased()
         let different = words.isEmpty || ["different", "another", "something else", "next", "new"].contains { words.contains($0) }
         let style = Self.style(in: words)
+        if let style, !purchases.allows(style: style) {
+            return outcome.skipped.append("\(style) grooves are in HouseKit Full. The free styles are Rock, Blues & Shuffle, Pop and Ballad.")
+        }
         var changed: [Int] = []
         var chosen: Groove?
         for i in targets {
@@ -233,6 +240,7 @@ struct AssistantApplier {
                 candidates = library.search(words, meter: meter)
                 if candidates.isEmpty { candidates = library.search(words) }
             }
+            candidates = candidates.filter { purchases.allows($0) }
             guard !candidates.isEmpty else { continue }
             // Keep a section that already fits; otherwise give choruses and
             // solos the second match so the song keeps some contrast.

@@ -25,8 +25,15 @@ struct ReferenceLibrary {
 
     var count: Int { entries.count }
 
-    /// Every song on the list, "Title — Artist", for browsing.
-    var titles: [String] { entries.map { "\($0.title) — \($0.artist)" }.sorted() }
+    struct Listing {
+        let label: String // "Title — Artist"
+        let style: String
+    }
+
+    /// Every song on the list, for browsing.
+    var songs: [Listing] {
+        entries.map { Listing(label: "\($0.title) — \($0.artist)", style: $0.style) }.sorted { $0.label < $1.label }
+    }
 
     /// The best match for "Back in Black", "back in black by ac/dc" or
     /// "something like Superstition", or nil.

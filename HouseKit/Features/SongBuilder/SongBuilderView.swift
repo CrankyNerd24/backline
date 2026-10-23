@@ -12,6 +12,8 @@ struct SongBuilderView: View {
     @State private var dismissedError: String?
     @Environment(Tutorial.self) private var tutorial
     @Environment(KitLibrary.self) private var kits
+    @Environment(Purchases.self) private var purchases
+    @State private var locked: Purchases.Feature?
     @State private var building = false
     @State private var askTyping = false
     @State private var compactWidth = false
@@ -87,17 +89,19 @@ struct SongBuilderView: View {
         // Tell HouseKit: "something that sounds like Superstition".
         .fullScreenCover(isPresented: Binding(get: { assistant.soundsLike != nil },
                                               set: { if !$0 { assistant.soundsLike = nil } })) {
-            SoundsLikeView(query: assistant.soundsLike ?? "") { store.newSong($0) }
+            SoundsLikeView(query: assistant.soundsLike ?? "") { store.newSong(purchases.fitted($0, kits: kits)) }
                 .environment(library)
                 .environment(kits)
                 .environment(engine)
                 .environment(store)
                 .environment(assistant)
                 .environment(tutorial)
+                .environment(purchases)
         }
         .fullScreenCover(isPresented: $building) {
             // Fills the empty song in place, keeping its name.
             BuildItView { built in
+                let built = purchases.fitted(built, kits: kits)
                 var song = store.song
                 song.sections = built.sections
                 song.bpm = built.bpm
@@ -109,7 +113,9 @@ struct SongBuilderView: View {
             }
             .environment(library)
             .environment(kits)
+            .environment(purchases)
         }
+        .unlockSheet($locked)
         .onAppear { tutorial.startIfFirstLaunch() }
         .onChange(of: store.song.id) {
             engine.stop()
@@ -136,7 +142,9 @@ struct SongBuilderView: View {
                 .padding(.top, 4)
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
                     ForEach(SongTemplate.all) { template in
-                        TemplateCard(template: template) {
+                        let allowed = purchases.allows(template, library: library)
+                        TemplateCard(template: template, locked: !allowed) {
+                            guard allowed else { return locked = .template(template.name) }
                             template.apply(to: &store.song, library: library)
                             selectedID = store.song.sections.first?.id
                         }
@@ -182,14 +190,23 @@ struct SongBuilderView: View {
 /// One template in the empty song: its name, what it is, and its shape.
 private struct TemplateCard: View {
     let template: SongTemplate
+    var locked = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(template.name)
-                    .font(Theme.condensed(22, weight: .bold))
-                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(template.name)
+                        .font(Theme.condensed(22, weight: .bold))
+                        .lineLimit(1)
+                    if locked {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(Theme.textMuted)
+                            .accessibilityLabel("In HouseKit Full")
+                    }
+                }
                 Text(template.summary)
                     .font(Theme.body(13))
                     .foregroundStyle(Theme.textMuted)
