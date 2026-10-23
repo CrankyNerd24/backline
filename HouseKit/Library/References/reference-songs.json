@@ -438,5 +438,265 @@
   "groove": "country.twoStep",
   "feel": "A boom-chick country two-step.",
   "kit": "Swirly Vintage"
+ },
+ {
+  "title": "Walk This Way",
+  "artist": "Aerosmith",
+  "bpm": 108,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.sixteenths",
+  "feel": "A funky rock groove: busy hats over a syncopated kick.",
+  "kit": "Studio Rock"
+ },
+ {
+  "title": "Born to Run",
+  "artist": "Bruce Springsteen",
+  "bpm": 147,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.driving",
+  "feel": "Big, driving eighths with lots of crash.",
+  "kit": "Arena Rock"
+ },
+ {
+  "title": "Jump",
+  "artist": "Van Halen",
+  "bpm": 130,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.straight8ths",
+  "feel": "Straight eighths and a big, bright backbeat.",
+  "kit": "Arena Rock"
+ },
+ {
+  "title": "Hotel California",
+  "artist": "Eagles",
+  "bpm": 74,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.sixteenths",
+  "feel": "A laid-back groove with sixteenths on the hats, never in a hurry.",
+  "kit": "Vintage 60s"
+ },
+ {
+  "title": "I Love Rock 'n' Roll",
+  "artist": "Joan Jett & the Blackhearts",
+  "bpm": 94,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.quarterPulse",
+  "feel": "A stomping quarter-note pulse with a heavy backbeat.",
+  "kit": "Garage Kit"
+ },
+ {
+  "title": "Song 2",
+  "artist": "Blur",
+  "bpm": 130,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.driving",
+  "feel": "Loose, loud driving eighths that explode in the chorus.",
+  "kit": "Garage Kit"
+ },
+ {
+  "title": "Creep",
+  "artist": "Radiohead",
+  "bpm": 92,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.straight8ths",
+  "feel": "Simple straight eighths; quiet verses, a heavy chorus.",
+  "kit": "Studio Rock"
+ },
+ {
+  "title": "Wonderwall",
+  "artist": "Oasis",
+  "bpm": 87,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.sixteenths",
+  "feel": "Sixteenths on the hats with a steady backbeat.",
+  "kit": "Studio Rock"
+ },
+ {
+  "title": "Zombie",
+  "artist": "The Cranberries",
+  "bpm": 84,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.straight8ths",
+  "feel": "Slow, heavy straight eighths with a big snare.",
+  "kit": "Arena Rock"
+ },
+ {
+  "title": "Don't Stop Me Now",
+  "artist": "Queen",
+  "bpm": 156,
+  "meter": "fourFour",
+  "style": "Rock",
+  "groove": "rock.driving",
+  "feel": "Fast, bouncy driving eighths once the band kicks in.",
+  "kit": "Studio Rock"
+ },
+ {
+  "title": "Hey Jude",
+  "artist": "The Beatles",
+  "bpm": 74,
+  "meter": "fourFour",
+  "style": "Pop",
+  "groove": "rock.straight8ths",
+  "feel": "Gentle straight eighths that build to a huge singalong.",
+  "kit": "Vintage 60s"
+ },
+ {
+  "title": "Let It Be",
+  "artist": "The Beatles",
+  "bpm": 72,
+  "meter": "fourFour",
+  "style": "Ballad",
+  "groove": "ballad.slow8ths",
+  "feel": "A soft, steady ballad groove.",
+  "kit": "Vintage 60s"
+ },
+ {
+  "title": "Imagine",
+  "artist": "John Lennon",
+  "bpm": 76,
+  "meter": "fourFour",
+  "style": "Ballad",
+  "groove": "ballad.slow8ths",
+  "feel": "Soft and sparse; stays out of the way of the piano.",
+  "kit": "Jazz Brushes"
+ },
+ {
+  "title": "Le Freak",
+  "artist": "Chic",
+  "bpm": 120,
+  "meter": "fourFour",
+  "style": "Funk",
+  "groove": "funk.openHat",
+  "feel": "Disco: four on the floor with open hats on the offbeats.",
+  "kit": "Dry Funk"
+ },
+ {
+  "title": "Stayin' Alive",
+  "artist": "Bee Gees",
+  "bpm": 104,
+  "meter": "fourFour",
+  "style": "Pop",
+  "groove": "pop.fourOnFloor",
+  "feel": "Four on the floor, a tight disco strut.",
+  "kit": "Dry Funk"
+ },
+ {
+  "title": "I Wish",
+  "artist": "Stevie Wonder",
+  "bpm": 107,
+  "meter": "fourFour",
+  "style": "Funk",
+  "groove": "funk.tight",
+  "feel": "Tight sixteenth funk with plenty of bounce.",
+  "kit": "Dry Funk"
+ },
+ {
+  "title": "Shut Up and Dance",
+  "artist": "Walk the Moon",
+  "bpm": 128,
+  "meter": "fourFour",
+  "style": "Pop",
+  "groove": "rock.driving",
+  "feel": "Bright, driving eighths that keep pushing.",
+  "kit": "Indie Mix"
+ },
+ {
+  "title": "Rolling in the Deep",
+  "artist": "Adele",
+  "bpm": 105,
+  "meter": "fourFour",
+  "style": "Pop",
+  "groove": "pop.fourOnFloor",
+  "feel": "A stomping four-on-the-floor kick under a big backbeat.",
+  "kit": "Indie Mix"
+ },
+ {
+  "title": "Valerie",
+  "artist": "Mark Ronson ft. Amy Winehouse",
+  "bpm": 106,
+  "meter": "fourFour",
+  "style": "Pop",
+  "groove": "pop.soulStomp",
+  "feel": "A Motown stomp: snare on every beat, four on the floor.",
+  "kit": "Vintage 60s"
+ },
+ {
+  "title": "No Woman, No Cry",
+  "artist": "Bob Marley & The Wailers",
+  "bpm": 78,
+  "meter": "fourFour",
+  "style": "Reggae",
+  "groove": "reggae.oneDrop",
+  "feel": "A gentle one drop: kick and rim together on 3.",
+  "kit": "Vintage 60s"
+ },
+ {
+  "title": "So What",
+  "artist": "Miles Davis",
+  "bpm": 136,
+  "meter": "fourFour",
+  "style": "Jazz & Swing",
+  "groove": "jazz.mediumSwing",
+  "feel": "Medium swing on the ride, hats on 2 and 4.",
+  "kit": "Jazz Brushes"
+ },
+ {
+  "title": "In Da Club",
+  "artist": "50 Cent",
+  "bpm": 90,
+  "meter": "fourFour",
+  "style": "Hip-hop",
+  "groove": "hiphop.boomBap",
+  "feel": "A hard, steady hip-hop beat.",
+  "kit": "Lo-fi"
+ },
+ {
+  "title": "Nuthin' but a 'G' Thang",
+  "artist": "Dr. Dre ft. Snoop Dogg",
+  "bpm": 95,
+  "meter": "fourFour",
+  "style": "Hip-hop",
+  "groove": "hiphop.laidBack",
+  "feel": "Laid-back West Coast groove, lazy and swung.",
+  "kit": "Lo-fi"
+ },
+ {
+  "title": "It Was a Good Day",
+  "artist": "Ice Cube",
+  "bpm": 82,
+  "meter": "fourFour",
+  "style": "Hip-hop",
+  "groove": "hiphop.laidBack",
+  "feel": "Relaxed and smooth, sitting behind the beat.",
+  "kit": "Lo-fi"
+ },
+ {
+  "title": "American Idiot",
+  "artist": "Green Day",
+  "bpm": 186,
+  "meter": "fourFour",
+  "style": "Punk",
+  "groove": "punk.drive",
+  "feel": "Fast, loud punk eighths.",
+  "kit": "Big Rusty"
+ },
+ {
+  "title": "What's My Age Again?",
+  "artist": "blink-182",
+  "bpm": 158,
+  "meter": "fourFour",
+  "style": "Punk",
+  "groove": "punk.popPunk",
+  "feel": "Bouncy pop-punk drive.",
+  "kit": "Big Rusty"
  }
 ]
