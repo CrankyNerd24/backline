@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Why HouseKit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a rehearsal-room stage. The song row opens the page, then
+   reasons laid out like a set list, then the three refusals as one band. */
+:root {
+  color-scheme: dark;
+  --stage: #141417;        /* page */
+  --riser: #1D1D22;        /* raised surfaces */
+  --riser-hi: #2A2A31;
+  --line: #34343C;
+  --text: #F3EFE6;
+  --muted: #A9A6A0;
+  --amber: #F5A524;        /* HouseKit's accent */
+  --on-amber: #1A1406;
+  --intro: #7C8CE0; --verse: #3FA39A; --chorus: #F5A524; --bridge: #C86FA8; --outro: #8A8F99;
+  --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+body {
+  background: var(--stage);
+  color: var(--text);
+  font: 400 17px/1.6 var(--body);
+}
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.05; }
+p { margin: 0; }
+.eyebrow {
+  font: 600 13px/1 var(--display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Hero */
+.hero { padding-block: 56px 40px; display: grid; gap: 28px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand svg { flex: none; }
+.brand span { font: 700 24px/1 var(--display); color: var(--muted); letter-spacing: 0.02em; }
+.hero h1 { font-size: clamp(44px, 8vw, 88px); font-weight: 700; letter-spacing: -0.01em; max-width: 14ch; }
+.hero h1 em { font-style: normal; color: var(--amber); }
+.lede { font-size: clamp(18px, 2.2vw, 21px); color: var(--muted); max-width: 60ch; }
+.lede strong { color: var(--text); font-weight: 600; }
+
+/* The song row, as in the app: block width = bars */
+.songrow { display: grid; gap: 10px; }
+.songrow-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.songrow-head .meta { font: 500 14px/1 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.blocks { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.block {
+  flex: var(--bars) 0 0;
+  min-width: 64px;
+  border-radius: 14px;
+  padding: 12px 12px 10px;
+  color: #141416;
+  display: grid;
+  gap: 2px;
+  align-content: start;
+  min-height: 92px;
+}
+.block b { font: 700 19px/1.1 var(--display); }
+.block small { font: 500 13px/1.2 var(--body); opacity: 0.8; }
+.block i { font: 600 12px/1.2 var(--body); font-style: normal; opacity: 0.75; margin-top: auto; }
+.intro { background: var(--intro); } .verse { background: var(--verse); } .chorus { background: var(--chorus); }
+.bridge { background: var(--bridge); } .outro { background: var(--outro); }
+.energy { display: flex; gap: 6px; }
+.energy span { flex: var(--bars) 0 0; min-width: 64px; height: 6px; border-radius: 3px; background: var(--riser-hi); position: relative; overflow: hidden; }
+.energy span::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--e); background: var(--amber); }
+.songrow-caption { font-size: 14px; color: var(--muted); }
+
+/* Set list of differences */
+.setlist { padding-block: 48px; display: grid; gap: 28px; border-top: 1px solid var(--line); }
+.setlist > header { display: grid; gap: 10px; max-width: 62ch; }
+.setlist h2 { font-size: clamp(32px, 4.6vw, 48px); font-weight: 700; }
+.setlist > header p { color: var(--muted); }
+.reasons { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0; border-top: 1px solid var(--line); }
+.reason { padding: 26px 24px 26px 0; border-bottom: 1px solid var(--line); display: grid; gap: 10px; align-content: start; min-width: 0; }
+.reason h3 { font-size: 27px; font-weight: 600; }
+.reason p { color: var(--muted); max-width: 52ch; }
+.reason p strong { color: var(--text); font-weight: 600; }
+.cue { font: 500 13px/1.3 var(--mono); color: var(--amber); }
+
+/* The three refusals */
+.nos { background: var(--riser); border-block: 1px solid var(--line); }
+.nos .wrap { padding-block: 48px; display: grid; gap: 28px; }
+.nos h2 { font-size: clamp(32px, 4.6vw, 48px); font-weight: 700; }
+.no-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.no { background: var(--stage); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.no h3 { font-size: 38px; font-weight: 700; color: var(--amber); }
+.no p { color: var(--text); }
+.no .fine { font-size: 14px; color: var(--muted); line-height: 1.5; }
+.free { grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 12px 28px; align-items: start; border-color: var(--amber); }
+.free-body { display: grid; gap: 10px; max-width: 70ch; }
+@media (max-width: 640px) { .free { grid-template-columns: minmax(0, 1fr); } }
+
+/* Spec strip */
+.specs { padding-block: 44px 28px; display: grid; gap: 18px; }
+.spec-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin: 0; }
+.spec { background: var(--stage); padding: 16px; display: grid; gap: 4px; }
+.spec dt { font: 700 30px/1 var(--display); font-variant-numeric: tabular-nums; }
+.spec dd { margin: 0; font-size: 14px; color: var(--muted); }
+footer { padding-block: 24px 48px; color: var(--muted); font-size: 14px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-between; border-top: 1px solid var(--line); }
+
+@media (max-width: 560px) {
+  .reason { padding-right: 0; }
+  .block { min-height: 80px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .energy span::after { animation: rise 1.2s ease-out both; }
+  @keyframes rise { from { width: 0; } }
+}
+</style>
+<style>body { margin: 0; } img { max-width: 100%; }</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+        <g fill="#F5A524">
+          <rect x="1" y="10" width="3" height="8" rx="1.5"/><rect x="6.5" y="5" width="3" height="18" rx="1.5"/>
+          <rect x="12.5" y="1" width="3" height="26" rx="1.5"/><rect x="18.5" y="6" width="3" height="16" rx="1.5"/>
+          <rect x="24" y="11" width="3" height="6" rx="1.5"/>
+        </g>
+      </svg>
+      <span>HouseKit</span>
+    </div>
+    <h1>A drummer for your practice, built for <em>guitarists</em>.</h1>
+    <p class="lede">Most drum apps hand you a grid and expect you to think like a drummer. HouseKit starts from the song you're playing: <strong>lay out the sections, say how it should feel, and play along</strong>. It runs entirely on your iPad.</p>
+
+    <section class="songrow" aria-label="Example song layout">
+      <div class="songrow-head">
+        <span class="eyebrow">Your song</span>
+        <span class="meta">56 bars · about 1:57 · 115 BPM</span>
+      </div>
+      <div class="blocks">
+        <div class="block intro" style="--bars:4"><b>Intro</b><small>4 bars</small><i>Chill</i></div>
+        <div class="block verse" style="--bars:8"><b>Verse 1</b><small>8 bars</small><i>Laid back</i></div>
+        <div class="block chorus" style="--bars:8"><b>Chorus 1</b><small>8 bars</small><i>Driving</i></div>
+        <div class="block verse" style="--bars:8"><b>Verse 2</b><small>8 bars</small><i>Steady</i></div>
+        <div class="block chorus" style="--bars:8"><b>Chorus 2</b><small>8 bars</small><i>Driving</i></div>
+        <div class="block bridge" style="--bars:8"><b>Bridge</b><small>8 bars</small><i>Half time</i></div>
+        <div class="block chorus" style="--bars:8"><b>Chorus 3</b><small>8 bars</small><i>Big</i></div>
+        <div class="block outro" style="--bars:4"><b>Outro</b><small>4 bars</small><i>Ending</i></div>
+      </div>
+      <div class="energy" aria-hidden="true">
+        <span style="--bars:4;--e:20%"></span><span style="--bars:8;--e:40%"></span><span style="--bars:8;--e:75%"></span>
+        <span style="--bars:8;--e:55%"></span><span style="--bars:8;--e:75%"></span><span style="--bars:8;--e:45%"></span>
+        <span style="--bars:8;--e:100%"></span><span style="--bars:4;--e:50%"></span>
+      </div>
+      <p class="songrow-caption">Each block is a section, as wide as its bars. The bar underneath is its energy: it builds into each chorus and peaks at the last. Fills land where the song changes.</p>
+    </section>
+  </header>
+
+  <section class="setlist" aria-labelledby="diff">
+    <header>
+      <span class="eyebrow">What makes it different</span>
+      <h2 id="diff">Six things other drum sequencers don't do</h2>
+      <p>Step sequencers and loop players are made for producers programming beats. HouseKit is made for the person holding a guitar.</p>
+    </header>
+    <div class="reasons">
+      <article class="reason">
+        <span class="cue">Songs, not patterns</span>
+        <h3>You arrange a song; HouseKit plays the drums</h3>
+        <p>Build in sections, from 14 song templates, or let <strong>Build It for Me</strong> lay out a whole song from a style, a vibe and a length. Count-ins, fills into each chorus and a proper ending come with it.</p>
+      </article>
+      <article class="reason">
+        <span class="cue">Plain words</span>
+        <h3>Say how it should feel</h3>
+        <p>Each section has one <strong>Energy</strong> control, from Chill to Big. Or type, or say, what you want: "more swing in the chorus", "punchier", "add 4 bars to chorus 2". Every change can be undone.</p>
+      </article>
+      <article class="reason">
+        <span class="cue">Sounds like…</span>
+        <h3>Start from a song you love</h3>
+        <p>Name one of 70 well-known songs, describe a feel ("a slow 6/8 blues"), or let HouseKit listen to a recording you own. It measures the tempo, the feel and whether it's in 3 or 4, then builds the drums.</p>
+      </article>
+      <article class="reason">
+        <span class="cue">Made for playing along</span>
+        <h3>Hands stay on the guitar</h3>
+        <p>Play-along mode reads from across the room. Changes wait for the bar line so the groove never breaks, a countdown shows what's next, and a Bluetooth page turner or MIDI foot controller steps through the song.</p>
+      </article>
+      <article class="reason">
+        <span class="cue">Real drums</span>
+        <h3>Recorded kits, played like a drummer would</h3>
+        <p>Three acoustic kits recorded by real players (a jazz club kit, a big rock kit and a dry vintage kit), with several hit strengths and alternate takes per drum. Twelve kits in all, each piece retunable and reshapable.</p>
+      </article>
+      <article class="reason">
+        <span class="cue">Yours to keep</span>
+        <h3>Timing you can trust, files you own</h3>
+        <p>The engine places every hit to the sample, and an export sounds exactly like playback. Export a 24-bit WAV and use it anywhere: every sound is public domain, so no credit is needed.</p>
+      </article>
+    </div>
+  </section>
+</div>
+
+<section class="nos" aria-labelledby="nos">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">What you won't find</span>
+      <h2 id="nos">Three things HouseKit leaves out</h2>
+    </div>
+    <div class="no-grid">
+      <article class="no">
+        <h3>No subscription</h3>
+        <p>No monthly fee, no account to make, no features held back for a higher tier.</p>
+      </article>
+      <article class="no">
+        <h3>No cloud</h3>
+        <p>Your songs, kits and grooves live on your iPad. Nothing is uploaded and HouseKit collects no data. It works on a plane.</p>
+        <p class="fine">Voice requests use Apple's speech recognition, which runs on the iPad where supported and otherwise goes through Apple.</p>
+      </article>
+      <article class="no">
+        <h3>No generative AI</h3>
+        <p>Nothing is generated. Every groove was written by hand, every sound was played by a real drummer, and requests are understood by HouseKit's own built-in rules.</p>
+        <p class="fine">On iPads with Apple Intelligence, Apple's on-device model can help read unusually worded requests. It runs offline and never writes the drums.</p>
+      </article>
+    </div>
+    <article class="no free">
+      <h3>Yours, license free</h3>
+      <div class="free-body">
+        <p>Every sound is either synthesized in the app or comes from recordings released into the public domain (CC0). Every groove and kit was made for HouseKit. So anything you make with HouseKit is yours: use it in recordings, videos, streams and live shows, sell it, with no license fees, royalties or credit needed.</p>
+        <p class="fine">Recorded drums from Virtuosity Drums (Versilian Studios), and Big Rusty Drums and Swirly Drums (Karoryfer Samples).</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<div class="wrap">
+  <section class="specs" aria-labelledby="specs">
+    <span class="eyebrow" id="specs">By the numbers</span>
+    <dl class="spec-list">
+      <div class="spec"><dt>99</dt><dd>grooves in 12 styles</dd></div>
+      <div class="spec"><dt>4</dt><dd>time signatures: 4/4, 3/4, 6/8, 12/8</dd></div>
+      <div class="spec"><dt>12</dt><dd>kits, from 3 recorded drum sets</dd></div>
+      <div class="spec"><dt>70</dt><dd>songs HouseKit knows</dd></div>
+      <div class="spec"><dt>14</dt><dd>song templates</dd></div>
+      <div class="spec"><dt>24-bit</dt><dd>48 kHz WAV export</dd></div>
+    </dl>
+  </section>
+  <footer>
+    <span>HouseKit for iPad · iPadOS 17 or later</span>
+    <span>Recorded drums: Virtuosity Drums, Big Rusty Drums and Swirly Drums, all CC0</span>
+  </footer>
+</div>
+</body>
+</html>
