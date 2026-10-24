@@ -21,6 +21,7 @@ final class SpeechInput {
     @ObservationIgnored private var request: SFSpeechAudioBufferRecognitionRequest?
     @ObservationIgnored private var task: SFSpeechRecognitionTask?
     @ObservationIgnored private var finalHeard = false
+    @ObservationIgnored private var restarts = 0
 
     func start() async -> Bool {
         problem = nil
@@ -44,31 +45,10 @@ final class SpeechInput {
         request.contextualStrings = ["swing", "punchier", "hi-hat", "half time", "double time", "chorus", "verse",
                                      "bridge", "outro", "intro", "fill", "ride", "crash", "toms", "reverb", "BPM"]
         stopAudio() // anything left from a listen that didn't finish
-        let audio = AVAudioEngine()
-        let input = audio.inputNode
-        let format = input.outputFormat(forBus: 0)
-        guard format.sampleRate > 0, format.channelCount > 0 else {
-            problem = "No microphone found."
+        restarts = 0
+        if let failure = startAudio(feeding: request) {
+            problem = failure
             return false
-        }
-        input.installTap(onBus: 0, bufferSize: 1024, format: format, block: Self.makeTap(request: request))
-        audio.prepare()
-        do {
-            try audio.start()
-        } catch {
-            input.removeTap(onBus: 0)
-            problem = "Couldn't start the microphone: \(error.localizedDescription)"
-            return false
-        }
-        self.audio = audio
-        // A route or session change stops the engine underneath us: end the
-        // audio so the recognizer finishes with what it has.
-        configurationObserver = NotificationCenter.default.addObserver(
-            forName: .AVAudioEngineConfigurationChange, object: audio, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.stopAudio()
-                self?.request?.endAudio()
-            }
         }
         self.request = request
         finalHeard = false
@@ -82,8 +62,9 @@ final class SpeechInput {
         guard isListening else { return transcript }
         stopAudio()
         request?.endAudio()
-        // The final result usually follows within a few hundred milliseconds.
-        for _ in 0..<12 where !finalHeard {
+        // The final result usually follows within a few hundred milliseconds,
+        // longer when it comes from Apple's servers.
+        for _ in 0..<30 where !finalHeard {
             try? await Task.sleep(for: .milliseconds(50))
         }
         task?.cancel()
@@ -91,6 +72,56 @@ final class SpeechInput {
         request = nil
         isListening = false
         return transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Starts a new engine whose microphone feeds `request`, or says why it
+    /// couldn't.
+    private func startAudio(feeding request: SFSpeechAudioBufferRecognitionRequest) -> String? {
+        let audio = AVAudioEngine()
+        let input = audio.inputNode
+        let format = input.outputFormat(forBus: 0)
+        guard format.sampleRate > 0, format.channelCount > 0 else { return "No microphone found." }
+        input.installTap(onBus: 0, bufferSize: 1024, format: format, block: Self.makeTap(request: request))
+        audio.prepare()
+        do {
+            try audio.start()
+        } catch {
+            input.removeTap(onBus: 0)
+            return "Couldn't start the microphone: \(error.localizedDescription)"
+        }
+        log("microphone on, \(Int(format.sampleRate)) Hz, \(format.channelCount) ch")
+        self.audio = audio
+        // Turning the microphone on makes the system reconfigure the audio
+        // hardware (the simulator always does), which stops this engine.
+        // Start again with the new format and keep listening.
+        configurationObserver = NotificationCenter.default.addObserver(
+            forName: .AVAudioEngineConfigurationChange, object: audio, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.restartAudio() }
+        }
+        return nil
+    }
+
+    private func restartAudio() {
+        stopAudio()
+        guard let request else { return }
+        restarts += 1
+        log("audio reconfigured, restart \(restarts)")
+        // A few in a row is normal while the hardware settles; endless ones
+        // mean it won't, so finish with what was heard.
+        if restarts > 4 {
+            request.endAudio()
+            return
+        }
+        if let failure = startAudio(feeding: request) {
+            log(failure)
+            request.endAudio()
+        }
+    }
+
+    private func log(_ message: String) {
+        #if DEBUG
+        print("[Speech] \(message)")
+        #endif
     }
 
     private func stopAudio() {
@@ -102,7 +133,9 @@ final class SpeechInput {
         self.audio = nil
     }
 
-    private func heard(_ text: String?, final: Bool) {
+    private func heard(_ text: String?, final: Bool, error: String?) {
+        if let error { log("recognizer: \(error)") }
+        if final { log("final: “\(text ?? transcript)”") }
         if let text { transcript = text }
         if final { finalHeard = true }
     }
@@ -117,8 +150,9 @@ final class SpeechInput {
         { [weak owner] result, error in
             let text = result?.bestTranscription.formattedString
             let final = result?.isFinal ?? (error != nil)
+            let problem = error.map { "\($0.localizedDescription) (\(($0 as NSError).domain) \(($0 as NSError).code))" }
             let target = owner
-            Task { @MainActor in target?.heard(text, final: final) }
+            Task { @MainActor in target?.heard(text, final: final, error: problem) }
         }
     }
 
