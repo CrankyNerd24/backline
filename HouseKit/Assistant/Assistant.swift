@@ -173,7 +173,8 @@ final class Assistant {
             if !started {
                 reply = Reply(request: "", done: [], problems: [speech.problem ?? "Couldn't listen."], canUndo: false)
             } else if text.isEmpty {
-                reply = Reply(request: "", done: [], problems: ["Didn't hear anything. Hold the mic while you speak."],
+                reply = Reply(request: "", done: [],
+                              problems: [speech.problem ?? "Didn't hear anything. Hold the mic while you speak."],
                               canUndo: false)
             } else {
                 submit(text, currentSectionID: currentSectionID)

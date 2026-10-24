@@ -133,8 +133,21 @@ final class SpeechInput {
         self.audio = nil
     }
 
-    private func heard(_ text: String?, final: Bool, error: String?) {
-        if let error { log("recognizer: \(error)") }
+    private func heard(_ text: String?, final: Bool, error: (domain: String, code: Int, text: String)?) {
+        if let error {
+            log("recognizer: \(error.text) (\(error.domain) \(error.code))")
+            // 1110 is "no speech detected": that's "didn't hear anything".
+            // Anything else means recognition itself failed, which the
+            // player should hear about instead.
+            if !(error.domain == "kAFAssistantErrorDomain" && error.code == 1110) {
+                #if targetEnvironment(simulator)
+                problem = "Speech recognition couldn't start. The Simulator often can't run it: try it on an iPad, or type your request."
+                #else
+                problem = "Speech recognition isn't working right now. On some iPads it needs an internet connection. "
+                    + "Type your request instead."
+                #endif
+            }
+        }
         if final { log("final: “\(text ?? transcript)”") }
         if let text { transcript = text }
         if final { finalHeard = true }
@@ -150,7 +163,10 @@ final class SpeechInput {
         { [weak owner] result, error in
             let text = result?.bestTranscription.formattedString
             let final = result?.isFinal ?? (error != nil)
-            let problem = error.map { "\($0.localizedDescription) (\(($0 as NSError).domain) \(($0 as NSError).code))" }
+            let problem = error.map { e -> (domain: String, code: Int, text: String) in
+                let ns = e as NSError
+                return (ns.domain, ns.code, ns.localizedDescription)
+            }
             let target = owner
             Task { @MainActor in target?.heard(text, final: final, error: problem) }
         }
