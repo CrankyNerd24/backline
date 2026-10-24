@@ -35,6 +35,7 @@ final class Assistant {
     @ObservationIgnored private let engine: EngineController
     @ObservationIgnored private let purchases: Purchases
     @ObservationIgnored private var undoSong: Song?
+    @ObservationIgnored private var starting: Task<Bool, Never>?
 
     init(store: SongStore, library: GrooveLibrary, kits: KitLibrary, engine: EngineController, purchases: Purchases) {
         self.store = store
@@ -147,22 +148,33 @@ final class Assistant {
         engine.enableMicrophone()
         phase = .listening
         engine.duck(true)
+        let start = Task { await speech.start() }
+        starting = start
         Task {
-            if !(await speech.start()) {
-                engine.duck(false)
-                phase = .idle
-                reply = Reply(request: "", done: [], problems: [speech.problem ?? "Couldn't listen."], canUndo: false)
-            }
+            // A start that fails on its own (no permission, no microphone).
+            // If the mic was already let go, stopListening reports it.
+            guard !(await start.value), starting == start else { return }
+            starting = nil
+            engine.duck(false)
+            phase = .idle
+            reply = Reply(request: "", done: [], problems: [speech.problem ?? "Couldn't listen."], canUndo: false)
         }
     }
 
     func stopListening(currentSectionID: UUID?) {
-        guard phase == .listening else { return }
+        // Letting go can come before listening has started (the permission
+        // alert, or a quick tap): wait for the start, then finish it, so the
+        // microphone is never left running.
+        guard phase == .listening, let start = starting else { return }
+        starting = nil
         Task {
-            let text = await speech.finish()
+            let started = await start.value
+            let text = started ? await speech.finish() : ""
             engine.duck(false)
             phase = .idle
-            if text.isEmpty {
+            if !started {
+                reply = Reply(request: "", done: [], problems: [speech.problem ?? "Couldn't listen."], canUndo: false)
+            } else if text.isEmpty {
                 reply = Reply(request: "", done: [], problems: ["Didn't hear anything. Hold the mic while you speak."],
                               canUndo: false)
             } else {

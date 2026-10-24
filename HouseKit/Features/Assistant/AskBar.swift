@@ -129,7 +129,10 @@ struct MicButton: View {
     @Environment(Assistant.self) private var assistant
     let currentSectionID: UUID?
     var size: CGFloat = 48
-    @State private var held = false
+    /// Down while a finger is on the mic. Unlike a flag set in onEnded, it
+    /// goes back to false when the touch is cancelled too (the permission
+    /// alert takes it), so listening always stops.
+    @GestureState private var pressing = false
 
     var body: some View {
         let listening = assistant.phase == .listening
@@ -143,16 +146,15 @@ struct MicButton: View {
             // Down starts listening, up finishes: a drag that never needs to move.
             .gesture(
                 DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        guard !held else { return }
-                        held = true
-                        assistant.startListening()
-                    }
-                    .onEnded { _ in
-                        held = false
-                        assistant.stopListening(currentSectionID: currentSectionID)
-                    }
+                    .updating($pressing) { _, down, _ in down = true }
             )
+            .onChange(of: pressing) { _, down in
+                if down {
+                    assistant.startListening()
+                } else {
+                    assistant.stopListening(currentSectionID: currentSectionID)
+                }
+            }
             .disabled(assistant.phase == .thinking)
             .accessibilityElement()
             .accessibilityLabel(listening ? "Stop listening" : "Speak a request")

@@ -437,8 +437,12 @@ final class EngineController {
     }
 
     /// The hardware format changed (e.g. a new output device at a different
-    /// sample rate). Rebuild the core at the new rate; playback stays stopped.
+    /// sample rate). Rebuild the core at the new rate.
     private func rebuildGraph() {
+        // Turning the microphone on for the first time changes the session,
+        // which rebuilds the graph: keep the song going, from the top of the
+        // section it was in, rather than going silent under the player.
+        let wasPlaying = isPlaying, resumeSection = position?.sectionID
         avEngine.stop()
         if let sourceNode { avEngine.detach(sourceNode) }
         sourceNode = nil
@@ -449,6 +453,7 @@ final class EngineController {
         previewing = false
         previewingGrooveID = nil
         buildGraph()
+        if wasPlaying { play(from: resumeSection, countIn: false) }
     }
 
     // MARK: System events
