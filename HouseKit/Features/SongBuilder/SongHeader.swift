@@ -149,7 +149,7 @@ struct SongHeader: View {
             .tutorialAnchor("kitChip")
             .accessibilityHint("Opens the Kit Editor")
             Button {
-                if purchases.isUnlocked { exporting = true } else { locked = .export }
+                exporting = true
             } label: {
                 Label("Export", systemImage: "square.and.arrow.up")
                     .labelStyle(CompactLabelStyle(iconOnly: compact))

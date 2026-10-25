@@ -9,8 +9,8 @@ Version 1.0. What changed in each version is in [`CHANGELOG.md`](CHANGELOG.md).
 ## Status: milestone 10 (polish): all v1 milestones built
 
 **Free and HouseKit Full** (`Store/Purchases.swift`, `Features/Paywall/`): HouseKit is free to download, and one non-consumable in-app purchase, **HouseKit Full** (`com.crankynerdnew.housekit.full`, Family Sharing on), unlocks the rest for good. No subscription.
-- **Free:** song building, Energy, Tell HouseKit and voice, Play-along, foot pedals, Undo and the tour; the Rock, Blues & Shuffle, Pop and Ballad styles (38 grooves) and My grooves; the Garage Kit and Big Rusty, plus the Kit Editor's knobs; up to 3 songs; Sounds Like songs in the free styles.
-- **HouseKit Full adds:** all 12 styles and 99 grooves; all 12 kits, picking each drum's sound and Save as new kit; unlimited songs; WAV export; the Pattern Editor; every Sounds Like song, Analyze a recording and Save the groove.
+- **Free:** song building, WAV export, Energy, Tell HouseKit and voice, Play-along, foot pedals, Undo and the tour; the Rock, Blues & Shuffle, Pop and Ballad styles (38 grooves) and My grooves; the Garage Kit and Big Rusty, plus the Kit Editor's knobs; up to 3 songs; Sounds Like songs in the free styles.
+- **HouseKit Full adds:** all 12 styles and 99 grooves; all 12 kits, picking each drum's sound and Save as new kit; unlimited songs; the Pattern Editor; every Sounds Like song, Analyze a recording and Save the groove.
 - Locks apply only where something new is chosen. Every groove and Sounds Like result can still be heard, songs already using a locked groove or kit keep playing, and nothing is ever watermarked or time-limited. Tell HouseKit says when a kit or style it was asked for is in HouseKit Full.
 - StoreKit 2: `Transaction.currentEntitlements` on launch and on returning to the app, a `Transaction.updates` listener (Ask to Buy, refunds, Family Sharing), the SwiftUI `purchase` action, and **Restore Purchases** (`AppStore.sync()`) in the song menu and on the offer. The last answer is cached so a launch doesn't flash locks.
 

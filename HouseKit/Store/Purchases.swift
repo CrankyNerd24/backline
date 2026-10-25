@@ -6,8 +6,8 @@ import SwiftUI
 /// HouseKit is free to try, and one purchase, HouseKit Full, unlocks the
 /// rest for good (no subscription; shared with the family through Family
 /// Sharing). The free app is the whole app with fewer styles and kits and
-/// three songs: building, Energy, Tell HouseKit, Play-along, pedals and
-/// accessibility are never locked, and nothing already in a song stops
+/// three songs: building, Energy, Tell HouseKit, Play-along, pedals, export
+/// and accessibility are never locked, and nothing already in a song stops
 /// playing. Locks apply only where something new is chosen.
 @Observable
 final class Purchases {
@@ -24,7 +24,6 @@ final class Purchases {
         case kit(String)
         case template(String)
         case moreSongs
-        case export
         case patternEditor
         case kitSounds
         case saveKit
@@ -41,7 +40,6 @@ final class Purchases {
             case .kit(let name): "The \(name) is in HouseKit Full"
             case .template(let name): "“\(name)” is in HouseKit Full"
             case .moreSongs: "Keep more than \(Purchases.freeSongLimit) songs"
-            case .export: "Export is in HouseKit Full"
             case .patternEditor: "The Pattern Editor is in HouseKit Full"
             case .kitSounds: "Choosing sounds is in HouseKit Full"
             case .saveKit: "Saving kits is in HouseKit Full"
@@ -58,7 +56,6 @@ final class Purchases {
             case .kit: "The free kits are the Garage Kit and Big Rusty."
             case .template: "This template uses grooves from a style in HouseKit Full."
             case .moreSongs: "The free version keeps \(Purchases.freeSongLimit) songs. Delete one, or unlock as many as you like."
-            case .export: "Save your songs as 24-bit WAV files to use anywhere."
             case .patternEditor: "Write your own grooves, step by step, and keep them in My grooves."
             case .kitSounds: "Pick each drum's sound from every recorded and synthesized kit, and mix them."
             case .saveKit: "Keep your own kits to use in any song."

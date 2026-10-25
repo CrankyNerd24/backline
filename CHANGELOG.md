@@ -10,12 +10,12 @@ The first release: a drummer for guitarists' practice on iPad. Everything
 runs on the iPad, with no subscription, no account and no data collected.
 
 ### Free and HouseKit Full
-- Free to download, with song building, Energy, Tell HouseKit, Play-along,
-  foot pedals and the tour; the Rock, Blues & Shuffle, Pop and Ballad styles;
+- Free to download, with song building, WAV export, Energy, Tell HouseKit,
+  Play-along, foot pedals and the tour; the Rock, Blues & Shuffle, Pop and Ballad styles;
   the Garage Kit and Big Rusty; and up to 3 songs.
 - **HouseKit Full**, one in-app purchase (no subscription, Family Sharing),
   adds every style, groove and kit, choosing sounds and saving kits in the Kit
-  Editor, unlimited songs, WAV export, the Pattern Editor, and every Sounds
+  Editor, unlimited songs, the Pattern Editor, and every Sounds
   Like song with Analyze a recording and Save the groove.
 - Every groove and Sounds Like song can be heard before buying, and nothing
   already in a song is locked. **Restore Purchases** is in the song menu.

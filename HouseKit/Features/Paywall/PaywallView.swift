@@ -19,7 +19,6 @@ struct PaywallView: View {
         Unlock(icon: "music.note.list", text: "All 12 styles and 99 grooves: funk, country, metal, punk, reggae, jazz, hip-hop and Latin"),
         Unlock(icon: "circle.grid.2x2", text: "All 12 kits, and the full Kit Editor: pick each drum's sound and save your own kits"),
         Unlock(icon: "square.stack", text: "As many songs as you like"),
-        Unlock(icon: "square.and.arrow.up", text: "Export songs as 24-bit WAV files, yours to use anywhere"),
         Unlock(icon: "square.grid.3x3", text: "The Pattern Editor, to write your own grooves"),
         Unlock(icon: "waveform.badge.magnifyingglass", text: "All 70 Sounds Like songs, and analyzing your own recordings"),
     ]
