@@ -85,7 +85,7 @@ final class Purchases {
         // StoreKit checks; refresh() corrects it either way.
         isUnlocked = UserDefaults.standard.bool(forKey: Self.cacheKey)
         updates = Task { [weak self] in
-            for await result in Transaction.updates {
+            for await result in StoreKit.Transaction.updates {
                 await self?.handle(result)
             }
         }
@@ -169,7 +169,7 @@ final class Purchases {
     /// Family Sharing included.
     func refresh() async {
         var owned = false
-        for await result in Transaction.currentEntitlements {
+        for await result in StoreKit.Transaction.currentEntitlements {
             if case .verified(let transaction) = result, transaction.productID == Self.productID,
                transaction.revocationDate == nil {
                 owned = true
@@ -178,7 +178,7 @@ final class Purchases {
         setUnlocked(owned)
     }
 
-    private func handle(_ result: VerificationResult<Transaction>) async {
+    private func handle(_ result: VerificationResult<StoreKit.Transaction>) async {
         guard case .verified(let transaction) = result else { return }
         if transaction.productID == Self.productID { await refresh() }
         await transaction.finish()
