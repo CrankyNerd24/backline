@@ -124,7 +124,7 @@ final class Tutorial {
              wait: .opened(.groovePicker), tryIt: "Tap Change groove"),
         Step(id: "styles", chapter: "Your first song", screen: .groovePicker, anchor: "styleTabs",
              title: "Browse by style",
-             text: "Rock, blues, funk, country and more. Or search for a feel, like “shuffle” or “half-time”."),
+             text: "Rock, blues, funk, country and more. Or search for a feel, like “shuffle” or “half-time”. A lock marks styles in HouseKit Full; you can still hear every groove."),
         Step(id: "grooves", chapter: "Your first song", screen: .groovePicker, anchor: "grooveList",
              title: "Listen before you choose",
              text: "Tap any groove to hear it at your song's tempo.",
@@ -161,7 +161,7 @@ final class Tutorial {
              wait: .opened(.soundsLike), tryIt: "Open New Song › Sounds Like…"),
         Step(id: "soundsLikeSearch", chapter: "Start from a song", screen: .soundsLike, anchor: "soundsLikeSearch",
              title: "Name a song, or a feel",
-             text: "Type a song HouseKit knows, like “Superstition”, or describe the feel: “a slow 6/8 blues”, “a fast country shuffle”.",
+             text: "Type a song HouseKit knows, like “Back in Black”, or describe the feel: “a slow 6/8 blues”, “a fast country shuffle”.",
              wait: .referenceFound, tryIt: "Search for a song or a feel"),
         Step(id: "soundsLikeResult", chapter: "Start from a song", screen: .soundsLike, anchor: "soundsLikeResult",
              title: "Hear it, then keep it",
@@ -191,7 +191,7 @@ final class Tutorial {
         // Kits and export
         Step(id: "kit", chapter: "Kits & export", screen: .builder, anchor: "kitChip",
              title: "Change the sound",
-             text: "Twelve kits: three real recorded drum sets (a jazz club kit, a big rock kit and a dry vintage kit) shaped in different ways, plus an electronic one.",
+             text: "Twelve kits: three real recorded drum sets (a jazz club kit, a big rock kit and a dry vintage kit) shaped in different ways, plus an electronic one. The Garage Kit and Big Rusty come with the free version; HouseKit Full adds the rest.",
              wait: .opened(.kitEditor), tryIt: "Tap the kit"),
         Step(id: "sounds", chapter: "Kits & export", screen: .kitEditor, anchor: "startingSounds",
              title: "Choose each drum",
@@ -205,6 +205,6 @@ final class Tutorial {
              text: "Export makes a WAV of the whole song to share or put in your recording app. It's yours to use anywhere, no credit needed."),
         Step(id: "done", chapter: "Tour complete", screen: .builder, anchor: "songMenu",
              title: "You've finished the tour",
-             text: "That's everything you need: build a song, or start from one you love, shape it in plain words, and play along. The tour is always here if you want it again: tap your song's name, up here, and choose Take the Tour."),
+             text: "That's everything you need: build a song, or start from one you love, shape it in plain words, and play along. The tour is always here if you want it again: tap your song's name, up here, and choose Take the Tour. Unlock HouseKit Full is in the same menu."),
     ]
 }

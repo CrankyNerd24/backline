@@ -7,7 +7,9 @@ struct KitEditorView: View {
     @Environment(SongStore.self) private var store
     @Environment(KitLibrary.self) private var kits
     @Environment(EngineController.self) private var engine
+    @Environment(Purchases.self) private var purchases
     @Environment(\.dismiss) private var dismiss
+    @State private var locked: Purchases.Feature?
 
     @State private var piece: Piece = .kick
     @State private var strength: Velocity = .normal
@@ -68,6 +70,7 @@ struct KitEditorView: View {
         }
         .background(Theme.bg)
         .tutorialHost(.kitEditor)
+        .unlockSheet($locked)
         .foregroundStyle(Theme.text)
         .onDisappear { if hearInGroove { engine.stopPreview() } }
         .onChange(of: hearInGroove) { _, on in on ? startGroove() : engine.stopPreview() }
@@ -119,6 +122,7 @@ struct KitEditorView: View {
             .buttonStyle(ChipButtonStyle())
             .disabled(voice == base.voice(piece))
             Button {
+                guard purchases.isUnlocked else { return locked = .saveKit }
                 kitName = "\(base.name) (mine)"
                 naming = true
             } label: {
@@ -133,12 +137,15 @@ struct KitEditorView: View {
 
     private func kitButton(_ kit: Kit) -> some View {
         Button {
+            guard purchases.allows(kit, in: kits) else { return locked = .kit(kit.name) }
             store.song.kitID = kit.id
             store.song.kitOverride = nil
             engine.load(store.song)
         } label: {
             if kit.id == store.song.kitID {
                 Label(kit.name, systemImage: "checkmark")
+            } else if !purchases.allows(kit, in: kits) {
+                Label(kit.name, systemImage: "lock")
             } else {
                 Text(kit.name)
             }
@@ -193,14 +200,23 @@ struct KitEditorView: View {
                 ForEach(models) { model in
                     let selected = model.id == voice.model
                     Button {
+                        guard purchases.isUnlocked || selected else { return locked = .kitSounds }
                         edit { $0.model = model.id }
                         engine.audition(piece, velocity: strength)
                     } label: {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(model.name)
-                                .font(Theme.condensed(20, weight: .bold))
-                                .lineLimit(2)
-                                .fixedSize(horizontal: false, vertical: true)
+                            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                Text(model.name)
+                                    .font(Theme.condensed(20, weight: .bold))
+                                    .lineLimit(2)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                if !purchases.isUnlocked && !selected {
+                                    Spacer(minLength: 0)
+                                    Image(systemName: "lock.fill")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundStyle(Theme.textMuted)
+                                }
+                            }
                             Text(model.description)
                                 .font(Theme.body(13))
                                 .foregroundStyle(Theme.textMuted)
@@ -218,7 +234,7 @@ struct KitEditorView: View {
                     }
                     .buttonStyle(.plain)
                     .id(model.id)
-                    .accessibilityLabel("\(model.name): \(model.description)")
+                    .accessibilityLabel("\(model.name): \(model.description)" + (purchases.isUnlocked || selected ? "" : ", in HouseKit Full"))
                     .accessibilityAddTraits(selected ? .isSelected : [])
                 }
             }

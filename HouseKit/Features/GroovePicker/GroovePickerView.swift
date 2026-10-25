@@ -9,7 +9,9 @@ struct GroovePickerView: View {
     @Environment(SongStore.self) private var store
     @Environment(GrooveLibrary.self) private var library
     @Environment(EngineController.self) private var engine
+    @Environment(Purchases.self) private var purchases
     @Environment(\.dismiss) private var dismiss
+    @State private var locked: Purchases.Feature?
 
     let sectionID: UUID
     @State private var query = ""
@@ -51,6 +53,7 @@ struct GroovePickerView: View {
         .background(Theme.bg)
         .foregroundStyle(Theme.text)
         .tutorialHost(.groovePicker)
+        .unlockSheet($locked)
         .onDisappear { engine.stopPreview() }
         .onChange(of: variations) {
             if engine.previewingGrooveID != nil { startPreview() }
@@ -125,6 +128,10 @@ struct GroovePickerView: View {
             style = value
         } label: {
             HStack(spacing: 6) {
+                if let value, !purchases.allows(style: value) {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 11, weight: .bold))
+                }
                 Text(title)
                 Text("\(count)")
                     .monospacedDigit()
@@ -133,7 +140,7 @@ struct GroovePickerView: View {
         }
         .buttonStyle(ChipButtonStyle(prominent: isSelected))
         .disabled(count == 0 && !isSelected)
-        .accessibilityLabel("\(title), \(count) grooves")
+        .accessibilityLabel("\(title), \(count) grooves" + (value.map { purchases.allows(style: $0) } == false ? ", in HouseKit Full" : ""))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
@@ -202,7 +209,16 @@ struct GroovePickerView: View {
                     .fixedSize(horizontal: false, vertical: true)
                 MiniPattern(pattern: groove.patterns.main, cell: 11)
 
-                if let section {
+                if section != nil, !purchases.allows(groove) {
+                    // Every groove can be heard; using one needs its style.
+                    Button {
+                        locked = .style(groove.style)
+                    } label: {
+                        Label("Unlock \(groove.style)", systemImage: "lock.fill").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(ChipButtonStyle(prominent: true))
+                    .tutorialAnchor("useGroove")
+                } else if let section {
                     VStack(spacing: 8) {
                         Button {
                             apply(to: [section.id])

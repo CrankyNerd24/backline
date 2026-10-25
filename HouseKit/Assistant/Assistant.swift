@@ -33,14 +33,16 @@ final class Assistant {
     @ObservationIgnored private let library: GrooveLibrary
     @ObservationIgnored private let kits: KitLibrary
     @ObservationIgnored private let engine: EngineController
+    @ObservationIgnored private let purchases: Purchases
     @ObservationIgnored private var undoSong: Song?
     @ObservationIgnored private var starting: Task<Bool, Never>?
 
-    init(store: SongStore, library: GrooveLibrary, kits: KitLibrary, engine: EngineController) {
+    init(store: SongStore, library: GrooveLibrary, kits: KitLibrary, engine: EngineController, purchases: Purchases) {
         self.store = store
         self.library = library
         self.kits = kits
         self.engine = engine
+        self.purchases = purchases
     }
 
     var understandsFreeForm: Bool { OnDeviceInterpreter.isAvailable }
@@ -110,7 +112,7 @@ final class Assistant {
             return
         }
         let before = store.song
-        let applier = AssistantApplier(store: store, library: library, kits: kits, engine: engine,
+        let applier = AssistantApplier(store: store, library: library, kits: kits, engine: engine, purchases: purchases,
                                        currentSectionID: currentSectionID)
         let outcome = applier.apply(steps)
         if outcome.songChanged { undoSong = before }

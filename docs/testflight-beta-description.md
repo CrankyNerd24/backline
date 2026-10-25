@@ -10,6 +10,6 @@ Play along. A large Play-along screen you can read from across the room, a count
 
 Real drums. Three recorded acoustic kits and 12 kits in all, each drum adjustable in the Kit Editor. Export your song as a 24-bit WAV. Every sound is synthesized in the app or public domain, so what you make is yours to use with no license or credit.
 
-No subscription, no account and no generative AI. HouseKit collects no data, and your songs stay on your iPad.
+Free to try, with four styles, two kits, three songs and full export. One purchase, HouseKit Full, unlocks everything: no subscription, no account and no generative AI. HouseKit collects no data, and your songs stay on your iPad.
 
 Requires an iPad with iPadOS 17 or later, used in landscape.

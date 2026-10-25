@@ -6,7 +6,9 @@ import SwiftUI
 struct BuildItView: View {
     @Environment(GrooveLibrary.self) private var library
     @Environment(KitLibrary.self) private var kits
+    @Environment(Purchases.self) private var purchases
     @Environment(\.dismiss) private var dismiss
+    @State private var locked: Purchases.Feature?
     /// Receives the finished song.
     let onBuild: (Song) -> Void
 
@@ -39,6 +41,7 @@ struct BuildItView: View {
         .background(Theme.bg)
         .foregroundStyle(Theme.text)
         .onAppear { suggestTempo() }
+        .unlockSheet($locked)
     }
 
     private var header: some View {
@@ -49,6 +52,7 @@ struct BuildItView: View {
                 .font(Theme.condensed(28, weight: .bold))
             Spacer()
             Button {
+                guard purchases.allows(style: arrangement.style) else { return locked = .style(arrangement.style) }
                 onBuild(arrangement.build(library: library, kits: kits))
                 dismiss()
             } label: {
@@ -67,12 +71,19 @@ struct BuildItView: View {
             Eyebrow("Style")
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 4), spacing: 10) {
                 ForEach(styles, id: \.self) { style in
+                    let allowed = purchases.allows(style: style)
                     Button {
+                        guard allowed else { return locked = .style(style) }
                         arrangement.style = style
                         if !tempoTouched { suggestTempo() }
                     } label: {
-                        Text(style).frame(maxWidth: .infinity)
+                        HStack(spacing: 6) {
+                            if !allowed { Image(systemName: "lock.fill").font(.system(size: 12, weight: .bold)) }
+                            Text(style)
+                        }
+                        .frame(maxWidth: .infinity)
                     }
+                    .accessibilityHint(allowed ? "" : "In HouseKit Full")
                     .buttonStyle(ChipButtonStyle(prominent: arrangement.style == style))
                     .accessibilityAddTraits(arrangement.style == style ? .isSelected : [])
                 }
@@ -174,7 +185,8 @@ struct BuildItView: View {
     private func setMeter(_ meter: TimeSig) {
         arrangement.meter = meter
         let styles = Arrangement.styles(for: meter, library: library)
-        if !styles.contains(arrangement.style), let first = styles.first { arrangement.style = first }
+        if !styles.contains(arrangement.style),
+           let first = styles.first(where: { purchases.allows(style: $0) }) ?? styles.first { arrangement.style = first }
         if !tempoTouched { suggestTempo() }
     }
 

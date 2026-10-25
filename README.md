@@ -8,6 +8,12 @@ Version 1.0. What changed in each version is in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Status: milestone 10 (polish): all v1 milestones built
 
+**Free and HouseKit Full** (`Store/Purchases.swift`, `Features/Paywall/`): HouseKit is free to download, and one non-consumable in-app purchase, **HouseKit Full** (`com.crankynerdnew.housekit.full`, Family Sharing on), unlocks the rest for good. No subscription.
+- **Free:** song building, WAV export, Energy, Tell HouseKit and voice, Play-along, foot pedals, Undo and the tour; the Rock, Blues & Shuffle, Pop and Ballad styles (38 grooves) and My grooves; the Garage Kit and Big Rusty, plus the Kit Editor's knobs; up to 3 songs; Sounds Like songs in the free styles.
+- **HouseKit Full adds:** all 12 styles and 99 grooves; all 12 kits, picking each drum's sound and Save as new kit; unlimited songs; the Pattern Editor; every Sounds Like song, Analyze a recording and Save the groove.
+- Locks apply only where something new is chosen. Every groove and Sounds Like result can still be heard, songs already using a locked groove or kit keep playing, and nothing is ever watermarked or time-limited. Tell HouseKit says when a kit or style it was asked for is in HouseKit Full.
+- StoreKit 2: `Transaction.currentEntitlements` on launch and on returning to the app, a `Transaction.updates` listener (Ask to Buy, refunds, Family Sharing), the SwiftUI `purchase` action, and **Restore Purchases** (`AppStore.sync()`) in the song menu and on the offer. The last answer is cached so a launch doesn't flash locks.
+
 **Sounds like…** (New Song ▸ Sounds Like…, or tell HouseKit "something that sounds like Superstition"): builds drums after a real song.
 - **HouseKit's song list** (`Library/References/reference-songs.json`, 70 well-known songs) gives each song's approximate tempo, time and style, the closest built-in groove and a fitting kit. It works offline. Only songs whose feel is well known are listed, rather than guesses.
 - **Describe the feel:** for a song not on the list, the words still count: "a slow 6/8 blues" or "fast country shuffle at 140" picks a style, groove, time and tempo.
@@ -217,6 +223,8 @@ Still to check on an iPad: no dropouts with a 5 ms buffer, using Instruments.
 ## Building
 
 **App:** open `HouseKit.xcodeproj` in Xcode 26 and run on an iPad or the iPad simulator. Minimum iPadOS 17, landscape only.
+
+**Purchases in the simulator:** `HouseKit.storekit` (at the repo root) is a local StoreKit configuration with HouseKit Full at $14.99. In Xcode choose **Product ▸ Scheme ▸ Edit Scheme… ▸ Run ▸ Options ▸ StoreKit Configuration ▸ HouseKit.storekit**. Then **Debug ▸ StoreKit ▸ Manage Transactions…** shows, refunds and deletes test purchases (delete one to see the free version again). It's used only when running from Xcode; TestFlight and the App Store use the product in App Store Connect.
 
 **Engine and pedal tests** (macOS or Linux, no Xcode needed):
 

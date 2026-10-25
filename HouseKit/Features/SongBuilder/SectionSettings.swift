@@ -8,6 +8,8 @@ struct SectionSettings: View {
     @Environment(EngineController.self) private var engine
     @Environment(Assistant.self) private var assistant
     @Environment(Tutorial.self) private var tutorial
+    @Environment(Purchases.self) private var purchases
+    @State private var locked: Purchases.Feature?
     let sectionID: UUID
     @Binding var selectedID: UUID?
     @State private var confirmingDelete = false
@@ -47,7 +49,9 @@ struct SectionSettings: View {
                     .environment(engine)
                     .environment(assistant)
                     .environment(tutorial)
+                    .environment(purchases)
             }
+            .unlockSheet($locked)
             .fullScreenCover(isPresented: $editingPattern) {
                 PatternEditorView(sectionID: sectionID)
                     .environment(store)
@@ -183,7 +187,7 @@ struct SectionSettings: View {
                     .tutorialAnchor("changeGroove")
                     if showAdvanced {
                         Button {
-                            editingPattern = true
+                            if purchases.isUnlocked { editingPattern = true } else { locked = .patternEditor }
                         } label: {
                             Label("Edit pattern", systemImage: "square.grid.3x3")
                         }
