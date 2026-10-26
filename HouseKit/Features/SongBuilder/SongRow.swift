@@ -27,20 +27,28 @@ struct SongRow: View {
             }
             GeometryReader { geo in
                 let unit = barWidth(for: geo.size.width, song: song)
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Self.spacing) {
-                        if song.countInBars > 0 {
-                            CountInBlock(bars: song.countInBars, progress: countInProgress(song))
-                                .frame(width: max(Self.minBlockWidth, CGFloat(song.countInBars) * unit))
+                ScrollViewReader { scroller in
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: Self.spacing) {
+                            if song.countInBars > 0 {
+                                CountInBlock(bars: song.countInBars, progress: countInProgress(song))
+                                    .frame(width: max(Self.minBlockWidth, CGFloat(song.countInBars) * unit))
+                            }
+                            ForEach(Array(song.sections.enumerated()), id: \.element.id) { index, section in
+                                block(section, isLast: index == song.sections.count - 1)
+                                    .frame(width: max(Self.minBlockWidth, CGFloat(section.bars) * unit))
+                            }
+                            addMenu
                         }
-                        ForEach(Array(song.sections.enumerated()), id: \.element.id) { index, section in
-                            block(section, isLast: index == song.sections.count - 1)
-                                .frame(width: max(Self.minBlockWidth, CGFloat(section.bars) * unit))
-                        }
-                        addMenu
+                        .padding(6) // room for the selection ring
+                        .frame(height: Self.height + 12)
                     }
-                    .padding(6) // room for the selection ring
-                    .frame(height: Self.height + 12)
+                    // A long song scrolls: keep the selected section (the one
+                    // playing, while it plays) in view.
+                    .onChange(of: selection) { _, id in
+                        guard let id else { return }
+                        withAnimation(.easeInOut(duration: 0.3)) { scroller.scrollTo(id, anchor: .center) }
+                    }
                 }
             }
             .frame(height: Self.height + 12)

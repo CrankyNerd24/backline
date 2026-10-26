@@ -84,6 +84,14 @@ struct SongBuilderView: View {
         .onChange(of: selection, initial: true) { _, id in
             engine.cuedSectionID = id // where a pedal's Play starts
         }
+        // The settings below the song row follow the section being played, so
+        // the energy, groove and sound you change are always the ones you're
+        // hearing. A section tapped mid-song stays selected until the next
+        // section starts.
+        .onChange(of: engine.position?.sectionID) { _, id in
+            guard engine.isPlaying, let id, id != selectedID else { return }
+            selectedID = id
+        }
         .pedalConfirmations()
         .tutorialHost(.builder)
         // Tell HouseKit: "something that sounds like Superstition".
