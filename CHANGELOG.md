@@ -35,7 +35,9 @@ runs on the iPad, with no subscription, no account and no data collected.
 - One **Energy** control per section (Chill to Big), plus swing; the busy,
   intensity and human sliders, time feel and cymbals are under Show Advanced
   Controls.
-- Double-tap a section to play from it. **Undo** and **Redo** for every change.
+- Double-tap a section to play from it. While a song plays, the selection and
+  its settings follow the section you're hearing. **Undo** and **Redo** for
+  every change.
 
 ### Tell HouseKit
 - Plain-language requests, typed or spoken: "more swing in the chorus",
